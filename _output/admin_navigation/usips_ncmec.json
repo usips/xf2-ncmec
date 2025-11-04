@@ -3,8 +3,8 @@
     "display_order": 350,
     "link": "ncmec",
     "icon": "fa-siren",
-    "admin_permission_id": "",
+    "admin_permission_id": "usips_ncmec",
     "debug_only": false,
     "development_only": false,
-    "hide_no_children": false
+    "hide_no_children": true
 }

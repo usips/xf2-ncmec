@@ -11,6 +11,18 @@
         "version_string": "1.0.0",
         "hash": "7e2708aeb65763c54052f57ed1a1ec1d"
     },
+    "admin_navigation.usips_ncmec_incident.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "515b059a6c6f39dd039d745554feba95"
+    },
+    "admin_permission.usips_ncmec.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "c5490ffa4c550df8ef69b8dfd6837e98"
+    },
     "usips_ncmec_failed_lines.txt": {
         "global_cache": false,
         "version_id": 0,
