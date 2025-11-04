@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Admin\\Controller\\AttachmentController",
+    "to_class": "USIPS\\NCMEC\\XF\\Admin\\Controller\\AttachmentController",
+    "execute_order": 10,
+    "active": true
+}

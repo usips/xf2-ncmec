@@ -10,5 +10,5 @@
 
 namespace USIPS\NCMEC\XF\Admin\Controller
 {
-	class XFCP_Attachment extends \XF\Admin\Controller\Attachment {}
+	class XFCP_AttachmentController extends \XF\Admin\Controller\AttachmentController {}
 }
