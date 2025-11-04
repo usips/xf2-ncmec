@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <phrases>
   <phrase title="admin_navigation.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_attachment_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_attachments" version_id="0" version_string="1.0.0"><![CDATA[Attachments]]></phrase>
 </phrases>

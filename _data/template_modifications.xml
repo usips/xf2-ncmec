@@ -1,2 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<template_modifications/>
+<template_modifications>
+  <modification type="admin" template="attachment_list" modification_key="usips_ncmec_attachment_list" description="Adds clarity to where an unassociated file is attached." execution_order="10" enabled="1" action="str_replace">
+    <find><![CDATA[{{ phrase('unassociated') }}]]></find>
+    <replace><![CDATA[{{ phrase('unassociated') }}
+									<span class="dataList-secondRow">{$attachment.getContentTypePhrase()|parens}</span>]]></replace>
+  </modification>
+</template_modifications>

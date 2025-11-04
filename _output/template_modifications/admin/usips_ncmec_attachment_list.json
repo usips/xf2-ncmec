@@ -1,0 +1,9 @@
+{
+    "template": "attachment_list",
+    "description": "Adds clarity to where an unassociated file is attached.",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "str_replace",
+    "find": "{{ phrase('unassociated') }}",
+    "replace": "{{ phrase('unassociated') }}\n\t\t\t\t\t\t\t\t\t<span class=\"dataList-secondRow\">{$attachment.getContentTypePhrase()|parens}</span>"
+}

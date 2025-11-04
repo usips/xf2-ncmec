@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <admin_navigation>
   <admin_navigation_entry navigation_id="usips_ncmec" display_order="350" link="ncmec" icon="fa-siren" debug_only="0" development_only="0" hide_no_children="0"/>
+  <admin_navigation_entry navigation_id="usips_ncmec_attachment_lookup" parent_navigation_id="usips_ncmec" display_order="250" link="ncmec-attachment/lookup" admin_permission_id="attachment" debug_only="0" development_only="0" hide_no_children="0"/>
+  <admin_navigation_entry navigation_id="usips_ncmec_attachments" parent_navigation_id="usips_ncmec" display_order="200" link="ncmec-attachment" admin_permission_id="attachment" debug_only="0" development_only="0" hide_no_children="0"/>
 </admin_navigation>

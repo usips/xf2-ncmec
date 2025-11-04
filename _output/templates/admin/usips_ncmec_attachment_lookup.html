@@ -1,0 +1,12 @@
+<xf:title>{{ phrase('usips_ncmec_lookup') }}</xf:title>
+
+<div class="blockMessage">{{ phrase('usips_ncmec_lookup_guide') }}</div>
+
+<xf:form action="{{ link('ncmec-attachment/lookup') }}" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:textarea name="input" rows="20" placeholder="{{ phrase('usips_ncmec_lookup_description') }}" />
+        </div>
+        <xf:submitrow submit="{{ phrase('usips_ncmec_lookup_submit') }}" fa="fa-file-search" />
+    </div>
+</xf:form>

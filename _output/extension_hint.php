@@ -8,7 +8,4 @@
  * @noinspection PhpMultipleClassesDeclarationsInOneFile
  */
 
-namespace USIPS\NCMEC\XF\Admin\Controller
-{
-	class XFCP_AttachmentController extends \XF\Admin\Controller\AttachmentController {}
-}
+

@@ -1,2 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<routes/>
+<routes>
+  <route route_type="admin" route_prefix="ncmec-attachment" format=":int&lt;attachment_id,filename&gt;/" controller="USIPS\NCMEC:Attachment" context="usips_ncmec_attachments"/>
+</routes>

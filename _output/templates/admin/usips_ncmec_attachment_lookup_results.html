@@ -1,0 +1,59 @@
+<xf:title>{{ phrase('usips_ncmec_lookup') }}</xf:title>
+
+<xf:if is="$attachments">
+    <div class="block">
+        <div class="block-container">
+            <div class="block-body">
+                <table class="dataTable">
+                    <thead>
+                        <tr>
+                            <th>{{ phrase('attachment') }}</th>
+                            <th>{{ phrase('user') }}</th>
+                            <th>{{ phrase('date') }}</th>
+                            <th>{{ phrase('size') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xf:foreach loop="$attachments" value="$attachment">
+                            <tr>
+                                <td>
+                                    <a href="{{ link('attachments', $attachment) }}"
+                                        target="_blank">{$attachment.filename}</a>
+                                    ({$attachment.attachment_id})
+                                </td>
+                                <td>
+                                    <xf:username user="{$attachment.Data.User}" />
+                                </td>
+                                <td>
+                                    <xf:date time="{$attachment.attach_date}" />
+                                </td>
+                                <td>
+                                    {$attachment.Data.file_size}
+                                </td>
+                            </tr>
+                        </xf:foreach>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</xf:if>
+
+<xf:if is="$failedLines">
+    <div class="block">
+        <div class="block-container">
+            <h3 class="block-header">{{ phrase('usips_ncmec_failed_lines') }}</h3>
+            <div class="block-body">
+                <ul>
+                    <xf:foreach loop="$failedLines" value="$line">
+                        <li><code>{$line}</code></li>
+                    </xf:foreach>
+                </ul>
+            </div>
+        </div>
+    </div>
+</xf:if>
+
+<xf:if is="!$attachments && !$failedLines">
+    <div class="blockMessage">{{ phrase('usips_ncmec_no_results') }}</div>
+</xf:if>
