@@ -1,0 +1,20 @@
+<xf:title>{{ phrase('usips_ncmec_incident') }}</xf:title>
+
+<xf:pageaction if="true">
+    <xf:button href="{{ link('ncmec-incident/delete', $incident) }}" icon="delete" overlay="true" />
+</xf:pageaction>
+
+<xf:form action="{{ link('ncmec-incidents/update', $incident) }}" ajax="true" class="block">
+
+    <div class="block-container">
+        <div class="block-body">
+            <xf:textboxrow name="title" value="{$incident.title}" label="{{ phrase('title') }}" />
+            <xf:textarearow name="additional_info" value="{$incident.additional_info}"
+                label="{{ phrase('usips_ncmec_additional_info') }}"
+                explain="{{ phrase('usips_ncmec_additional_info_explain') }}" rows="10" />
+
+            <xf:submitrow sticky="true" icon="save" />
+        </div>
+    </div>
+
+</xf:form>

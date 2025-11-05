@@ -1,0 +1,1 @@
+Passed as a value in the <a href="https://report.cybertip.org/ispws/documentation/index.html#xml-report">/report/additionalInfo</a> if provided.

@@ -130,4 +130,41 @@ class IncidentController extends AbstractController
         return $this->view('USIPS\NCMEC:Incident\Create', 'usips_ncmec_incident_create', $viewParams);
 
     }
+
+    protected function assertIncidentExists($id, $with = null)
+    {
+        return $this->assertRecordExists('USIPS\NCMEC:Incident', $id, $with);
+    }
+
+    public function actionUpdate(ParameterBag $params)
+    {
+        $this->assertPostOnly();
+
+        $incident = $this->assertIncidentExists($params->incident_id);
+
+        $input = $this->filter([
+            'title' => 'str',
+            'additional_info' => 'str',
+        ]);
+
+        $incident->bulkSet($input);
+        $incident->save();
+
+        return $this->message('Incident updated successfully.');
+    }
+
+    public function actionView(ParameterBag $params)
+    {
+        $incident = $this->assertIncidentExists($params->incident_id);
+
+        $viewParams = [
+            'incident' => $incident,
+            'reports' => $incident->Reports,
+            'incidentUsers' => $incident->IncidentUsers,
+            'incidentContents' => $incident->IncidentContents,
+            'incidentAttachmentDatas' => $incident->IncidentAttachmentDatas,
+        ];
+
+        return $this->view('USIPS\NCMEC:Incident\View', 'usips_ncmec_incident_view', $viewParams);
+    }
 }
