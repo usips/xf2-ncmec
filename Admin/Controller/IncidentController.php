@@ -2,6 +2,7 @@
 
 namespace USIPS\NCMEC\Admin\Controller;
 
+use USIPS\NCMEC\Entity\Incident;;
 use \XF;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\ParameterBag;
@@ -11,6 +12,11 @@ class IncidentController extends AbstractController
     protected function preDispatchController($action, ParameterBag $params)
     {
         $this->assertAdminPermission('usips_ncmec');
+    }
+
+    protected function assertIncidentExists($id, $with = null)
+    {
+        return $this->assertRecordExists('USIPS\NCMEC:Incident', $id, $with);
     }
 
     public function actionIndex(ParameterBag $params)
@@ -131,11 +137,6 @@ class IncidentController extends AbstractController
 
     }
 
-    protected function assertIncidentExists($id, $with = null)
-    {
-        return $this->assertRecordExists('USIPS\NCMEC:Incident', $id, $with);
-    }
-
     public function actionUpdate(ParameterBag $params)
     {
         $this->assertPostOnly();
@@ -155,14 +156,29 @@ class IncidentController extends AbstractController
 
     public function actionView(ParameterBag $params)
     {
-        $incident = $this->assertIncidentExists($params->incident_id);
+        $incident = $this->assertIncidentExists($params->incident_id, ['User', 'Report']);
+
+        // Manually load TO_MANY relations with nested User preloading
+        $incident->hydrateRelation('IncidentUsers', $this->finder('USIPS\NCMEC:IncidentUser')
+            ->where('incident_id', $incident->incident_id)
+            ->with('User')
+            ->fetch()
+        );
+        
+        $incident->hydrateRelation('IncidentContents', $this->finder('USIPS\NCMEC:IncidentContent')
+            ->where('incident_id', $incident->incident_id)
+            ->with('User')
+            ->fetch()
+        );
+        
+        $incident->hydrateRelation('IncidentAttachmentDatas', $this->finder('USIPS\NCMEC:IncidentAttachmentData')
+            ->where('incident_id', $incident->incident_id)
+            ->with('User')
+            ->fetch()
+        );
 
         $viewParams = [
             'incident' => $incident,
-            'reports' => $incident->Reports,
-            'incidentUsers' => $incident->IncidentUsers,
-            'incidentContents' => $incident->IncidentContents,
-            'incidentAttachmentDatas' => $incident->IncidentAttachmentDatas,
         ];
 
         return $this->view('USIPS\NCMEC:Incident\View', 'usips_ncmec_incident_view', $viewParams);

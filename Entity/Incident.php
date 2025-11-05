@@ -29,9 +29,9 @@ class Incident extends Entity
                 'conditions' => 'user_id',
                 'primary' => true,
             ],
-            'Reports' => [
+            'Report' => [
                 'entity' => 'USIPS\NCMEC:Report',
-                'type' => self::TO_MANY,
+                'type' => self::TO_ONE,
                 'conditions' => 'incident_id',
             ],
             'IncidentUsers' => [
@@ -44,7 +44,7 @@ class Incident extends Entity
                 'type' => self::TO_MANY,
                 'conditions' => 'incident_id',
             ],
-            'IncidentAttachmentDatas' => [
+            'IncidentAttachmentData' => [
                 'entity' => 'USIPS\NCMEC:IncidentAttachmentData',
                 'type' => self::TO_MANY,
                 'conditions' => 'incident_id',
@@ -52,5 +52,10 @@ class Incident extends Entity
         ];
 
         return $structure;
+    }
+
+    public static function getWithEverything()
+    {
+        return ['User', 'Report', 'IncidentUsers', 'IncidentContents', 'IncidentAttachmentData'];
     }
 }

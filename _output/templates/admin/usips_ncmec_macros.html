@@ -62,3 +62,19 @@
 		</xf:foreach>
 	</div>
 </xf:macro>
+
+<xf:macro id="user_avatar_block" arg-users="{{ [] }}">
+	<xf:if is="$users is not empty">
+		<div class="block-body">
+			<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$users}" />
+		</div>
+	</xf:if>
+</xf:macro>
+
+<xf:macro id="user_avatar_list" arg-users="{{ [] }}">
+	<div class="user-avatars">
+		<xf:foreach loop="$users" value="$user">
+			<xf:avatar user="$user.User" size="s" />
+		</xf:foreach>
+	</div>
+</xf:macro>
