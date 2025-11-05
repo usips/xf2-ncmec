@@ -1,29 +1,29 @@
 <xf:title>{{ phrase('usips_ncmec_lookup') }}</xf:title>
+<xf:css src="usips_ncmec.less" />
 
-<xf:if is="$failedLines">
-    <xf:form action="{{ link('ncmec-attachment/lookup') }}" class="block">
-        <div class="block-container">
-            <h3 class="block-header">{{ phrase('usips_ncmec_failed_lines') }}</h3>
-            <div class="block-body">
-                <xf:textarea name="failed_lines" value="{{ $failedLines }}" rows="{{ $failedLinesCount }}" />
-                <xf:hiddenval name="attachment_ids" value="{{ $attachmentIds }}" />
-            </div>
+<xf:form action="{{ link('ncmec-attachment/lookup') }}" class="block">
+    <div class="block-container">
+        <h3 class="block-header">{{ phrase('usips_ncmec_failed_lines') }}</h3>
+        <div class="block-body">
+            <xf:textarea name="input" value="{{ $failedLines }}" rows="{{ $failedLinesCount }}" />
         </div>
-        <xf:submitrow sticky="true" icon="search" submit="{{ phrase('usips_ncmec_lookup') }}"></xf:submitrow>
-    </xf:form>
-</xf:if>
+    </div>
+    <xf:submitrow sticky="true" type="submit" name="attachment_ids" icon="search" value="{{ $attachmentIds|join(',') }}"
+        submit="{{ phrase('usips_ncmec_lookup_reattempt') }}">
+        <xf:html>
+            <xf:button type="submit" name="forget" icon="search">{{ phrase('usips_ncmec_lookup_restart') }}</xf:button>
+        </xf:html>
+    </xf:submitrow>
+</xf:form>
 
 <xf:if is="$attachments">
+    <h3 class="block-header">{{ phrase('usips_ncmec_attachments') }}</h3>
     <xf:form action="{{ link('ncmec-incident/create-from-attachments') }}" class="block">
         <div class="block-container">
-            <xf:macro name="usips_ncmec_macros::attachment_block" arg-attachments="{{ $attachments }}" />
+            <xf:macro name="usips_ncmec_macros::attachment_block" arg-attachments="{{ $attachments }}"
+                arg-checked="{{ $attachmentIds }}" />
         </div>
-        <xf:submitrow sticky="true">
-            <xf:html>
-                <xf:button type="submit" name="submit" icon="siren">{{ phrase('usips_ncmec_create_incident') }}
-                </xf:button>
-            </xf:html>
-        </xf:submitrow>
+        <xf:submitrow sticky="true" submit="{{ phrase('usips_ncmec_create_incident') }}" icon="siren"></xf:submitrow>
     </xf:form>
     <xf:else />
     <div class="blockMessage">{{ phrase('usips_ncmec_no_results') }}</div>

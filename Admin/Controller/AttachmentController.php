@@ -78,6 +78,7 @@ class AttachmentController extends AbstractController
         if ($this->isPost())
         {
             $input = $this->filter('input', 'str');
+            $existingAttachmentIds = $this->filter('attachment_ids', 'str');
 
             $attachmentIds = [];
             $dataIds = [];
@@ -128,6 +129,13 @@ class AttachmentController extends AbstractController
                 }
             }
 
+            // Add existing successful attachment IDs
+            if ($existingAttachmentIds)
+            {
+                $existingIds = array_map('intval', array_filter(explode(',', $existingAttachmentIds)));
+                $attachmentIds = array_merge($attachmentIds, $existingIds);
+            }
+
             // Remove duplicates
             $attachmentIds = array_unique(array_map('intval', $attachmentIds));
             $dataIds = array_unique(array_map('intval', $dataIds));
@@ -153,9 +161,9 @@ class AttachmentController extends AbstractController
 
             $viewParams = [
                 'attachments' => $attachments,
-                'attachmentIds' => implode(',', array_column($attachments, 'attachment_id')),
-                'failedLines' =>  implode("\n", $failedLines),
-                'failedLinesCount' => max(4,count($failedLines)),
+                'attachmentIds' => array_column($attachments, 'attachment_id'),
+                'failedLinesText' => implode("\n", $failedLines),
+                'failedLinesCount' => max(4, count($failedLines)),
             ];
 
             return $this->view('USIPS\NCMEC:Attachment\LookupResults', 'usips_ncmec_attachment_lookup_results', $viewParams);

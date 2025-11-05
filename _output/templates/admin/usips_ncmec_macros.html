@@ -1,36 +1,43 @@
-<xf:macro id="attachment_block" arg-attachments="{{ [] }}">
+<xf:macro id="attachment_block" arg-attachments="{{ [] }}" arg-checked="{{ [] }}">
 	<xf:if is="$attachments is not empty">
-		<div class="block-body usips-attachments">
-			<xf:macro id="attachment_list" arg-attachments="{{ $attachments }}" />
+		<div class="block-body">
+			<xf:macro id="attachment_list" arg-attachments="{{ $attachments }}" arg-checked="{{ $checked }}" />
 		</div>
 		<xf:else />
 		<div class="block-body block-row">{{ phrase('no_results_found') }}</div>
 	</xf:if>
 </xf:macro>
 
-<xf:macro id="attachment_list" arg-attachments="{{ [] }}">
-	<xf:foreach loop="$attachments" value="$attachment">
-		<xf:if is="$attachment.has_thumbnail">
-			<a href="{{ link('attachments/view', $attachment) }}"
-			   class="usips-attachment usips-attachmentThumbnail"
-			   style="background-image: url({$attachment.thumbnail_url})" alt="{$attachment.filename}">
-			</a>
-			<xf:elseif is="$attachment.is_audio" />
-			<a href="{{ link('attachments/view', $attachment) }}"
-			   class="usips-attachment usips-attachmentIcon">
-				<xf:fa icon="fa-volume fa-4x" />
-			</a>
-			<xf:elseif is="$attachment.is_video" />
-			<a href="{{ link('attachments/view', $attachment) }}" class="usips-attachment">
-				<video title="{$attachment.filename}" class="usips-attachmentVideo">
-					<source src="{$attachment.direct_url}" />
-				</video>
-			</a>
-			<xf:else />
-			<a href="{{ link('attachments/view', $attachment) }}"
-			   class="usips-attachment usips-attachmentIcon">
-				<xf:fa icon="fa-file fa-4x" />
-			</a>
-		</xf:if>
-	</xf:foreach>
+<xf:macro id="attachment_list" arg-attachments="{{ [] }}" arg-checked="{{ [] }}">
+	<div class="usips-attachments">
+		<xf:foreach loop="$attachments" value="$attachment">
+			<label class="usips-attachment">
+				<input type="checkbox" class="usips-attachmentCheckbox" name="attachment_ids[]"
+					value="{{ $attachment.attachment_id }}" {{ in_array($attachment.attachment_id, $checked) ? 'checked'
+					: '' }} />
+				<xf:if is="$attachment.has_thumbnail">
+					<a href="{{ link('attachments/view', $attachment) }}"
+						class="usips-attachmentLink usips-attachmentThumbnail"
+						style="background-image: url({$attachment.thumbnail_url})" alt="{$attachment.filename}">
+					</a>
+					<xf:elseif is="$attachment.is_audio" />
+					<a href="{{ link('attachments/view', $attachment) }}"
+						class="usips-attachmentLink usips-attachmentIcon">
+						<xf:fa icon="fa-volume fa-4x" />
+					</a>
+					<xf:elseif is="$attachment.is_video" />
+					<a href="{{ link('attachments/view', $attachment) }}" class="usips-attachmentLink">
+						<video title="{$attachment.filename}" class="usips-attachmentVideo">
+							<source src="{$attachment.direct_url}" />
+						</video>
+					</a>
+					<xf:else />
+					<a href="{{ link('attachments/view', $attachment) }}"
+						class="usips-attachmentLink usips-attachmentIcon">
+						<xf:fa icon="fa-file fa-4x" />
+					</a>
+				</xf:if>
+			</label>
+		</xf:foreach>
+	</div>
 </xf:macro>
