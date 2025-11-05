@@ -7,6 +7,25 @@ use XF\Service\AbstractService;
 class AttachmentManager extends AbstractService
 {
     /**
+     * Update the incident count for attachment data
+     *
+     * @param int $dataId
+     */
+    public function updateIncidentCount($dataId)
+    {
+        $count = $this->finder('USIPS\NCMEC:IncidentAttachmentData')
+            ->where('data_id', $dataId)
+            ->total();
+
+        $attachmentData = $this->em()->find('XF:AttachmentData', $dataId);
+        if ($attachmentData)
+        {
+            $attachmentData->usips_ncmec_incident_count = $count;
+            $attachmentData->save();
+        }
+    }
+
+    /**
      * Add an attachment to an incident
      *
      * @param int $incidentId

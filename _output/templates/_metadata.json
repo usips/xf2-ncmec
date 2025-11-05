@@ -24,6 +24,11 @@
         "version_string": "1.0.0",
         "hash": "fb5da3be35d258b96bfc6098abb3daf5"
     },
+    "admin/usips_ncmec_incident_delete.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "7ddf85a90e00c9f20b52473a46a4bd5e"
+    },
     "admin/usips_ncmec_incident_list.html": {
         "version_id": 0,
         "version_string": "1.0.0",
@@ -32,7 +37,7 @@
     "admin/usips_ncmec_incident_view.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "9b6d87e18be55d6931b0ccd7730b5321"
+        "hash": "beb89c335c00a02e99199ef70cc3cc89"
     },
     "admin/usips_ncmec_macros.html": {
         "version_id": 0,

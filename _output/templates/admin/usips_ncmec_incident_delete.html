@@ -1,0 +1,25 @@
+<xf:title>{{ phrase('usips_ncmec_confirm_incident_deletion') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-incidents/delete', $incident) }}" class="block">
+
+    <div class="block-container">
+        <div class="block-header">
+            <h2 class="block-tabHeader">{{ phrase('usips_ncmec_confirm_incident_deletion') }}</h2>
+        </div>
+
+        <div class="block-body">
+            <xf:if is="$incident.is_finalized">
+                <xf:inforow rowtype="error">
+                    {{ phrase('usips_ncmec_incident_finalized_cannot_delete') }}
+                </xf:inforow>
+                <xf:else />
+                <xf:inforow rowtype="confirm">
+                    {{ phrase('please_confirm_that_you_want_to_delete_following:') }}
+                    <strong><a href="{{ link('ncmec-incidents/edit', $incident) }}">{$incident.title}</a></strong>
+                </xf:inforow>
+
+                <xf:submitrow submit="{{ phrase('delete') }}" />
+            </xf:if>
+        </div>
+    </div>
+</xf:form>

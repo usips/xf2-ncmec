@@ -137,6 +137,33 @@ class IncidentController extends AbstractController
 
     }
 
+    public function actionDelete(ParameterBag $params)
+    {
+        $incident = $this->assertIncidentExists($params->incident_id);
+
+        if ($this->isPost())
+        {
+            // Check if incident is finalized
+            if ($incident->is_finalized)
+            {
+                return $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
+            }
+
+            /** @var \USIPS\NCMEC\Service\Incident\Deleter $deleter */
+            $deleter = $this->service('USIPS\NCMEC:Incident\Deleter', $incident);
+            $deleter->delete();
+
+            return $this->redirect($this->buildLink('ncmec-incidents'));
+        }
+        else
+        {
+            $viewParams = [
+                'incident' => $incident,
+            ];
+            return $this->view('USIPS\NCMEC:Incident\Delete', 'usips_ncmec_incident_delete', $viewParams);
+        }
+    }
+
     public function actionUpdate(ParameterBag $params)
     {
         $this->assertPostOnly();
@@ -171,7 +198,7 @@ class IncidentController extends AbstractController
             ->fetch()
         );
         
-        $incident->hydrateRelation('IncidentAttachmentDatas', $this->finder('USIPS\NCMEC:IncidentAttachmentData')
+        $incident->hydrateRelation('IncidentAttachmentData', $this->finder('USIPS\NCMEC:IncidentAttachmentData')
             ->where('incident_id', $incident->incident_id)
             ->with('User')
             ->fetch()

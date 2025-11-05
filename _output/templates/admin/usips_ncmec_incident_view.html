@@ -1,7 +1,7 @@
 <xf:title>{{ phrase('usips_ncmec_incident') }}</xf:title>
 
 <xf:pageaction if="true">
-    <xf:button href="{{ link('ncmec-incident/delete', $incident) }}" icon="delete" overlay="true" />
+    <xf:button href="{{ link('ncmec-incidents/delete', $incident) }}" icon="delete" overlay="true" />
 </xf:pageaction>
 
 <xf:form action="{{ link('ncmec-incidents/update', $incident) }}" ajax="true" class="block">
