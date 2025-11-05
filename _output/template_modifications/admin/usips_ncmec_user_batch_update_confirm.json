@@ -1,0 +1,9 @@
+{
+    "template": "user_batch_update_confirm",
+    "description": "Adds the NCMEC Incident action to the User Batch Update Confirmation page.",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "preg_replace",
+    "find": "#</xf:form>(?!.*</xf:form>)#s\n",
+    "replace": "$0\n\n<xf:include template=\"usips_ncmec_user_batch_update_confirm\" />"
+}

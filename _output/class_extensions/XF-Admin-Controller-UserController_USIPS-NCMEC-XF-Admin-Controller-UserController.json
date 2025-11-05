@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Admin\\Controller\\UserController",
+    "to_class": "USIPS\\NCMEC\\XF\\Admin\\Controller\\UserController",
+    "execute_order": 10,
+    "active": true
+}

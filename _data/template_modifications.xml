@@ -5,4 +5,11 @@
     <replace><![CDATA[{{ phrase('unassociated') }}
 									<span class="dataList-secondRow">{$attachment.getContentTypePhrase()|parens}</span>]]></replace>
   </modification>
+  <modification type="admin" template="user_batch_update_confirm" modification_key="usips_ncmec_user_batch_update_confirm" description="Adds the NCMEC Incident action to the User Batch Update Confirmation page." execution_order="10" enabled="1" action="preg_replace">
+    <find><![CDATA[#</xf:form>(?!.*</xf:form>)#s
+]]></find>
+    <replace><![CDATA[$0
+
+<xf:include template="usips_ncmec_user_batch_update_confirm" />]]></replace>
+  </modification>
 </template_modifications>

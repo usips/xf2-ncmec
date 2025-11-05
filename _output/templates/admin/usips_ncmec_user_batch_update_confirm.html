@@ -1,0 +1,33 @@
+<xf:form action="{{ link('users/batch-update/action') }}" class="block">
+	<div class="block-container">
+		<h2 class="block-header">{{ phrase('usips_ncmec_create_incident') }}</h2>
+		<div class="block-body">
+			<xf:checkboxrow explain="{{ phrase('administrators_and_moderators_will_not_be_deleted') }}">
+
+				<xf:option name="actions[ncmec_incident]">{{ phrase('usips_ncmec_confirm_associating_x_users', {'total':
+					$total|number}) }}</xf:option>
+			</xf:checkboxrow>
+
+			<xf:if is="$nonFinalizedIncidents is not empty">
+				<xf:formrow label="{{ phrase('usips_ncmec_incident') }}">
+					<xf:select name="incident_id">
+						<xf:option value="">{{ phrase('usips_ncmec_create_incident') }}</xf:option>
+						<xf:foreach loop="$nonFinalizedIncidents" value="$incident">
+							<xf:option value="{$incident.incident_id}">{$incident.title} ({{
+								date($incident.created_date) }})</xf:option>
+						</xf:foreach>
+					</xf:select>
+				</xf:formrow>
+				<xf:else />
+				<xf:inforow rowtype="confirm">{{ phrase('usips_ncmec_new_incident_will_be_created') }}</xf:inforow>
+			</xf:if>
+		</div>
+		<xf:submitrow name="ncmec_incident" icon="attach" />
+	</div>
+
+	<xf:if is="$userIds">
+		<xf:hiddenval name="user_ids">{$userIds|json}</xf:hiddenval>
+		<xf:else />
+		<xf:hiddenval name="criteria">{$criteria|json}</xf:hiddenval>
+	</xf:if>
+</xf:form>

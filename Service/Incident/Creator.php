@@ -46,6 +46,7 @@ class Creator extends AbstractService
         return $incident;
     }
 
+    // Attachment association methods
     public function associateAttachments(iterable $attachments)
     {
         $attachmentManager = $this->service('USIPS\NCMEC:Incident\AttachmentManager');
@@ -71,6 +72,7 @@ class Creator extends AbstractService
         }
     }
 
+    // User association methods
     public function associateUsers(iterable $attachments)
     {
         $userIds = [];
@@ -90,6 +92,31 @@ class Creator extends AbstractService
             $incidentUser->user_id = $user->user_id;
             $incidentUser->username = $user->username;
             $incidentUser->save();
+        }
+    }
+
+    public function associateUsersByIds(array $userIds)
+    {
+        foreach ($userIds as $userId)
+        {
+            $user = $this->em()->find('XF:User', $userId);
+            if ($user)
+            {
+                // Check if user is already associated
+                $existing = $this->finder('USIPS\NCMEC:IncidentUser')
+                    ->where('incident_id', $this->incident->incident_id)
+                    ->where('user_id', $userId)
+                    ->fetchOne();
+
+                if (!$existing)
+                {
+                    $incidentUser = $this->em()->create('USIPS\NCMEC:IncidentUser');
+                    $incidentUser->incident_id = $this->incident->incident_id;
+                    $incidentUser->user_id = $userId;
+                    $incidentUser->username = $user->username;
+                    $incidentUser->save();
+                }
+            }
         }
     }
 
@@ -120,17 +147,7 @@ class Creator extends AbstractService
         $this->db()->delete('xf_usips_ncmec_incident_user', 'incident_id = ? AND user_id IN (' . $this->db()->quote($userIds) . ')', $this->incident->incident_id);
     }
 
-    protected function getContentEntity($contentType)
-    {
-        $entities = [
-            'post' => 'XF:Post',
-            'thread' => 'XF:Thread',
-            'profile_post' => 'XF:ProfilePost',
-            // Add more as needed
-        ];
-        return $entities[$contentType] ?? null;
-    }
-
+    // Content association methods
     public function associateContent(iterable $attachments)
     {
         $contentKeys = [];
@@ -174,6 +191,30 @@ class Creator extends AbstractService
         }
     }
 
+    public function associateContentByIds(array $contentItems)
+    {
+        foreach ($contentItems as $contentData)
+        {
+            // Check if content is already associated
+            $existing = $this->finder('USIPS\NCMEC:IncidentContent')
+                ->where('incident_id', $this->incident->incident_id)
+                ->where('content_type', $contentData['content_type'])
+                ->where('content_id', $contentData['content_id'])
+                ->fetchOne();
+
+            if (!$existing)
+            {
+                $incidentContent = $this->em()->create('USIPS\NCMEC:IncidentContent');
+                $incidentContent->incident_id = $this->incident->incident_id;
+                $incidentContent->content_type = $contentData['content_type'];
+                $incidentContent->content_id = $contentData['content_id'];
+                $incidentContent->user_id = $contentData['user_id'];
+                $incidentContent->username = $this->em()->find('XF:User', $contentData['user_id'])->username;
+                $incidentContent->save();
+            }
+        }
+    }
+
     public function disassociateContent($contentPairs)
     {
         if (!$contentPairs)
@@ -208,5 +249,17 @@ class Creator extends AbstractService
         {
             $this->db()->delete('xf_usips_ncmec_incident_content', 'incident_id = ? AND content_type = ? AND content_id = ?', [$this->incident->incident_id, $contentType, $contentId]);
         }
+    }
+
+    // Helper methods
+    protected function getContentEntity($contentType)
+    {
+        $entities = [
+            'post' => 'XF:Post',
+            'thread' => 'XF:Thread',
+            'profile_post' => 'XF:ProfilePost',
+            // Add more as needed
+        ];
+        return $entities[$contentType] ?? null;
     }
 }

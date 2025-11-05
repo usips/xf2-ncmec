@@ -1,5 +1,8 @@
 {
     "admin/usips_ncmec_attachment_list.json": {
         "hash": "4c5f635339e99944e5f449cf24feca81"
+    },
+    "admin/usips_ncmec_user_batch_update_confirm.json": {
+        "hash": "790447cf0230bca1e032aed61aa0dee9"
     }
 }

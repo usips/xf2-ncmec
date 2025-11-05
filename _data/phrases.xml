@@ -3,4 +3,35 @@
   <phrase title="admin_navigation.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_attachment_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_attachments" version_id="0" version_string="1.0.0"><![CDATA[Attachments]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_attachments_latest" version_id="0" version_string="1.0.0"><![CDATA[Newest Attachments]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
+  <phrase title="admin_permission.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[Manage NCMEC incidents]]></phrase>
+  <phrase title="usips_ncmec_additional_info" version_id="0" version_string="1.0.0"><![CDATA[Additional Info]]></phrase>
+  <phrase title="usips_ncmec_additional_info_explain" version_id="0" version_string="1.0.0"><![CDATA[Passed as a value in the <a href="https://report.cybertip.org/ispws/documentation/index.html#xml-report">/report/additionalInfo</a> if provided.]]></phrase>
+  <phrase title="usips_ncmec_associate_with_incident" version_id="0" version_string="1.0.0"><![CDATA[Associate with Incident]]></phrase>
+  <phrase title="usips_ncmec_attachments" version_id="0" version_string="1.0.0"><![CDATA[Attachments]]></phrase>
+  <phrase title="usips_ncmec_confirm_associating_x_users" version_id="0" version_string="1.0.0"><![CDATA[Confirm associating these {total} users with an NCMEC Incident]]></phrase>
+  <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create Incident]]></phrase>
+  <phrase title="usips_ncmec_failed_lines" version_id="0" version_string="1.0.0"><![CDATA[Rejected Input]]></phrase>
+  <phrase title="usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incident]]></phrase>
+  <phrase title="usips_ncmec_incident_draft" version_id="0" version_string="1.0.0"><![CDATA[Draft]]></phrase>
+  <phrase title="usips_ncmec_incident_finalized" version_id="0" version_string="1.0.0"><![CDATA[Finalized]]></phrase>
+  <phrase title="usips_ncmec_incidents" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
+  <phrase title="usips_ncmec_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>
+  <phrase title="usips_ncmec_lookup_description" version_id="0" version_string="1.0.0"><![CDATA[https://domain.com/attachments/1762288299348-png.8126290/
+attachments/1762288299348-png.8126290/
+https://uploads.domain.com/data/attachments/8113/8113544-e4c0ef8591c22203a8f61a0ec01f86d4.jpg
+8113544-e4c0ef8591c22203a8f61a0ec01f86d4.jpg
+https://uploads.domain.com/data/video/8113/8113855-c576e900752e0e9a518a0e649185d70e.mp4
+8113855-c576e900752e0e9a518a0e649185d70e.mp4
+internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
+8112987-6d3b1c717417cb17a5bce52b21307a14.data]]></phrase>
+  <phrase title="usips_ncmec_lookup_guide" version_id="0" version_string="1.0.0"><![CDATA[Paste URLs below to select them for moderation actions.]]></phrase>
+  <phrase title="usips_ncmec_lookup_reattempt" version_id="0" version_string="1.0.0"><![CDATA[Lookup and Collect]]></phrase>
+  <phrase title="usips_ncmec_lookup_restart" version_id="0" version_string="1.0.0"><![CDATA[Lookup and Forget]]></phrase>
+  <phrase title="usips_ncmec_lookup_submit" version_id="0" version_string="1.0.0"><![CDATA[Lookup]]></phrase>
+  <phrase title="usips_ncmec_new_incident_will_be_created" version_id="0" version_string="1.0.0"><![CDATA[A new incident will be created.]]></phrase>
+  <phrase title="usips_ncmec_no_incidents" version_id="0" version_string="1.0.0"><![CDATA[There are no incidents available.]]></phrase>
+  <phrase title="usips_ncmec_no_results" version_id="0" version_string="1.0.0"><![CDATA[No results matched your input.]]></phrase>
+  <phrase title="usips_ncmec_report_logs" version_id="0" version_string="1.0.0"><![CDATA[Report Logs]]></phrase>
 </phrases>

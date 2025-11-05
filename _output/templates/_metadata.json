@@ -43,5 +43,10 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "6e335645befeea903d9d4aac9c1877c2"
+    },
+    "admin/usips_ncmec_user_batch_update_confirm.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "25407d07a952a9ca85eb1296d0db9e59"
     }
 }
