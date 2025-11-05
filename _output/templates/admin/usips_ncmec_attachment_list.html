@@ -1,7 +1,6 @@
 <xf:title>{{ phrase('attachment_browser') }}</xf:title>
-<xf:css src="usips_ncmec.less" />
 
-<xf:form action="{{ link('attachments') }}" class="block" ajax="true">
+<xf:form action="{{ link('ncmec-incidents/create') }}" class="block">
 	<div class="block-container">
 		<xf:macro name="filter_macros::filter_bar" arg-route="attachments" arg-content="{{ null }}"
 			arg-params="{$linkParams}" arg-displayValues="{$filterDisplay}" arg-phrases="{{ {
@@ -16,10 +15,11 @@
 				'val:attach_date_asc': phrase('least_recent')
 			} }}" arg-menu="attachments/filter" arg-menuTitle="{{ phrase('filter') }}" />
 		<xf:macro name="usips_ncmec_macros::attachment_block" arg-attachments="{{ $attachments }}" />
+		<xf:submitrow sticky="true">
+			<xf:html>
+				<xf:button type="submit" name="submit" icon="siren">{{ phrase('usips_ncmec_create_incident') }}
+				</xf:button>
+			</xf:html>
+		</xf:submitrow>
 	</div>
-	<xf:submitrow sticky="true">
-		<xf:html>
-			<xf:button type="submit" name="submit" icon="siren">{{ phrase('usips_ncmec_create_incident') }}</xf:button>
-		</xf:html>
-	</xf:submitrow>
 </xf:form>

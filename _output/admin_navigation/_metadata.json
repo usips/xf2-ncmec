@@ -3,12 +3,15 @@
         "hash": "dbf68c642671698e5015f9cf83f6d2fd"
     },
     "usips_ncmec_attachment_lookup.json": {
-        "hash": "85f4282ca4b41a613bd6d4a6898ff36d"
+        "hash": "1fc36859ae91bdcc0e53bf18938800cc"
     },
     "usips_ncmec_attachments.json": {
-        "hash": "efdc0b95f97b3446d322556ae133a45d"
+        "hash": "c3e2041dc76e7fc29b492c7d85d83887"
+    },
+    "usips_ncmec_attachments_latest.json": {
+        "hash": "a5ea77376b513c44937ad91ece501082"
     },
     "usips_ncmec_incident.json": {
-        "hash": "559af66a6d540617ac2548ec15270df6"
+        "hash": "c5538bd0bfe6512b25e4cdeb7f667ed9"
     }
 }

@@ -12,6 +12,7 @@ class Setup extends AbstractSetup
         $this->schemaManager()->createTable('xf_usips_ncmec_incident', function(Create $table)
         {
             $table->addColumn('incident_id', 'int')->autoIncrement();
+            $table->addColumn('title', 'varchar', 255);
             $table->addColumn('created_date', 'int');
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
@@ -57,7 +58,7 @@ class Setup extends AbstractSetup
             $table->addKey(['user_id']);
         });
 
-        $this->schemaManager()->createTable('xf_usips_ncmec_log', function(Create $table)
+        $this->schemaManager()->createTable('xf_usips_ncmec_report_log', function(Create $table)
         {
             $table->addColumn('log_id', 'int')->autoIncrement();
             $table->addColumn('report_id', 'int');
@@ -86,7 +87,7 @@ class Setup extends AbstractSetup
         $this->schemaManager()->dropTable('xf_usips_ncmec_incident_attachment_data');
         $this->schemaManager()->dropTable('xf_usips_ncmec_incident_content');
         $this->schemaManager()->dropTable('xf_usips_ncmec_incident_user');
-        $this->schemaManager()->dropTable('xf_usips_ncmec_log');
+        $this->schemaManager()->dropTable('xf_usips_ncmec_report_log');
         $this->schemaManager()->dropTable('xf_usips_ncmec_report');
         $this->schemaManager()->dropTable('xf_usips_ncmec_incident');
     }

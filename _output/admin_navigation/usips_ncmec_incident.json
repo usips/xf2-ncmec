@@ -2,7 +2,7 @@
     "parent_navigation_id": "usips_ncmec",
     "display_order": 100,
     "link": "ncmec-incidents",
-    "icon": "",
+    "icon": "fa-clipboard",
     "admin_permission_id": "usips_ncmec",
     "debug_only": false,
     "development_only": false,

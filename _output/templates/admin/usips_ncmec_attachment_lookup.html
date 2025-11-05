@@ -1,9 +1,8 @@
 <xf:title>{{ phrase('usips_ncmec_lookup') }}</xf:title>
-<xf:css src="usips_ncmec.less" />
 
 <div class="blockMessage">{{ phrase('usips_ncmec_lookup_guide') }}</div>
 
-<xf:form action="{{ link('ncmec-attachment/lookup') }}" class="block">
+<xf:form action="{{ link('ncmec-attachments/lookup') }}" class="block">
     <div class="block-container">
         <div class="block-body">
             <xf:textarea name="input" rows="20" placeholder="{{ phrase('usips_ncmec_lookup_description') }}" />

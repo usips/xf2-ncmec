@@ -1,6 +1,6 @@
 {
     "route_type": "admin",
-    "route_prefix": "ncmec-attachment",
+    "route_prefix": "ncmec-attachments",
     "sub_name": "",
     "format": ":int<attachment_id,filename>/",
     "build_class": "",

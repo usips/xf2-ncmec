@@ -1,7 +1,6 @@
 <xf:title>{{ phrase('usips_ncmec_lookup') }}</xf:title>
-<xf:css src="usips_ncmec.less" />
 
-<xf:form action="{{ link('ncmec-attachment/lookup') }}" class="block">
+<xf:form action="{{ link('ncmec-attachments/lookup') }}" class="block">
     <div class="block-container">
         <h3 class="block-header">{{ phrase('usips_ncmec_failed_lines') }}</h3>
         <div class="block-body">
@@ -18,7 +17,7 @@
 
 <xf:if is="$attachments">
     <h3 class="block-header">{{ phrase('usips_ncmec_attachments') }}</h3>
-    <xf:form action="{{ link('ncmec-incident/create-from-attachments') }}" class="block">
+    <xf:form action="{{ link('ncmec-incidents/create') }}" class="block">
         <div class="block-container">
             <xf:macro name="usips_ncmec_macros::attachment_block" arg-attachments="{{ $attachments }}"
                 arg-checked="{{ $attachmentIds }}" />

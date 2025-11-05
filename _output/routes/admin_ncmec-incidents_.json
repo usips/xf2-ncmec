@@ -1,0 +1,11 @@
+{
+    "route_type": "admin",
+    "route_prefix": "ncmec-incidents",
+    "sub_name": "",
+    "format": ":int<attachment_id,title>/",
+    "build_class": "",
+    "build_method": "",
+    "controller": "USIPS\\NCMEC:Incident",
+    "context": "usips_ncmec_incidents",
+    "action_prefix": ""
+}

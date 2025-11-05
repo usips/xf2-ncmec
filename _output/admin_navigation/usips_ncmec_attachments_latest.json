@@ -1,7 +1,7 @@
 {
     "parent_navigation_id": "usips_ncmec_attachments",
-    "display_order": 250,
-    "link": "ncmec-attachments/lookup",
+    "display_order": 100,
+    "link": "ncmec-attachments",
     "icon": "",
     "admin_permission_id": "attachment",
     "debug_only": false,
