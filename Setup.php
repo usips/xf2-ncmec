@@ -13,6 +13,7 @@ class Setup extends AbstractSetup
         {
             $table->addColumn('incident_id', 'int')->autoIncrement();
             $table->addColumn('title', 'varchar', 255);
+            $table->addColumn('additional_info', 'text');
             $table->addColumn('created_date', 'int');
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
