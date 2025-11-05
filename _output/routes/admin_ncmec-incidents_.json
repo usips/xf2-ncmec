@@ -6,6 +6,6 @@
     "build_class": "",
     "build_method": "",
     "controller": "USIPS\\NCMEC:Incident",
-    "context": "usips_ncmec_incidents",
+    "context": "usips_ncmec_incident",
     "action_prefix": ""
 }

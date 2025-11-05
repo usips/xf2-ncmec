@@ -15,6 +15,7 @@ class IncidentUser extends Entity
         $structure->columns = [
             'incident_id' => ['type' => self::UINT, 'required' => true],
             'user_id' => ['type' => self::UINT, 'required' => true],
+            'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
         ];
         $structure->relations = [
             'Incident' => [

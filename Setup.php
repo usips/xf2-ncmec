@@ -25,7 +25,10 @@ class Setup extends AbstractSetup
         {
             $table->addColumn('incident_id', 'int');
             $table->addColumn('data_id', 'int');
+            $table->addColumn('user_id', 'int');
+            $table->addColumn('username', 'varchar', 50);
             $table->addPrimaryKey(['incident_id', 'data_id']);
+            $table->addKey('user_id');
         });
 
         $this->schemaManager()->createTable('xf_usips_ncmec_incident_content', function(Create $table)
@@ -33,13 +36,17 @@ class Setup extends AbstractSetup
             $table->addColumn('incident_id', 'int');
             $table->addColumn('content_type', 'varchar', 25);
             $table->addColumn('content_id', 'int');
+            $table->addColumn('user_id', 'int');
+            $table->addColumn('username', 'varchar', 50);
             $table->addPrimaryKey(['incident_id', 'content_type', 'content_id']);
+            $table->addKey('user_id');
         });
 
         $this->schemaManager()->createTable('xf_usips_ncmec_incident_user', function(Create $table)
         {
             $table->addColumn('incident_id', 'int');
             $table->addColumn('user_id', 'int');
+            $table->addColumn('username', 'varchar', 50);
             $table->addPrimaryKey(['incident_id', 'user_id']);
         });
 

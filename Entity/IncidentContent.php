@@ -16,6 +16,8 @@ class IncidentContent extends Entity
             'incident_id' => ['type' => self::UINT, 'required' => true],
             'content_type' => ['type' => self::STR, 'maxLength' => 25, 'required' => true],
             'content_id' => ['type' => self::UINT, 'required' => true],
+            'user_id' => ['type' => self::UINT, 'required' => true],
+            'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
         ];
         $structure->relations = [
             'Incident' => [
@@ -23,6 +25,11 @@ class IncidentContent extends Entity
                 'type' => self::TO_ONE,
                 'conditions' => [['incident_id', '=', '$incident_id']],
                 'primary' => true,
+            ],
+            'User' => [
+                'entity' => 'XF:User',
+                'type' => self::TO_ONE,
+                'conditions' => [['user_id', '=', '$user_id']],
             ],
         ];
 

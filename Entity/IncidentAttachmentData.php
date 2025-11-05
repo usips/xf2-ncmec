@@ -15,6 +15,8 @@ class IncidentAttachmentData extends Entity
         $structure->columns = [
             'incident_id' => ['type' => self::UINT, 'required' => true],
             'data_id' => ['type' => self::UINT, 'required' => true],
+            'user_id' => ['type' => self::UINT, 'required' => true],
+            'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
         ];
         $structure->relations = [
             'Incident' => [
@@ -28,6 +30,11 @@ class IncidentAttachmentData extends Entity
                 'type' => self::TO_ONE,
                 'conditions' => [['data_id', '=', '$data_id']],
                 'primary' => true,
+            ],
+            'User' => [
+                'entity' => 'XF:User',
+                'type' => self::TO_ONE,
+                'conditions' => [['user_id', '=', '$user_id']],
             ],
         ];
 

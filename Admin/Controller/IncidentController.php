@@ -112,58 +112,9 @@ class IncidentController extends AbstractController
             }
             else
             {
-                XF::db()->beginTransaction();
-
-                $title = $input['title'];
-                if (!trim($title))
-                {
-                    $title = 'Incident created on ' . \XF::language()->dateTime(\XF::$time);
-                }
-
-                $incident = $this->em()->create('USIPS\NCMEC:Incident');
-                $incident->title = $title;
-                $incident->user_id = \XF::visitor()->user_id;
-                $incident->username = \XF::visitor()->username;
-                $incident->save();
-
-                // Associate attachments
-                foreach ($attachments as $attachment)
-                {
-                    $incidentAttachment = $this->em()->create('USIPS\NCMEC:IncidentAttachmentData');
-                    $incidentAttachment->incident_id = $incident->incident_id;
-                    $incidentAttachment->data_id = $attachment->Data->data_id;
-                    $incidentAttachment->save();
-                }
-
-                // Associate unique users
-                $userIds = [];
-                foreach ($attachments as $attachment)
-                {
-                    $userIds[] = $attachment->Data->user_id;
-                }
-                $userIds = array_unique($userIds);
-                foreach ($userIds as $userId)
-                {
-                    $incidentUser = $this->em()->create('USIPS\NCMEC:IncidentUser');
-                    $incidentUser->incident_id = $incident->incident_id;
-                    $incidentUser->user_id = $userId;
-                    $incidentUser->save();
-                }
-
-                // Associate content where content_id is not 0
-                foreach ($attachments as $attachment)
-                {
-                    if ($attachment->content_id != 0)
-                    {
-                        $incidentContent = $this->em()->create('USIPS\NCMEC:IncidentContent');
-                        $incidentContent->incident_id = $incident->incident_id;
-                        $incidentContent->content_type = $attachment->content_type;
-                        $incidentContent->content_id = $attachment->content_id;
-                        $incidentContent->save();
-                    }
-                }
-
-                XF::db()->commit();
+                /** @var \USIPS\NCMEC\Service\Incident\Creator $creator */
+                $creator = $this->service('USIPS\NCMEC:Incident\Creator');
+                $incident = $creator->createIncident($input['title'], \XF::visitor()->user_id, \XF::visitor()->username, $attachments);
 
                 return $this->redirect($this->buildLink('ncmec-incidents', $incident));
             }
