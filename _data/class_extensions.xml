@@ -1,2 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<class_extensions/>
+<class_extensions>
+    <extension from_class="XF\Entity\AttachmentData" to_class="USIPS\NCMEC\XF\Entity\AttachmentData" />
+</class_extensions>

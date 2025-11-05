@@ -28,7 +28,8 @@
 								<xf:if is="$attachment.content_id == 0">
 									<li>{{ phrase('draft') }}</li>
 								</xf:if>
-								<li>{{ date($attachment.Data.upload_date) }} {{ time($attachment.Data.upload_date) }}
+								<li>
+									<xf:date time="{{ $attachment.Data.upload_date }}" />
 								</li>
 								<li>{$attachment.filename}</li>
 							</ul>

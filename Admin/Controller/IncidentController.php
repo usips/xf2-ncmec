@@ -2,6 +2,7 @@
 
 namespace USIPS\NCMEC\Admin\Controller;
 
+use \XF;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\ParameterBag;
 
@@ -40,7 +41,7 @@ class IncidentController extends AbstractController
         {
             $input = $this->filter([
                 'title' => 'str',
-                'confirm' => 'bool',
+                'submit' => 'bool',
                 'attachment_ids' => 'array-int',
             ]);
 
@@ -97,7 +98,7 @@ class IncidentController extends AbstractController
                 }
             }
 
-            if (!$input['confirm'])
+            if (!$input['submit'])
             {
                 $viewParams = [
                     'attachments' => $attachments,
@@ -105,22 +106,66 @@ class IncidentController extends AbstractController
                     'attachmentsChecked' => $attachmentsChecked,
                     'users' => $users,
                     'title' => $input['title'],
-                    'confirm' => $input['confirm'],
                 ];
 
                 return $this->view('USIPS\NCMEC:Incident\Create', 'usips_ncmec_incident_create', $viewParams);
             }
             else
             {
+                XF::db()->beginTransaction();
+
+                $title = $input['title'];
+                if (!trim($title))
+                {
+                    $title = 'Incident created on ' . \XF::language()->dateTime(\XF::$time);
+                }
+
                 $incident = $this->em()->create('USIPS\NCMEC:Incident');
-                $incident->title = $input['title'];
+                $incident->title = $title;
                 $incident->user_id = \XF::visitor()->user_id;
                 $incident->username = \XF::visitor()->username;
                 $incident->save();
 
-                // TODO: Associate attachments with incident if needed
+                // Associate attachments
+                foreach ($attachments as $attachment)
+                {
+                    $incidentAttachment = $this->em()->create('USIPS\NCMEC:IncidentAttachmentData');
+                    $incidentAttachment->incident_id = $incident->incident_id;
+                    $incidentAttachment->data_id = $attachment->Data->data_id;
+                    $incidentAttachment->save();
+                }
 
-                return $this->redirect($this->buildLink('ncmec-incidents'));
+                // Associate unique users
+                $userIds = [];
+                foreach ($attachments as $attachment)
+                {
+                    $userIds[] = $attachment->Data->user_id;
+                }
+                $userIds = array_unique($userIds);
+                foreach ($userIds as $userId)
+                {
+                    $incidentUser = $this->em()->create('USIPS\NCMEC:IncidentUser');
+                    $incidentUser->incident_id = $incident->incident_id;
+                    $incidentUser->user_id = $userId;
+                    $incidentUser->save();
+                }
+
+                // Associate content where content_id is not 0
+                foreach ($attachments as $attachment)
+                {
+                    if ($attachment->content_id != 0)
+                    {
+                        $incidentContent = $this->em()->create('USIPS\NCMEC:IncidentContent');
+                        $incidentContent->incident_id = $incident->incident_id;
+                        $incidentContent->content_type = $attachment->content_type;
+                        $incidentContent->content_id = $attachment->content_id;
+                        $incidentContent->save();
+                    }
+                }
+
+                XF::db()->commit();
+
+                return $this->redirect($this->buildLink('ncmec-incidents', $incident));
             }
         }
 
@@ -129,7 +174,6 @@ class IncidentController extends AbstractController
             'attachmentsByUser' => [],
             'attachmentChecked' => [],
             'title' => '',
-            'confirm' => false,
         ];
 
         return $this->view('USIPS\NCMEC:Incident\Create', 'usips_ncmec_incident_create', $viewParams);

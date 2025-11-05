@@ -19,7 +19,7 @@
         </div>
         <xf:submitrow sticky="true">
             <xf:html>
-                <xf:button type="submit" icon="save">{{ phrase('save') }}</xf:button>
+                <xf:button type="submit" name="submit" value="1" icon="save">{{ phrase('save') }}</xf:button>
             </xf:html>
         </xf:submitrow>
     </div>
@@ -42,8 +42,8 @@
                                 <xf:avatar user="$user" size="xxs" href="" /> {$user.username}
                             </li>
                             <li>
-                                {{ phrase('Joined' )}}
-                                <xf:date time="$user.register_date" format="date" />
+                                {{ phrase('Joined') }}
+                                <xf:date time="$user.register_date" />
                             </li>
                         </ul>
                     </xf:cell>

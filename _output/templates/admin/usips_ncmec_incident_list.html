@@ -17,6 +17,8 @@
                         <xf:cell>{{ phrase('user') }}</xf:cell>
                         <xf:cell>{{ phrase('date') }}</xf:cell>
                         <xf:cell>{{ phrase('status') }}</xf:cell>
+                        <xf:cell></xf:cell>
+                        <xf:cell></xf:cell>
                     </xf:datarow>
                     <xf:foreach loop="$incidents" value="$incident">
                         <xf:datarow>
@@ -26,6 +28,7 @@
                                 </a>
                             </xf:cell>
                             <xf:cell>
+                                <xf:avatar user="$incident.User" size="xxs" />
                                 <xf:username user="$incident.User" />
                             </xf:cell>
                             <xf:cell>
@@ -33,11 +36,16 @@
                             </xf:cell>
                             <xf:cell>
                                 <xf:if is="$incident.is_finalized">
-                                    {{ phrase('finalized') }}
+                                    {{ phrase('usips_ncmec_incident_finalized') }}
                                     <xf:else />
-                                    {{ phrase('draft') }}
+                                    {{ phrase('usips_ncmec_incident_draft') }}
                                 </xf:if>
                             </xf:cell>
+                            <xf:action class="{{ false ? 'dataList-cell--highlighted' : '' }}"
+                                href="{{ link('ncmec-incidents/log', $incident) }}">
+                                {{ phrase('usips_ncmec_report_logs') }}
+                            </xf:action>
+                            <xf:delete href="{{ link('ncmec-incidents/delete', $incident) }}" />
                         </xf:datarow>
                     </xf:foreach>
                 </xf:datalist>

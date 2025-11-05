@@ -8,4 +8,7 @@
  * @noinspection PhpMultipleClassesDeclarationsInOneFile
  */
 
-
+namespace USIPS\NCMEC\XF\Entity
+{
+	class XFCP_AttachmentData extends \XF\Entity\AttachmentData {}
+}

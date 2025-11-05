@@ -47,6 +47,18 @@
         "version_string": "1.0.0",
         "hash": "0b85f9864a7fe429139d82721e581378"
     },
+    "usips_ncmec_incident_draft.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "f03ab16cd58372c77ba45a3d9a5a1cb9"
+    },
+    "usips_ncmec_incident_finalized.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "65457a3fa7904cfb30c890a602332205"
+    },
     "usips_ncmec_incidents.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -100,5 +112,11 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "868a1abc7ac515798ddd0278b4fa1f38"
+    },
+    "usips_ncmec_report_logs.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "9821e010248505f2ac58f6e78ab9689d"
     }
 }
