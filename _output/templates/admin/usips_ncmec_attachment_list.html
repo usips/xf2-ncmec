@@ -1,24 +1,10 @@
 <xf:title>{{ phrase('attachment_browser') }}</xf:title>
+<xf:css src="usips_ncmec.less" />
 
-<xf:css>
-	.attachment-tooltip-image
-	{
-		display: block;
-	}
-</xf:css>
-
-<xf:form action="{{ link('attachments') }}" class="block" ajax="true"
-	data-xf-init="select-plus"
-	data-sp-checkbox="input[name='attachment_ids[]']"
-	data-sp-container=".dataList-row">
-
+<xf:form action="{{ link('attachments') }}" class="block" ajax="true">
 	<div class="block-container">
-		<xf:macro name="filter_macros::filter_bar"
-			arg-route="attachments"
-			arg-content="{{ null }}"
-			arg-params="{$linkParams}"
-			arg-displayValues="{$filterDisplay}"
-			arg-phrases="{{ {
+		<xf:macro name="filter_macros::filter_bar" arg-route="attachments" arg-content="{{ null }}"
+			arg-params="{$linkParams}" arg-displayValues="{$filterDisplay}" arg-phrases="{{ {
 				'key:content_type':  phrase('content_type:'),
 				'key:username': phrase('user_name:'),
 				'key:start': phrase('start_date:'),
@@ -28,52 +14,12 @@
 				'val:file_size_asc': phrase('smallest'),
 				'val:attach_date_desc': phrase('most_recent'),
 				'val:attach_date_asc': phrase('least_recent')
-			} }}"
-			arg-menu="attachments/filter"
-			arg-menuTitle="{{ phrase('filter') }}" />
-
-		<xf:if is="$attachments is not empty">
-			<div class="block-body">
-				<xf:foreach loop="$attachments" value="$attachment">
-					<xf:if is="$attachment.has_thumbnail">
-						<a class="dataList-cell--attachment"
-								 href="{{ link('attachments/view', $attachment) }}"
-								 style="background-image: url({$attachment.thumbnail_url})"
-								 alt="{$attachment.filename}"
-								 data-xf-init="element-tooltip" data-element="| .tooltip-element">
-							<span class="tooltip-element"><img src="{$attachment.thumbnail_url}" class="attachment-tooltip-image" /></span>
-						</a>
-					<xf:elseif is="$attachment.is_audio" />
-						<a class="dataList-cell--attachment"
-								 href="{{ link('attachments/view', $attachment) }}">
-							<xf:fa icon="fa-volume fa-4x" />
-						</a>
-					<xf:elseif is="$attachment.is_video" />
-						<a class="dataList-cell--attachment"
-								 href="{{ link('attachments/view', $attachment) }}">
-							<xf:fa icon="fa-video fa-4x" />
-						</a>
-					<xf:else />
-						<a class="dataList-cell--attachment"
-								 href="{{ link('attachments/view', $attachment) }}">
-							<xf:fa icon="fa-file fa-4x" />
-						</a>
-					</xf:if>
-				</xf:foreach>
-			</div>
-			<div class="block-footer block-footer--split">
-				<span class="block-footer-counter">{{ display_totals($attachments, $total) }}</span>
-				<span class="block-footer-select"><xf:checkbox standalone="true"><xf:option check-all="< .block-container" label="{{ phrase('select_all') }}" /></xf:checkbox></span>
-				<span class="block-footer-controls">
-					<xf:button type="submit" name="delete_attachments" icon="delete" />
-				</span>
-			</div>
-		<xf:else />
-			<div class="block-body block-row">{{ phrase('no_results_found') }}</div>
-		</xf:if>
+			} }}" arg-menu="attachments/filter" arg-menuTitle="{{ phrase('filter') }}" />
+		<xf:macro name="usips_ncmec_macros::attachment_block" arg-attachments="{{ $attachments }}" />
 	</div>
-	<xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}"
-		link="attachments" params="{$linkParams}"
-		wrapperclass="block-outer block-outer--after" />
-
+	<xf:submitrow sticky="true">
+		<xf:html>
+			<xf:button type="submit" name="submit" icon="siren">{{ phrase('usips_ncmec_create_incident') }}</xf:button>
+		</xf:html>
+	</xf:submitrow>
 </xf:form>

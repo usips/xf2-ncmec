@@ -1,59 +1,30 @@
 <xf:title>{{ phrase('usips_ncmec_lookup') }}</xf:title>
 
-<xf:if is="$attachments">
-    <div class="block">
-        <div class="block-container">
-            <div class="block-body">
-                <table class="dataTable">
-                    <thead>
-                        <tr>
-                            <th>{{ phrase('attachment') }}</th>
-                            <th>{{ phrase('user') }}</th>
-                            <th>{{ phrase('date') }}</th>
-                            <th>{{ phrase('size') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xf:foreach loop="$attachments" value="$attachment">
-                            <tr>
-                                <td>
-                                    <a href="{{ link('attachments', $attachment) }}"
-                                        target="_blank">{$attachment.filename}</a>
-                                    ({$attachment.attachment_id})
-                                </td>
-                                <td>
-                                    <xf:username user="{$attachment.Data.User}" />
-                                </td>
-                                <td>
-                                    <xf:date time="{$attachment.attach_date}" />
-                                </td>
-                                <td>
-                                    {$attachment.Data.file_size}
-                                </td>
-                            </tr>
-                        </xf:foreach>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</xf:if>
-
 <xf:if is="$failedLines">
-    <div class="block">
+    <xf:form action="{{ link('ncmec-attachment/lookup') }}" class="block">
         <div class="block-container">
             <h3 class="block-header">{{ phrase('usips_ncmec_failed_lines') }}</h3>
             <div class="block-body">
-                <ul>
-                    <xf:foreach loop="$failedLines" value="$line">
-                        <li><code>{$line}</code></li>
-                    </xf:foreach>
-                </ul>
+                <xf:textarea name="failed_lines" value="{{ $failedLines }}" rows="{{ $failedLinesCount }}" />
+                <xf:hiddenval name="attachment_ids" value="{{ $attachmentIds }}" />
             </div>
         </div>
-    </div>
+        <xf:submitrow sticky="true" icon="search" submit="{{ phrase('usips_ncmec_lookup') }}"></xf:submitrow>
+    </xf:form>
 </xf:if>
 
-<xf:if is="!$attachments && !$failedLines">
+<xf:if is="$attachments">
+    <xf:form action="{{ link('ncmec-incident/create-from-attachments') }}" class="block">
+        <div class="block-container">
+            <xf:macro name="usips_ncmec_macros::attachment_block" arg-attachments="{{ $attachments }}" />
+        </div>
+        <xf:submitrow sticky="true">
+            <xf:html>
+                <xf:button type="submit" name="submit" icon="siren">{{ phrase('usips_ncmec_create_incident') }}
+                </xf:button>
+            </xf:html>
+        </xf:submitrow>
+    </xf:form>
+    <xf:else />
     <div class="blockMessage">{{ phrase('usips_ncmec_no_results') }}</div>
 </xf:if>

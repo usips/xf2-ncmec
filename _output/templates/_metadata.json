@@ -1,8 +1,13 @@
 {
+    "admin/usips_ncmec.less": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "4fc73be710a0319894cf976b943ecba6"
+    },
     "admin/usips_ncmec_attachment_list.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "f05059033114cf58ee7e3fb4c290fc01"
+        "hash": "9cc382bdefb4aa2af59f48a64994cdf5"
     },
     "admin/usips_ncmec_attachment_lookup.html": {
         "version_id": 0,
@@ -12,6 +17,11 @@
     "admin/usips_ncmec_attachment_lookup_results.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "b74e8f2d14838124c65695b0c37cabdf"
+        "hash": "48db7e44fc7d6ec454e85ded53355cef"
+    },
+    "admin/usips_ncmec_macros.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "1f1c0b0cd0ac62f6aaa4fd66e789717c"
     }
 }

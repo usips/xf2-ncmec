@@ -1,0 +1,40 @@
+@_attach-thumbSize: xf-option('attachmentThumbnailDimensions', px);
+@_bg-color: rgba(200, 200, 200, 0.25);
+
+.usips-attachments {
+    display: flex;
+    background-image:
+        linear-gradient(45deg, @_bg-color 25%, transparent 25%),
+        linear-gradient(-45deg, @_bg-color 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, @_bg-color 75%),
+        linear-gradient(-45deg, transparent 75%, @_bg-color 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    flex-wrap: wrap;
+
+    .usips-attachment {
+        display: inline-block;
+        flex-shrink: 0;
+        flex-grow: 1;
+        width: @_attach-thumbSize;
+        height: @_attach-thumbSize;
+        background-position: center;
+        background-size: contain;
+        background-repeat: no-repeat;
+        line-height: @_attach-thumbSize;
+        text-align: center;
+        text-decoration: none;
+        overflow: hidden;
+
+        .usips-attachmentVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            margin: auto;
+        }
+
+        .fa--xf {
+            vertical-align: middle;
+        }
+    }
+}

@@ -23,6 +23,12 @@
         "version_string": "1.0.0",
         "hash": "c5490ffa4c550df8ef69b8dfd6837e98"
     },
+    "usips_ncmec_create_incident.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "6d814bdc6f6aa8453b670eb676afec5b"
+    },
     "usips_ncmec_failed_lines.txt": {
         "global_cache": false,
         "version_id": 0,

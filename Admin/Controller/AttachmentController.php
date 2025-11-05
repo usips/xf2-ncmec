@@ -3,8 +3,9 @@
 namespace USIPS\NCMEC\Admin\Controller;
 
 use XF\Admin\Controller\AbstractController;
+use XF\Entity\Attachment;
 use XF\Entity\OptionGroup;
-use XF\Filterer\Attachment;
+use XF\Filterer\Attachment as AttachmentFilterer;
 use XF\Mvc\ParameterBag;
 use XF\Mvc\Reply\AbstractReply;
 use XF\Repository\AttachmentRepository;
@@ -152,7 +153,9 @@ class AttachmentController extends AbstractController
 
             $viewParams = [
                 'attachments' => $attachments,
-                'failedLines' => $failedLines,
+                'attachmentIds' => implode(',', array_column($attachments, 'attachment_id')),
+                'failedLines' =>  implode("\n", $failedLines),
+                'failedLinesCount' => max(4,count($failedLines)),
             ];
 
             return $this->view('USIPS\NCMEC:Attachment\LookupResults', 'usips_ncmec_attachment_lookup_results', $viewParams);
@@ -165,6 +168,32 @@ class AttachmentController extends AbstractController
         ];
 
         return $this->view('USIPS\NCMEC:Attachment\Lookup', 'usips_ncmec_attachment_lookup', $viewParams);
+    }
+
+    public function actionView(ParameterBag $params)
+    {
+        /** @var \XF\Entity\Attachment $attachment */
+        $attachment = $this->em()->find(Attachment::class, $params->attachment_id);
+        if (!$attachment)
+        {
+            throw $this->exception($this->notFound());
+        }
+
+        if (!$attachment->Data || !$attachment->Data->isDataAvailable())
+        {
+            return $this->error(\XF::phrase('attachment_cannot_be_shown_at_this_time'));
+        }
+
+        $this->setResponseType('raw');
+
+        $eTag = $this->request->getServer('HTTP_IF_NONE_MATCH');
+        $return304 = ($eTag && $eTag == '"' . $attachment['attach_date'] . '"');
+
+        $viewParams = [
+            'attachment' => $attachment,
+            'return304' => $return304,
+        ];
+        return $this->view('XF:Attachment\View', '', $viewParams);
     }
 
     /**
@@ -220,10 +249,10 @@ class AttachmentController extends AbstractController
     /**
      * @return Attachment
      */
-    protected function setupAttachmentFilterer(): Attachment
+    protected function setupAttachmentFilterer(): AttachmentFilterer
     {
         /** @var Attachment $filterer */
-        $filterer = $this->app->filterer(Attachment::class);
+        $filterer = $this->app->filterer(AttachmentFilterer::class);
         $filterer->addFilters($this->request, $this->filter('_skipFilter', 'str'));
 
         return $filterer;
