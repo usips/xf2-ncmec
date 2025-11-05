@@ -10,11 +10,16 @@ class AttachmentData extends XFCP_AttachmentData
     {
         $structure = parent::getStructure($structure);
 
+        $structure->columns['usips_ncmec_incident_count'] = [
+            'type' => self::UINT,
+            'default' => 0
+        ];
+
         $structure->relations['Incidents'] = [
             'entity' => 'USIPS\NCMEC:Incident',
             'type' => self::TO_MANY,
             'conditions' => [
-                ['attachment_id', '=', '$attachment_id']
+                ['data_id', '=', '$data_id']
             ],
             'table' => 'xf_usips_ncmec_incident_attachment_data',
         ];

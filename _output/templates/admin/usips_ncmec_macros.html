@@ -1,14 +1,15 @@
-<xf:macro id="attachment_block" arg-attachments="{{ [] }}" arg-checked="{{ [] }}">
+<xf:macro id="attachment_block" arg-attachments="{{ [] }}" arg-checked="{{ [] }}" arg-incident="{{ false }}">
 	<xf:if is="$attachments is not empty">
 		<div class="block-body">
-			<xf:macro id="attachment_list" arg-attachments="{$attachments}" arg-checked="{$checked}" />
+			<xf:macro id="attachment_list" arg-attachments="{$attachments}" arg-checked="{$checked}"
+				arg-incident="{$incident}" />
 		</div>
 		<xf:else />
 		<div class="block-body block-row">{{ phrase('no_results_found') }}</div>
 	</xf:if>
 </xf:macro>
 
-<xf:macro id="attachment_list" arg-attachments="{{ [] }}" arg-checked="{{ [] }}">
+<xf:macro id="attachment_list" arg-attachments="{{ [] }}" arg-checked="{{ [] }}" arg-incident="{{ false }}">
 	<xf:css src="usips_ncmec.less" />
 	<xf:js src="USIPS/NCMEC/attachment_browser.js" />
 	<div class="usips-attachments">
@@ -37,23 +38,24 @@
 					</div>
 					<xf:if is="$attachment.has_thumbnail">
 						<a href="{{ link('attachments/view', $attachment) }}"
-							class="usips-attachmentLink usips-attachmentThumbnail"
+							class="usips-attachmentLink usips-attachmentThumbnail{{ $attachment.in_incident ? ' is-in-incident' : '' }}"
 							style="background-image: url({$attachment.thumbnail_url})" alt="{$attachment.filename}">
 						</a>
 						<xf:elseif is="$attachment.is_audio" />
 						<a href="{{ link('attachments/view', $attachment) }}"
-							class="usips-attachmentLink usips-attachmentIcon">
+							class="usips-attachmentLink usips-attachmentIcon{{ $attachment.in_incident ? ' is-in-incident' : '' }}">
 							<xf:fa icon="fa-volume fa-4x" />
 						</a>
 						<xf:elseif is="$attachment.is_video" />
-						<a href="{{ link('attachments/view', $attachment) }}" class="usips-attachmentLink">
+						<a href="{{ link('attachments/view', $attachment) }}"
+							class="usips-attachmentLink{{ $attachment.in_incident ? ' is-in-incident' : '' }}">
 							<video title="{$attachment.filename}" class="usips-attachmentVideo">
 								<source src="{$attachment.direct_url}" />
 							</video>
 						</a>
 						<xf:else />
 						<a href="{{ link('attachments/view', $attachment) }}"
-							class="usips-attachmentLink usips-attachmentIcon">
+							class="usips-attachmentLink usips-attachmentIcon{{ $attachment.in_incident ? ' is-in-incident' : '' }}">
 							<xf:fa icon="fa-file fa-4x" />
 						</a>
 				</label>

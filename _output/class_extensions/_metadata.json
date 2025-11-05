@@ -1,5 +1,8 @@
 {
     "XF-Entity-AttachmentData_USIPS-NCMEC-XF-Entity-AttachmentData.json": {
         "hash": "430c3e3a7445b8691640cce3fc49cada"
+    },
+    "XF-Entity-Attachment_USIPS-NCMEC-XF-Entity-Attachment.json": {
+        "hash": "7aa224e80ddc1117bc32795666cbd75d"
     }
 }

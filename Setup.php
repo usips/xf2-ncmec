@@ -83,20 +83,56 @@ class Setup extends AbstractSetup
             $table->addKey(['report_id']);
             $table->addKey(['user_id']);
         });
+
+        // Add denormalized column to track incident relationships
+        $this->schemaManager()->alterTable('xf_attachment_data', function(\XF\Db\Schema\Alter $table)
+        {
+            $table->addColumn('usips_ncmec_incident_count', 'int')->setDefault(0);
+        });
     }
 
     public function upgrade(array $stepParams = [])
     {
-        // Future upgrades can be handled here
+        $sm = $this->schemaManager();
+        
+        // Add incident count column to existing installations
+        if (!$sm->columnExists('xf_attachment_data', 'usips_ncmec_incident_count'))
+        {
+            $sm->alterTable('xf_attachment_data', function(\XF\Db\Schema\Alter $table)
+            {
+                $table->addColumn('usips_ncmec_incident_count', 'int')->setDefault(0);
+            });
+        }
+        
+        // Populate the count for existing data
+        $this->db()->query("
+            UPDATE xf_attachment_data 
+            SET usips_ncmec_incident_count = (
+                SELECT COUNT(*) 
+                FROM xf_usips_ncmec_incident_attachment_data 
+                WHERE xf_usips_ncmec_incident_attachment_data.data_id = xf_attachment_data.data_id
+            )
+        ");
     }
 
     public function uninstall(array $stepParams = [])
     {
-        $this->schemaManager()->dropTable('xf_usips_ncmec_incident_attachment_data');
-        $this->schemaManager()->dropTable('xf_usips_ncmec_incident_content');
-        $this->schemaManager()->dropTable('xf_usips_ncmec_incident_user');
-        $this->schemaManager()->dropTable('xf_usips_ncmec_report_log');
-        $this->schemaManager()->dropTable('xf_usips_ncmec_report');
-        $this->schemaManager()->dropTable('xf_usips_ncmec_incident');
+        $sm = $this->schemaManager();
+        
+        // Remove the denormalized column
+        if ($sm->columnExists('xf_attachment_data', 'usips_ncmec_incident_count'))
+        {
+            $sm->alterTable('xf_attachment_data', function(\XF\Db\Schema\Alter $table)
+            {
+                $table->dropColumns('usips_ncmec_incident_count');
+            });
+        }
+        
+        $sm->dropTable('xf_usips_ncmec_incident_attachment_data');
+        $sm->dropTable('xf_usips_ncmec_incident_content');
+        $sm->dropTable('xf_usips_ncmec_incident_user');
+        $sm->dropTable('xf_usips_ncmec_report_log');
+        $sm->dropTable('xf_usips_ncmec_report');
+        $sm->dropTable('xf_usips_ncmec_incident');
     }
 }

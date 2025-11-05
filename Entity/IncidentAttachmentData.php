@@ -40,4 +40,37 @@ class IncidentAttachmentData extends Entity
 
         return $structure;
     }
+
+    protected function _postSave()
+    {
+        parent::_postSave();
+        
+        // Update the incident count for the attachment data
+        $this->updateIncidentCount();
+    }
+
+    protected function _postDelete()
+    {
+        parent::_postDelete();
+        
+        // Update the incident count for the attachment data
+        $this->updateIncidentCount();
+    }
+
+    /**
+     * Update the incident count for the associated attachment data
+     */
+    protected function updateIncidentCount()
+    {
+        $count = $this->finder('USIPS\NCMEC:IncidentAttachmentData')
+            ->where('data_id', $this->data_id)
+            ->total();
+
+        $attachmentData = $this->em()->find('XF:AttachmentData', $this->data_id);
+        if ($attachmentData)
+        {
+            $attachmentData->usips_ncmec_incident_count = $count;
+            $attachmentData->save();
+        }
+    }
 }

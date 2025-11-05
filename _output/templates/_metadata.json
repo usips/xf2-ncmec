@@ -2,7 +2,7 @@
     "admin/usips_ncmec.less": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "80d70a38eb713ec268051c3cfdb761b2"
+        "hash": "a23072071134a42fb6d1a41db0743ccc"
     },
     "admin/usips_ncmec_attachment_list.html": {
         "version_id": 0,
@@ -37,6 +37,6 @@
     "admin/usips_ncmec_macros.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "0d0bbccfe2947517ecb8d162823f5a5f"
+        "hash": "6e335645befeea903d9d4aac9c1877c2"
     }
 }

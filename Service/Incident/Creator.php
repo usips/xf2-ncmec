@@ -48,20 +48,27 @@ class Creator extends AbstractService
 
     public function associateAttachments(iterable $attachments)
     {
+        $attachmentManager = $this->service('USIPS\NCMEC:Incident\AttachmentManager');
+        
         foreach ($attachments as $attachment)
         {
-            $incidentAttachment = $this->em()->create('USIPS\NCMEC:IncidentAttachmentData');
-            $incidentAttachment->incident_id = $this->incident->incident_id;
-            $incidentAttachment->data_id = $attachment->Data->data_id;
-            $incidentAttachment->user_id = $attachment->Data->user_id;
-            $incidentAttachment->username = $attachment->Data->User->username;
-            $incidentAttachment->save();
+            $attachmentManager->addAttachmentToIncident(
+                $this->incident->incident_id,
+                $attachment->Data->data_id,
+                $attachment->Data->user_id,
+                $attachment->Data->User->username
+            );
         }
     }
 
     public function disassociateAttachments(array $dataIds)
     {
-        $this->db()->delete('xf_usips_ncmec_incident_attachment_data', 'incident_id = ? AND data_id IN (' . $this->db()->quote($dataIds) . ')', $this->incident->incident_id);
+        $attachmentManager = $this->service('USIPS\NCMEC:Incident\AttachmentManager');
+        
+        foreach ($dataIds as $dataId)
+        {
+            $attachmentManager->removeAttachmentFromIncident($this->incident->incident_id, $dataId);
+        }
     }
 
     public function associateUsers(iterable $attachments)
