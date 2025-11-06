@@ -2,9 +2,9 @@
 
 namespace USIPS\NCMEC\Job;
 
-use XF\Job\AbstractJob;
+use XF\Job\AbstractRebuildJob;
 
-class AssociateUser extends AbstractJob
+class AssociateUser extends AbstractRebuildJob
 {
     protected $defaultData = [
         'incident_id' => 0,
@@ -12,15 +12,28 @@ class AssociateUser extends AbstractJob
         'time_limit_seconds' => 172800, // 48 hours default
     ];
 
-    public function run($maxRunTime)
+    protected function getNextIds($start, $batch)
+    {
+        $userIds = $this->data['user_ids'];
+        
+        // Find the next batch of user IDs starting from $start
+        $remainingIds = array_filter($userIds, function($id) use ($start) {
+            return $id > $start;
+        });
+        
+        sort($remainingIds);
+        
+        return array_slice($remainingIds, 0, $batch);
+    }
+
+    protected function rebuildById($id)
     {
         $incidentId = $this->data['incident_id'];
-        $userIds = $this->data['user_ids'];
-        $timeLimitSeconds = $this->data['time_limit_seconds'] ?? 172800; // 48 hours default
+        $timeLimitSeconds = $this->data['time_limit_seconds'] ?? 172800;
 
-        if (!$incidentId || empty($userIds))
+        if (!$incidentId)
         {
-            return $this->complete();
+            return;
         }
 
         $app = \XF::app();
@@ -28,43 +41,36 @@ class AssociateUser extends AbstractJob
         $incident = $app->find('USIPS\NCMEC:Incident', $incidentId);
         if (!$incident)
         {
-            return $this->complete();
+            return;
         }
 
         $creator->setIncident($incident);
 
         try {
-            // Associate all users
-            $creator->associateUsersByIds($userIds);
+            // Associate this specific user
+            $creator->associateUsersByIds([$id]);
 
-            // For each user, collect and associate their content and attachments within time limit
-            foreach ($userIds as $userId)
+            // Collect and associate their content and attachments within time limit
+            $contentItems = $creator->collectUserContentWithinTimeLimit($id, $timeLimitSeconds);
+            if (!empty($contentItems))
             {
-                // Collect and associate user content within time limit
-                $contentItems = $creator->collectUserContentWithinTimeLimit($userId, $timeLimitSeconds);
-                if (!empty($contentItems))
-                {
-                    $creator->associateContentByIds($contentItems);
-                }
+                $creator->associateContentByIds($contentItems);
+            }
 
-                // Collect and associate user attachments within time limit
-                $attachmentDataIds = $creator->collectUserAttachmentDataWithinTimeLimit($userId, $timeLimitSeconds);
-                if (!empty($attachmentDataIds))
-                {
-                    $creator->associateAttachmentsByDataIds($attachmentDataIds);
-                }
+            $attachmentDataIds = $creator->collectUserAttachmentDataWithinTimeLimit($id, $timeLimitSeconds);
+            if (!empty($attachmentDataIds))
+            {
+                $creator->associateAttachmentsByDataIds($attachmentDataIds);
             }
         } catch (\Exception $e) {
-            // Log the error but don't fail the job
-            \XF::logError('NCMEC AssociateUser job failed: ' . $e->getMessage());
+            // Log the error but continue with other users
+            \XF::logError('NCMEC AssociateUser job failed for user ' . $id . ': ' . $e->getMessage());
         }
-
-        return $this->complete();
     }
 
-    public function getStatusMessage()
+    protected function getStatusType()
     {
-        return \XF::phrase('usips_ncmec_associating_user_with_incident');
+        return \XF::phrase('users');
     }
 
     public function canCancel()

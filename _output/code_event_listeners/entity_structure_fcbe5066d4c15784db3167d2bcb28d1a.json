@@ -1,0 +1,9 @@
+{
+    "event_id": "entity_structure",
+    "execute_order": 10,
+    "callback_class": "USIPS\\NCMEC\\Listener",
+    "callback_method": "userEntityStructure",
+    "active": true,
+    "hint": "XF\\Entity\\User",
+    "description": "Extends User entity with NCMEC incident field."
+}

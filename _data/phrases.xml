@@ -46,5 +46,5 @@ internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
   <phrase title="usips_ncmec_report_type_emergency" version_id="0" version_string="1.0.0"><![CDATA[Emergency report]]></phrase>
   <phrase title="usips_ncmec_report_type_explain" version_id="0" version_string="1.0.0"><![CDATA[Please use emergency reports only for violations of law which require immediate attention.]]></phrase>
   <phrase title="usips_ncmec_report_type_standard" version_id="0" version_string="1.0.0"><![CDATA[Standard report]]></phrase>
-  <phrase title="usips_ncmec_you_must_confirm_to_proceed" version_id="0" version_string="1.0.0"><![CDATA[You must confirm your intention to associate users with an incident to proceed.]]></phrase>
-</phrases>
+  <phrase title="option_group.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC]]></phrase>
+  <phrase title="option_group.usips_ncmec_explain" version_id="0" version_string="1.0.0"><![CDATA[Settings for NCMEC incident management and reporting.]]></phrase>

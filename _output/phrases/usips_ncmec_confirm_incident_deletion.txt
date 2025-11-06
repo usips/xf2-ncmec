@@ -1,1 +1,1 @@
-Confirm incident deletion
+Confirm deletion of draft incident

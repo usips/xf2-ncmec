@@ -89,10 +89,58 @@ class Setup extends AbstractSetup
         {
             $table->addColumn('usips_ncmec_incident_count', 'int')->setDefault(0);
         });
+
+        $this->createUserField();
     }
 
-    public function upgrade(array $stepParams = [])
+    protected function createUserField()
     {
+        $userField = \XF::em()->create('XF:UserField');
+        $userField->bulkSet([
+            'field_id' => 'usips_ncmec_in_incident',
+            'field_type' => 'radio',
+            'field_choices' => ['0' => 'No', '1' => 'Yes'],
+            'match_type' => 'none',
+            'max_length' => 0,
+            'required' => 0,
+            'user_editable' => 'never',
+            'moderator_editable' => 0,
+            'viewable_profile' => 0,
+            'viewable_message' => 0,
+            'show_registration' => 0,
+        ]);
+        $userField->save();
+
+        $title = $userField->getMasterPhrase(true);
+        $title->phrase_text = 'In NCMEC Incident';
+        $title->save();
+
+        $description = $userField->getMasterPhrase(false);
+        $description->phrase_text = 'User is currently involved in an active NCMEC incident report.';
+        $description->save();
+
+        // Create UserFieldValue records for all existing users, defaulting to FALSE (not in incident)
+        $this->db()->query("
+            INSERT INTO xf_user_field_value (field_id, user_id, field_value)
+            SELECT 'usips_ncmec_in_incident', user_id, '0'
+            FROM xf_user
+            WHERE user_id NOT IN (
+                SELECT user_id FROM xf_user_field_value WHERE field_id = 'usips_ncmec_in_incident'
+            )
+        ");
+
+        // Update the custom_fields JSON cache for all users to include the new field
+        // Use JSON_MERGE_PATCH which is more forgiving with data types
+        $this->db()->query("
+            UPDATE xf_user_profile
+            SET custom_fields = JSON_MERGE_PATCH(
+                COALESCE(NULLIF(CAST(custom_fields AS CHAR CHARACTER SET utf8mb4), ''), '{}'), 
+                '{\"usips_ncmec_in_incident\":\"0\"}'
+            )
+        ");
+
+        \XF::repository('XF:UserField')->rebuildFieldCache();
+
         $sm = $this->schemaManager();
         
         // Add incident count column to existing installations
@@ -134,5 +182,17 @@ class Setup extends AbstractSetup
         $sm->dropTable('xf_usips_ncmec_report_log');
         $sm->dropTable('xf_usips_ncmec_report');
         $sm->dropTable('xf_usips_ncmec_incident');
+
+        $this->deleteUserField();
+    }
+
+    protected function deleteUserField()
+    {
+        $userField = \XF::em()->find('XF:UserField', 'usips_ncmec_in_incident');
+        if ($userField)
+        {
+            $userField->delete();
+            \XF::repository('XF:UserField')->rebuildFieldCache();
+        }
     }
 }

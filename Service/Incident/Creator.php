@@ -32,7 +32,7 @@ class Creator extends AbstractService
         $incident = $this->em()->create('USIPS\NCMEC:Incident');
         $incident->title = $title;
         $incident->user_id = $userId;
-        $incident->username = $username;
+        $incident->username = \XF\Util\Str::substr($username, 0, 50);
         $incident->save();
 
         $this->setIncident($incident);
@@ -105,7 +105,7 @@ class Creator extends AbstractService
             $incidentUser = $this->em()->create('USIPS\NCMEC:IncidentUser');
             $incidentUser->incident_id = $this->incident->incident_id;
             $incidentUser->user_id = $user->user_id;
-            $incidentUser->username = $user->username;
+            $incidentUser->username = \XF\Util\Str::substr($user->username, 0, 50);
             $incidentUser->save();
         }
     }
@@ -128,8 +128,12 @@ class Creator extends AbstractService
                     $incidentUser = $this->em()->create('USIPS\NCMEC:IncidentUser');
                     $incidentUser->incident_id = $this->incident->incident_id;
                     $incidentUser->user_id = $userId;
-                    $incidentUser->username = $user->username;
+                    $incidentUser->username = \XF\Util\Str::substr($user->username, 0, 50);
                     $incidentUser->save();
+
+                    // Update user field to indicate user is in incident
+                    $userFieldService = $this->service('USIPS\NCMEC:UserField');
+                    $userFieldService->updateIncidentField($userId, true);
                 }
             }
         }
@@ -160,6 +164,14 @@ class Creator extends AbstractService
 
         // Finally, disassociate the users
         $this->db()->delete('xf_usips_ncmec_incident_user', 'incident_id = ? AND user_id IN (' . $this->db()->quote($userIds) . ')', $this->incident->incident_id);
+
+        // Update user field for each disassociated user
+        $userFieldService = $this->service('USIPS\NCMEC:UserField');
+        foreach ($userIds as $userId)
+        {
+            $stillInIncident = $userFieldService->checkUserInAnyIncident($userId);
+            $userFieldService->updateIncidentField($userId, $stillInIncident);
+        }
     }
 
     // Content association methods
@@ -201,7 +213,7 @@ class Creator extends AbstractService
             $incidentContent->content_type = $data['content_type'];
             $incidentContent->content_id = $data['content_id'];
             $incidentContent->user_id = $content->user_id;
-            $incidentContent->username = $content->User->username;
+            $incidentContent->username = \XF\Util\Str::substr($content->User->username, 0, 50);
             $incidentContent->save();
         }
     }
@@ -224,7 +236,7 @@ class Creator extends AbstractService
                 $incidentContent->content_type = $contentData['content_type'];
                 $incidentContent->content_id = $contentData['content_id'];
                 $incidentContent->user_id = $contentData['user_id'];
-                $incidentContent->username = $this->em()->find('XF:User', $contentData['user_id'])->username;
+                $incidentContent->username = \XF\Util\Str::substr($contentData['username'], 0, 50);
                 $incidentContent->save();
             }
         }
@@ -288,10 +300,26 @@ class Creator extends AbstractService
     {
         $contentItems = [];
 
-        // Get all registered content types
-        $contentTypes = array_keys(\XF::app()->container('contentTypes'));
+        // Get the user once to avoid multiple queries
+        $user = $this->em()->find('XF:User', $userId);
+        if (!$user)
+        {
+            return $contentItems;
+        }
 
-        foreach ($contentTypes as $contentType)
+        // Only check content types we know have user_id and date fields
+        $contentTypesToCheck = [
+            'post',
+            'thread', 
+            'profile_post',
+            'conversation_message',
+            'resource_update',
+            'xfmg_media',
+            'xfmg_album',
+            'xfmg_comment'
+        ];
+
+        foreach ($contentTypesToCheck as $contentType)
         {
             $entityClass = \XF::app()->getContentTypeEntity($contentType, false);
             if (!$entityClass)
@@ -301,7 +329,7 @@ class Creator extends AbstractService
 
             try
             {
-                // Get the date field for this content type (usually 'post_date' or similar)
+                // Get the date field for this content type
                 $dateField = $this->getContentDateField($contentType);
                 if (!$dateField)
                 {
@@ -325,6 +353,7 @@ class Creator extends AbstractService
                         'content_type' => $contentType,
                         'content_id' => $content->getEntityId(),
                         'user_id' => $content->user_id,
+                        'username' => $user->username,
                         'date' => $content->{$dateField}
                     ];
                 }

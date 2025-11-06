@@ -89,6 +89,12 @@
         "version_string": "1.0.0",
         "hash": "ecc08305181c88005bc4b58f146b55d3"
     },
+    "usips_ncmec_confirm_incident_deletion.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "66f7c27f195ee8f63145d8bbbe39ab9a"
+    },
     "usips_ncmec_content_time_limit.txt": {
         "global_cache": false,
         "version_id": 0,

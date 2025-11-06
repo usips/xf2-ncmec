@@ -21,6 +21,13 @@ class Deleter extends AbstractService
 
         try
         {
+            // Get user IDs before deleting associations
+            $userIds = $this->db()->fetchAllColumn('
+                SELECT user_id 
+                FROM xf_usips_ncmec_incident_user 
+                WHERE incident_id = ?
+            ', $this->incident->incident_id);
+
             // Delete report logs first (leaf table)
             $this->db()->delete('xf_usips_ncmec_report_log', 'report_id IN (
                 SELECT report_id FROM xf_usips_ncmec_report WHERE incident_id = ?
@@ -37,6 +44,17 @@ class Deleter extends AbstractService
 
             // Delete incident users
             $this->db()->delete('xf_usips_ncmec_incident_user', 'incident_id = ?', $this->incident->incident_id);
+
+            // Update user fields for disassociated users
+            if ($userIds)
+            {
+                $userFieldService = $this->service('USIPS\NCMEC:UserField');
+                foreach ($userIds as $userId)
+                {
+                    $stillInIncident = $userFieldService->checkUserInAnyIncident($userId);
+                    $userFieldService->updateIncidentField($userId, $stillInIncident);
+                }
+            }
 
             // Finally delete the incident itself
             $this->incident->delete();
