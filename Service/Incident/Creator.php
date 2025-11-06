@@ -20,11 +20,11 @@ class Creator extends AbstractService
         $this->incident = $incident;
     }
 
-    public function createIncident($title, $userId, $username)
+    public function createIncident($userId, $username, $title = null)
     {
         $this->db()->beginTransaction();
 
-        if (!trim($title))
+        if (!$title || !trim($title))
         {
             $title = 'Incident created on ' . \XF::language()->dateTime(\XF::$time);
         }

@@ -120,7 +120,7 @@ class IncidentController extends AbstractController
             {
                 /** @var \USIPS\NCMEC\Service\Incident\Creator $creator */
                 $creator = $this->service('USIPS\NCMEC:Incident\Creator');
-                $incident = $creator->createIncident($input['title'], \XF::visitor()->user_id, \XF::visitor()->username);
+                $incident = $creator->createIncident(\XF::visitor()->user_id, \XF::visitor()->username, $input['title']);
 
                 $creator->setIncident($incident);
 
