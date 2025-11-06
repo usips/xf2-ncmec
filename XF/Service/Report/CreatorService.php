@@ -6,6 +6,7 @@ use Throwable;
 use XF\Entity\Report;
 use XF\Entity\ReportComment;
 use XF\Mvc\Entity\Entity;
+use XF\Service\Report\NotifierService;
 
 class CreatorService extends XFCP_CreatorService
 {

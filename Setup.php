@@ -163,6 +163,11 @@ class Setup extends AbstractSetup
         ");
     }
 
+    public function upgrade(array $stepParams = [])
+    {
+        // No upgrades yet
+    }
+
     public function uninstall(array $stepParams = [])
     {
         $sm = $this->schemaManager();
