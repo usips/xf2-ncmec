@@ -120,7 +120,25 @@ class IncidentController extends AbstractController
             {
                 /** @var \USIPS\NCMEC\Service\Incident\Creator $creator */
                 $creator = $this->service('USIPS\NCMEC:Incident\Creator');
-                $incident = $creator->createIncident($input['title'], \XF::visitor()->user_id, \XF::visitor()->username, $attachments);
+                $incident = $creator->createIncident($input['title'], \XF::visitor()->user_id, \XF::visitor()->username);
+
+                $creator->setIncident($incident);
+
+                if ($attachments)
+                {
+                    // Extract data IDs from attachments
+                    $dataIds = $attachments->pluck('data_id');
+
+                    // Enqueue AssociateAttachmentData job
+                    \XF::app()->jobManager()->enqueue('USIPS\NCMEC:AssociateAttachmentData', [
+                        'incident_id' => $incident->incident_id,
+                        'attachment_data_ids' => $dataIds
+                    ]);
+
+                    // Associate users and content synchronously
+                    $creator->associateAttachmentUsers($attachments);
+                    $creator->associateContent($attachments);
+                }
 
                 return $this->redirect($this->buildLink('ncmec-incidents', $incident));
             }

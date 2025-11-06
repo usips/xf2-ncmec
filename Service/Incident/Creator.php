@@ -20,7 +20,7 @@ class Creator extends AbstractService
         $this->incident = $incident;
     }
 
-    public function createIncident($title, $userId, $username, iterable $attachments)
+    public function createIncident($title, $userId, $username)
     {
         $this->db()->beginTransaction();
 
@@ -36,10 +36,6 @@ class Creator extends AbstractService
         $incident->save();
 
         $this->setIncident($incident);
-
-        $this->associateAttachments($attachments);
-        $this->associateAttachmentUsers($attachments);
-        $this->associateContent($attachments);
 
         $this->db()->commit();
 

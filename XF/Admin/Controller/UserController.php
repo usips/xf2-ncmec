@@ -67,7 +67,7 @@ class UserController extends BaseUserController
             {
                 // Create new incident
                 $creator = $this->service('USIPS\NCMEC:Incident\Creator');
-                $incident = $creator->createIncident('', \XF::visitor()->user_id, \XF::visitor()->username, []);
+                $incident = $creator->createIncident('', \XF::visitor()->user_id, \XF::visitor()->username);
             }
 
             // Associate each user with the incident synchronously for now
