@@ -8,15 +8,15 @@ class DisassociateUser extends AbstractJob
 {
     protected $defaultData = [
         'incident_id' => 0,
-        'user_id' => 0,
+        'user_ids' => [], // Array of user IDs to disassociate
     ];
 
     public function run($maxRunTime)
     {
         $incidentId = $this->data['incident_id'];
-        $userId = $this->data['user_id'];
+        $userIds = $this->data['user_ids'];
 
-        if (!$incidentId || !$userId)
+        if (!$incidentId || empty($userIds))
         {
             return $this->complete();
         }
@@ -30,7 +30,7 @@ class DisassociateUser extends AbstractJob
         }
 
         $creator->setIncident($incident);
-        $creator->disassociateUsers([$userId]);
+        $creator->disassociateUsers($userIds);
 
         return $this->complete();
     }

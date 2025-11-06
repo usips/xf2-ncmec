@@ -8,36 +8,17 @@ class AssociateUser extends AbstractJob
 {
     protected $defaultData = [
         'incident_id' => 0,
-        'user_id' => 0, // For single user association
-        'user_ids' => [], // For batch user association
+        'user_ids' => [], // Array of user IDs to associate
         'time_limit_seconds' => 172800, // 48 hours default
     ];
 
     public function run($maxRunTime)
     {
         $incidentId = $this->data['incident_id'];
-        $userId = $this->data['user_id'];
         $userIds = $this->data['user_ids'];
         $timeLimitSeconds = $this->data['time_limit_seconds'] ?? 172800; // 48 hours default
 
-        if (!$incidentId)
-        {
-            return $this->complete();
-        }
-
-        // Determine which users to process
-        $usersToProcess = [];
-        if ($userId)
-        {
-            $usersToProcess[] = $userId;
-        }
-        if (!empty($userIds))
-        {
-            $usersToProcess = array_merge($usersToProcess, $userIds);
-        }
-        $usersToProcess = array_unique($usersToProcess);
-
-        if (empty($usersToProcess))
+        if (!$incidentId || empty($userIds))
         {
             return $this->complete();
         }
@@ -54,20 +35,20 @@ class AssociateUser extends AbstractJob
 
         try {
             // Associate all users
-            $creator->associateUsersByIds($usersToProcess);
+            $creator->associateUsersByIds($userIds);
 
             // For each user, collect and associate their content and attachments within time limit
-            foreach ($usersToProcess as $uid)
+            foreach ($userIds as $userId)
             {
                 // Collect and associate user content within time limit
-                $contentItems = $creator->collectUserContentWithinTimeLimit($uid, $timeLimitSeconds);
+                $contentItems = $creator->collectUserContentWithinTimeLimit($userId, $timeLimitSeconds);
                 if (!empty($contentItems))
                 {
                     $creator->associateContentByIds($contentItems);
                 }
 
                 // Collect and associate user attachments within time limit
-                $attachmentDataIds = $creator->collectUserAttachmentDataWithinTimeLimit($uid, $timeLimitSeconds);
+                $attachmentDataIds = $creator->collectUserAttachmentDataWithinTimeLimit($userId, $timeLimitSeconds);
                 if (!empty($attachmentDataIds))
                 {
                     $creator->associateAttachmentsByDataIds($attachmentDataIds);

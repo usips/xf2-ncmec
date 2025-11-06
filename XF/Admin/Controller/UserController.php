@@ -69,36 +69,13 @@ class UserController extends BaseUserController
                 $creator = $this->service('USIPS\NCMEC:Incident\Creator');
                 $incident = $creator->createIncident(\XF::visitor()->user_id, \XF::visitor()->username);
             }
-            else {
-                // Associate each user with the incident synchronously for now
-                $creator = $this->service('USIPS\NCMEC:Incident\Creator');
-                $creator->setIncident($incident);
-            }
 
-            foreach ($userIds as $userId)
-            {
-                try {
-                    // Associate the user
-                    $creator->associateUsersByIds([$userId]);
-
-                    // Collect and associate user content within time limit
-                    $contentItems = $creator->collectUserContentWithinTimeLimit($userId, $timeLimitSeconds);
-                    if (!empty($contentItems))
-                    {
-                        $creator->associateContentByIds($contentItems);
-                    }
-
-                    // Collect and associate user attachments within time limit
-                    $attachmentDataIds = $creator->collectUserAttachmentDataWithinTimeLimit($userId, $timeLimitSeconds);
-                    if (!empty($attachmentDataIds))
-                    {
-                        $creator->associateAttachmentsByDataIds($attachmentDataIds);
-                    }
-                } catch (\Exception $e) {
-                    // Log the error but continue with other users
-                    \XF::logError('NCMEC user association failed for user ' . $userId . ': ' . $e->getMessage());
-                }
-            }
+            // Enqueue AssociateUser job to handle user association and content/attachment collection
+            \XF::app()->jobManager()->enqueue('USIPS\NCMEC:AssociateUser', [
+                'incident_id' => $incident->incident_id,
+                'user_ids' => $userIds,
+                'time_limit_seconds' => $timeLimitSeconds
+            ]);
 
             return $this->redirect($this->buildLink('users/batch-update', null, ['success' => true]));
         }
