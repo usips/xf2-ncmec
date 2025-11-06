@@ -37,7 +37,7 @@
     "admin/usips_ncmec_incident_view.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "beb89c335c00a02e99199ef70cc3cc89"
+        "hash": "57aa253605c221d81bdf96609d3aa5a2"
     },
     "admin/usips_ncmec_macros.html": {
         "version_id": 0,
@@ -47,6 +47,6 @@
     "admin/usips_ncmec_user_batch_update_confirm.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "25407d07a952a9ca85eb1296d0db9e59"
+        "hash": "48ab960e71610b3f5370313eccc844bd"
     }
 }

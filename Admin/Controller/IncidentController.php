@@ -185,27 +185,34 @@ class IncidentController extends AbstractController
     {
         $incident = $this->assertIncidentExists($params->incident_id, ['User', 'Report']);
 
-        // Manually load TO_MANY relations with nested User preloading
+        // Get counts efficiently without hydrating relationships
+        $counts = $this->repository('USIPS\NCMEC:Incident')->getIncidentCounts($incident->incident_id);
+
+        // Manually load TO_MANY relations with nested User preloading (but limit for display)
         $incident->hydrateRelation('IncidentUsers', $this->finder('USIPS\NCMEC:IncidentUser')
             ->where('incident_id', $incident->incident_id)
             ->with('User')
+            ->limit(50) // Limit for display performance
             ->fetch()
         );
         
         $incident->hydrateRelation('IncidentContents', $this->finder('USIPS\NCMEC:IncidentContent')
             ->where('incident_id', $incident->incident_id)
             ->with('User')
+            ->limit(50) // Limit for display performance
             ->fetch()
         );
         
         $incident->hydrateRelation('IncidentAttachmentData', $this->finder('USIPS\NCMEC:IncidentAttachmentData')
             ->where('incident_id', $incident->incident_id)
             ->with('User')
+            ->limit(50) // Limit for display performance
             ->fetch()
         );
 
         $viewParams = [
             'incident' => $incident,
+            'counts' => $counts,
         ];
 
         return $this->view('USIPS\NCMEC:Incident\View', 'usips_ncmec_incident_view', $viewParams);

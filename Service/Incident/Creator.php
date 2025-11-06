@@ -38,7 +38,7 @@ class Creator extends AbstractService
         $this->setIncident($incident);
 
         $this->associateAttachments($attachments);
-        $this->associateUsers($attachments);
+        $this->associateAttachmentUsers($attachments);
         $this->associateContent($attachments);
 
         $this->db()->commit();
@@ -72,8 +72,27 @@ class Creator extends AbstractService
         }
     }
 
+    public function associateAttachmentsByDataIds(array $dataIds)
+    {
+        $attachmentManager = $this->service('USIPS\NCMEC:Incident\AttachmentManager');
+        
+        foreach ($dataIds as $dataId)
+        {
+            $attachmentData = $this->em()->find('XF:AttachmentData', $dataId);
+            if ($attachmentData)
+            {
+                $attachmentManager->addAttachmentToIncident(
+                    $this->incident->incident_id,
+                    $dataId,
+                    $attachmentData->user_id,
+                    $attachmentData->User->username
+                );
+            }
+        }
+    }
+
     // User association methods
-    public function associateUsers(iterable $attachments)
+    public function associateAttachmentUsers(iterable $attachments)
     {
         $userIds = [];
         $users = [];
@@ -261,5 +280,118 @@ class Creator extends AbstractService
             // Add more as needed
         ];
         return $entities[$contentType] ?? null;
+    }
+
+    /**
+     * Collects all content for a user within a specified time limit
+     * @param int $userId The user ID to collect content for
+     * @param int $timeLimitSeconds Time limit in seconds (0 = no limit)
+     * @return array Array of content items with type, id, and user info
+     */
+    public function collectUserContentWithinTimeLimit($userId, $timeLimitSeconds = 172800) // 48 hours default
+    {
+        $contentItems = [];
+
+        // Get all registered content types
+        $contentTypes = array_keys(\XF::app()->container('contentTypes'));
+
+        foreach ($contentTypes as $contentType)
+        {
+            $entityClass = \XF::app()->getContentTypeEntity($contentType, false);
+            if (!$entityClass)
+            {
+                continue;
+            }
+
+            try
+            {
+                // Get the date field for this content type (usually 'post_date' or similar)
+                $dateField = $this->getContentDateField($contentType);
+                if (!$dateField)
+                {
+                    continue;
+                }
+
+                $finder = $this->finder($entityClass)
+                    ->where('user_id', $userId);
+
+                // Apply time limit if specified
+                if ($timeLimitSeconds > 0)
+                {
+                    $cutoffTime = \XF::$time - $timeLimitSeconds;
+                    $finder->where($dateField, '>=', $cutoffTime);
+                }
+
+                $contents = $finder->fetch();
+                foreach ($contents as $content)
+                {
+                    $contentItems[] = [
+                        'content_type' => $contentType,
+                        'content_id' => $content->getEntityId(),
+                        'user_id' => $content->user_id,
+                        'date' => $content->{$dateField}
+                    ];
+                }
+            }
+            catch (\Exception $e)
+            {
+                // Skip content types that don't work with this approach
+                continue;
+            }
+        }
+
+        return $contentItems;
+    }
+
+    /**
+     * Collects all attachments for a user within a specified time limit
+     * @param int $userId The user ID to collect attachments for
+     * @param int $timeLimitSeconds Time limit in seconds (0 = no limit)
+     * @return array Array of attachment data IDs
+     */
+    public function collectUserAttachmentDataWithinTimeLimit($userId, $timeLimitSeconds = 172800) // 48 hours default
+    {
+        // Query attachment data directly since xf_attachment doesn't have user_id
+        $finder = $this->finder('XF:AttachmentData')
+            ->where('user_id', $userId);
+
+        // Apply time limit if specified
+        if ($timeLimitSeconds > 0)
+        {
+            $cutoffTime = \XF::$time - $timeLimitSeconds;
+            $finder->where('upload_date', '>=', $cutoffTime);
+        }
+
+        $attachmentData = $finder->fetch();
+
+        $dataIds = [];
+        foreach ($attachmentData as $data)
+        {
+            $dataIds[] = $data->data_id;
+        }
+
+        return $dataIds;
+    }
+
+    /**
+     * Gets the appropriate date field name for a content type
+     * @param string $contentType The content type
+     * @return string|null The date field name or null if not applicable
+     */
+    protected function getContentDateField($contentType)
+    {
+        $dateFields = [
+            'post' => 'post_date',
+            'thread' => 'post_date', // threads use the first post date
+            'profile_post' => 'post_date',
+            'conversation_message' => 'message_date',
+            'resource_update' => 'post_date',
+            'resource_version' => 'release_date',
+            'xfmg_media' => 'media_date',
+            'xfmg_album' => 'album_date',
+            'xfmg_comment' => 'comment_date',
+        ];
+
+        return $dateFields[$contentType] ?? null;
     }
 }

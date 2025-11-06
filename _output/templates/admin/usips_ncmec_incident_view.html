@@ -13,6 +13,24 @@
                 label="{{ phrase('usips_ncmec_additional_info') }}"
                 explain="{{ phrase('usips_ncmec_additional_info_explain') }}" rows="10" />
 
+            <xf:formrow label="{{ phrase('usips_ncmec_incident_status') }}">
+                <xf:if is="$incident.is_finalized">
+                    {{ phrase('usips_ncmec_incident_finalized') }}
+                    <xf:else />
+                    {{ phrase('usips_ncmec_incident_draft') }}
+                </xf:if>
+            </xf:formrow>
+
+            <xf:formrow label="{{ phrase('usips_ncmec_associated_users') }}">
+                {{ $counts.users|number }}
+            </xf:formrow>
+            <xf:formrow label="{{ phrase('usips_ncmec_associated_content') }}">
+                {{ $counts.content|number }}
+            </xf:formrow>
+            <xf:formrow label="{{ phrase('usips_ncmec_associated_attachment_data') }}">
+                {{ $counts.attachments|number }}
+            </xf:formrow>
+
             <xf:submitrow sticky="true" icon="save" />
         </div>
     </div>

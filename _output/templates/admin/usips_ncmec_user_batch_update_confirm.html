@@ -2,14 +2,15 @@
 	<div class="block-container">
 		<h2 class="block-header">{{ phrase('usips_ncmec_create_incident') }}</h2>
 		<div class="block-body">
-			<xf:checkboxrow explain="{{ phrase('administrators_and_moderators_will_not_be_deleted') }}">
-
-				<xf:option name="actions[ncmec_incident]">{{ phrase('usips_ncmec_confirm_associating_x_users', {'total':
+			<xf:checkboxrow>
+				<xf:option name="actions[ncmec_incident]" required="{{ true }}">{{
+					phrase('usips_ncmec_confirm_associating_x_users',
+					{'total':
 					$total|number}) }}</xf:option>
 			</xf:checkboxrow>
 
-			<xf:if is="$nonFinalizedIncidents is not empty">
-				<xf:formrow label="{{ phrase('usips_ncmec_incident') }}">
+			<xf:formrow label="{{ phrase('usips_ncmec_incident') }}">
+				<xf:if is="$nonFinalizedIncidents is not empty">
 					<xf:select name="incident_id">
 						<xf:option value="">{{ phrase('usips_ncmec_create_incident') }}</xf:option>
 						<xf:foreach loop="$nonFinalizedIncidents" value="$incident">
@@ -17,12 +18,24 @@
 								date($incident.created_date) }})</xf:option>
 						</xf:foreach>
 					</xf:select>
-				</xf:formrow>
-				<xf:else />
-				<xf:inforow rowtype="confirm">{{ phrase('usips_ncmec_new_incident_will_be_created') }}</xf:inforow>
-			</xf:if>
+					<xf:else />
+					{{ phrase('usips_ncmec_new_incident_will_be_created') }}
+				</xf:if>
+			</xf:formrow>
+
+			<xf:formrow label="{{ phrase('usips_ncmec_content_time_limit') }}"
+				explain="{{ phrase('usips_ncmec_content_time_limit_explain') }}">
+				<xf:select name="time_limit_seconds">
+					<xf:option value="3600">{{ phrase('1_hour') }}</xf:option>
+					<xf:option value="86400">{{ phrase('1_day') }}</xf:option>
+					<xf:option value="172800" selected="{{ true }}">{{ phrase('48_hours') }}</xf:option>
+					<xf:option value="604800">{{ phrase('1_week') }}</xf:option>
+					<xf:option value="2592000">{{ phrase('1_month') }}</xf:option>
+					<xf:option value="0">{{ phrase('all_time') }}</xf:option>
+				</xf:select>
+			</xf:formrow>
 		</div>
-		<xf:submitrow name="ncmec_incident" icon="attach" />
+		<xf:submitrow name="ncmec_incident" icon="attach" submit="{{ phrase('usips_ncmec_associate_users') }}" />
 	</div>
 
 	<xf:if is="$userIds">
