@@ -6,6 +6,9 @@ use XF\Job\AbstractRebuildJob;
 
 class AssociateUser extends AbstractRebuildJob
 {
+    /** @var \USIPS\NCMEC\Service\UserPromotion|null */
+    protected $userPromotionService = null;
+
     protected $defaultData = [
         'incident_id' => 0,
         'user_ids' => [], // Array of user IDs to associate
@@ -62,10 +65,23 @@ class AssociateUser extends AbstractRebuildJob
             {
                 $creator->associateAttachmentsByDataIds($attachmentDataIds);
             }
+
+            // Update promotions for this user after association is complete
+            $this->getUserPromotionService()->updateUser($id);
         } catch (\Exception $e) {
             // Log the error but continue with other users
             \XF::logError('NCMEC AssociateUser job failed for user ' . $id . ': ' . $e->getMessage());
         }
+    }
+
+    protected function getUserPromotionService()
+    {
+        if ($this->userPromotionService === null)
+        {
+            $this->userPromotionService = $this->app->service('USIPS\\NCMEC:UserPromotion');
+        }
+
+        return $this->userPromotionService;
     }
 
     protected function getStatusType()

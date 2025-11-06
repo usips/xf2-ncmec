@@ -35,16 +35,23 @@ class UserField extends \XF\Service\AbstractService
         $userFieldValue->field_value = $inIncident ? '1' : '0';
         $userFieldValue->saveIfChanged();
 
-        // Rebuild the custom fields cache to ensure user criteria matching works
-        try {
-            $user = $this->em()->find('XF:User', $userId);
-            if ($user)
-            {
-                $user->Profile->rebuildUserFieldValuesCache();
-            }
-        } catch (\Exception $e) {
-            // Log the error but don't fail the update
-            \XF::logError('Failed to rebuild user field cache for user ' . $userId . ': ' . $e->getMessage());
+        /** @var \XF\Repository\UserFieldRepository $userFieldRepo */
+        $userFieldRepo = $this->repository('XF:UserField');
+        $cache = $userFieldRepo->getUserFieldValues($userId);
+
+        // Persist the denormalized cache to ensure criteria checks see the latest state
+        $this->db()->update(
+            'xf_user_profile',
+            ['custom_fields' => json_encode($cache)],
+            'user_id = ?',
+            $userId
+        );
+
+        // Update any in-memory entity instances so subsequent processes read the new value immediately
+        $user = $this->em()->find('XF:User', $userId, ['Profile']);
+        if ($user)
+        {
+            $user->Profile->setAsSaved('custom_fields', $cache);
         }
     }
 

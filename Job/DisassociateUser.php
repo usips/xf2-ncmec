@@ -6,6 +6,9 @@ use XF\Job\AbstractJob;
 
 class DisassociateUser extends AbstractJob
 {
+    /** @var \USIPS\NCMEC\Service\UserPromotion|null */
+    protected $userPromotionService = null;
+
     protected $defaultData = [
         'incident_id' => 0,
         'user_ids' => [], // Array of user IDs to disassociate
@@ -32,7 +35,20 @@ class DisassociateUser extends AbstractJob
         $creator->setIncident($incident);
         $creator->disassociateUsers($userIds);
 
+        // Update promotions for all disassociated users
+        $this->getUserPromotionService()->updateUsers($userIds);
+
         return $this->complete();
+    }
+
+    protected function getUserPromotionService()
+    {
+        if ($this->userPromotionService === null)
+        {
+            $this->userPromotionService = $this->app->service('USIPS\\NCMEC:UserPromotion');
+        }
+
+        return $this->userPromotionService;
     }
 
     public function getStatusMessage()

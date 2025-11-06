@@ -8,6 +8,8 @@ use XF\Service\AbstractService;
 class Deleter extends AbstractService
 {
     protected $incident;
+    /** @var \USIPS\NCMEC\Service\UserPromotion|null */
+    protected $userPromotionService = null;
 
     public function __construct(\XF\App $app, Incident $incident)
     {
@@ -54,6 +56,9 @@ class Deleter extends AbstractService
                     $stillInIncident = $userFieldService->checkUserInAnyIncident($userId);
                     $userFieldService->updateIncidentField($userId, $stillInIncident);
                 }
+
+                // Update promotions for all affected users
+                $this->getUserPromotionService()->updateUsers($userIds);
             }
 
             // Finally delete the incident itself
@@ -89,5 +94,15 @@ class Deleter extends AbstractService
                 $attachmentManager->updateIncidentCount($dataId);
             }
         }
+    }
+
+    protected function getUserPromotionService()
+    {
+        if ($this->userPromotionService === null)
+        {
+            $this->userPromotionService = $this->service('USIPS\\NCMEC:UserPromotion');
+        }
+
+        return $this->userPromotionService;
     }
 }
