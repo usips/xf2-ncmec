@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <template_modifications>
+  <modification type="public" template="approval_queue_macros" modification_key="usips_ncmec_approval_queue_macros" description="Adds viewable attachments with NCMEC incident response actions to the approval queue." execution_order="10" enabled="1" action="preg_replace">
+    <find><![CDATA[/<div class="message-expandLink js-expandLink">.*?<\/div>(.*?)<\/div>/s]]></find>
+    <replace><![CDATA[$0
+
+<xf:macro id="message_macros::attachments" arg-attachments="{{ $content.Attachments }}" arg-message="{{ $content }}" arg-canView="{{ true }}" />]]></replace>
+  </modification>
   <modification type="admin" template="attachment_list" modification_key="usips_ncmec_attachment_list" description="Adds clarity to where an unassociated file is attached." execution_order="10" enabled="1" action="str_replace">
     <find><![CDATA[{{ phrase('unassociated') }}]]></find>
     <replace><![CDATA[{{ phrase('unassociated') }}

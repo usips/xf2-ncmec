@@ -8,14 +8,22 @@
   <phrase title="admin_permission.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[Manage NCMEC incidents]]></phrase>
   <phrase title="usips_ncmec_additional_info" version_id="0" version_string="1.0.0"><![CDATA[Additional Info]]></phrase>
   <phrase title="usips_ncmec_additional_info_explain" version_id="0" version_string="1.0.0"><![CDATA[Passed as a value in the <a href="https://report.cybertip.org/ispws/documentation/index.html#xml-report">/report/additionalInfo</a> if provided.]]></phrase>
+  <phrase title="usips_ncmec_associate_users" version_id="0" version_string="1.0.0"><![CDATA[Associate users]]></phrase>
   <phrase title="usips_ncmec_associate_with_incident" version_id="0" version_string="1.0.0"><![CDATA[Associate with Incident]]></phrase>
+  <phrase title="usips_ncmec_associated_attachment_data" version_id="0" version_string="1.0.0"><![CDATA[Associated attachment data]]></phrase>
+  <phrase title="usips_ncmec_associated_content" version_id="0" version_string="1.0.0"><![CDATA[Associated content]]></phrase>
+  <phrase title="usips_ncmec_associated_users" version_id="0" version_string="1.0.0"><![CDATA[Associated users]]></phrase>
+  <phrase title="usips_ncmec_associating_user_with_incident" version_id="0" version_string="1.0.0"><![CDATA[Associating users with incident]]></phrase>
   <phrase title="usips_ncmec_attachments" version_id="0" version_string="1.0.0"><![CDATA[Attachments]]></phrase>
   <phrase title="usips_ncmec_confirm_associating_x_users" version_id="0" version_string="1.0.0"><![CDATA[Confirm associating these {total} users with an NCMEC Incident]]></phrase>
+  <phrase title="usips_ncmec_content_time_limit" version_id="0" version_string="1.0.0"><![CDATA[Content time limit]]></phrase>
+  <phrase title="usips_ncmec_content_time_limit_explain" version_id="0" version_string="1.0.0"><![CDATA[Matched users will be attached to the abuse report regardless of when they were created. The batch will only associate content created in this timeframe. This is useful to limit damage done to old accounts, for instance compromised account.]]></phrase>
   <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create Incident]]></phrase>
   <phrase title="usips_ncmec_failed_lines" version_id="0" version_string="1.0.0"><![CDATA[Rejected Input]]></phrase>
   <phrase title="usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incident]]></phrase>
   <phrase title="usips_ncmec_incident_draft" version_id="0" version_string="1.0.0"><![CDATA[Draft]]></phrase>
   <phrase title="usips_ncmec_incident_finalized" version_id="0" version_string="1.0.0"><![CDATA[Finalized]]></phrase>
+  <phrase title="usips_ncmec_incident_status" version_id="0" version_string="1.0.0"><![CDATA[Incident status]]></phrase>
   <phrase title="usips_ncmec_incidents" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
   <phrase title="usips_ncmec_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>
   <phrase title="usips_ncmec_lookup_description" version_id="0" version_string="1.0.0"><![CDATA[https://domain.com/attachments/1762288299348-png.8126290/
@@ -34,4 +42,5 @@ internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
   <phrase title="usips_ncmec_no_incidents" version_id="0" version_string="1.0.0"><![CDATA[There are no incidents available.]]></phrase>
   <phrase title="usips_ncmec_no_results" version_id="0" version_string="1.0.0"><![CDATA[No results matched your input.]]></phrase>
   <phrase title="usips_ncmec_report_logs" version_id="0" version_string="1.0.0"><![CDATA[Report Logs]]></phrase>
+  <phrase title="usips_ncmec_you_must_confirm_to_proceed" version_id="0" version_string="1.0.0"><![CDATA[You must confirm your intention to associate users with an incident to proceed.]]></phrase>
 </phrases>

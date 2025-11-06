@@ -4,5 +4,8 @@
     },
     "admin/usips_ncmec_user_batch_update_confirm.json": {
         "hash": "790447cf0230bca1e032aed61aa0dee9"
+    },
+    "public/usips_ncmec_approval_queue_macros.json": {
+        "hash": "bfc80508ae851a533db74859c7b46dfc"
     }
 }

@@ -1,0 +1,9 @@
+{
+    "template": "approval_queue_macros",
+    "description": "Adds viewable attachments with NCMEC incident response actions to the approval queue.",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "preg_replace",
+    "find": "/<div class=\"message-expandLink js-expandLink\">.*?<\\/div>(.*?)<\\/div>/s",
+    "replace": "$0\n\n<xf:macro id=\"message_macros::attachments\" arg-attachments=\"{{ $content.Attachments }}\" arg-message=\"{{ $content }}\" arg-canView=\"{{ true }}\" />"
+}
