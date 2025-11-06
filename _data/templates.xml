@@ -480,4 +480,27 @@
 		<xf:hiddenval name="criteria">{$criteria|json}</xf:hiddenval>
 	</xf:if>
 </xf:form>]]></template>
+  <template type="public" title="usips_ncmec_approval_queue_macro_item_message_type" version_id="0" version_string="1.0.0"><![CDATA[<xf:macro id="message_macros::attachments" arg-attachments="{{ $content.Attachments }}" arg-message="{{ $content }}" arg-canView="{{ true }}" />]]></template>
+  <template type="public" title="usips_ncmec_report_create" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('report_content') }}</xf:title>
+
+<xf:form action="{$confirmUrl}" class="block" ajax="true" data-skip-overlay-redirect="true">
+
+	<div class="block-container">
+		<div class="block-body">
+			<xf:radiorow name="report_type" value="standard" label="{{ phrase('usips_ncmec_report_type') }}"
+				required="true" explain="{{ phrase('usips_ncmec_report_type_explain') }}">
+				<xf:option value="standard" selected="true" label="{{ phrase('usips_ncmec_report_type_standard') }}">
+					<xf:dependent>
+						<div class="inputGroup">
+							<xf:textarea name="message" autosize="true" autofocus="autofocus"
+								placeholder="{{ phrase('report_reason') }}" />
+						</div>
+					</xf:dependent>
+				</xf:option>
+				<xf:option value="emergency" label="{{ phrase('usips_ncmec_report_type_emergency') }}" />
+			</xf:radiorow>
+		</div>
+		<xf:submitrow submit="{{ phrase('report_verb') }}" />
+	</div>
+</xf:form>]]></template>
 </templates>

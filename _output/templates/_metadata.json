@@ -53,5 +53,10 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "9c5ff6cc9af1d50f32b112c0e49cfc43"
+    },
+    "public/usips_ncmec_report_create.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "f4eeab3df881430d9d662064c421af57"
     }
 }

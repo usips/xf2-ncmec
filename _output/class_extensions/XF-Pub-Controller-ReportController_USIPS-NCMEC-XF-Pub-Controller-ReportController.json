@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Pub\\Controller\\ReportController",
+    "to_class": "USIPS\\NCMEC\\XF\\Pub\\Controller\\ReportController",
+    "execute_order": 10,
+    "active": true
+}

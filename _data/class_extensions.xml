@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <class_extensions>
   <extension from_class="XF\Admin\Controller\UserController" to_class="USIPS\NCMEC\XF\Admin\Controller\UserController" execute_order="10" active="1"/>
+  <extension from_class="XF\ControllerPlugin\ReportPlugin" to_class="USIPS\NCMEC\XF\ControllerPlugin\ReportPlugin" execute_order="10" active="1"/>
   <extension from_class="XF\Entity\Attachment" to_class="USIPS\NCMEC\XF\Entity\Attachment" execute_order="10" active="1"/>
   <extension from_class="XF\Entity\AttachmentData" to_class="USIPS\NCMEC\XF\Entity\AttachmentData" execute_order="10" active="1"/>
+  <extension from_class="XF\Pub\Controller\ReportController" to_class="USIPS\NCMEC\XF\Pub\Controller\ReportController" execute_order="10" active="1"/>
 </class_extensions>

@@ -2,10 +2,16 @@
     "XF-Admin-Controller-UserController_USIPS-NCMEC-XF-Admin-Controller-UserController.json": {
         "hash": "4cd8e316cd8a856f153e9eb046641a4f"
     },
+    "XF-ControllerPlugin-ReportPlugin_USIPS-NCMEC-XF-ControllerPlugin-ReportPlugin.json": {
+        "hash": "72e3d85086a6da286b998208933a3179"
+    },
     "XF-Entity-AttachmentData_USIPS-NCMEC-XF-Entity-AttachmentData.json": {
         "hash": "430c3e3a7445b8691640cce3fc49cada"
     },
     "XF-Entity-Attachment_USIPS-NCMEC-XF-Entity-Attachment.json": {
         "hash": "7aa224e80ddc1117bc32795666cbd75d"
+    },
+    "XF-Pub-Controller-ReportController_USIPS-NCMEC-XF-Pub-Controller-ReportController.json": {
+        "hash": "d8f998ceecea9cdc64a1082cb117972f"
     }
 }

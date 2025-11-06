@@ -71,13 +71,19 @@ class UserController extends BaseUserController
             }
 
             // Enqueue AssociateUser job to handle user association and content/attachment collection
-            \XF::app()->jobManager()->enqueue('USIPS\NCMEC:AssociateUser', [
+            $uniqueId = 'ncmec_associate_' . $incident->incident_id . '_' . \XF::$time;
+            \XF::app()->jobManager()->enqueueUnique($uniqueId, 'USIPS\NCMEC:AssociateUser', [
                 'incident_id' => $incident->incident_id,
                 'user_ids' => $userIds,
                 'time_limit_seconds' => $timeLimitSeconds
             ]);
 
-            return $this->redirect($this->buildLink('users/batch-update', null, ['success' => true]));
+            return $this->redirect(
+                $this->buildLink('tools/run-job', null, [
+                    'only' => $uniqueId,
+                    '_xfRedirect' => $this->buildLink('users/batch-update', null, ['success' => true]),
+                ])
+            );
         }
 
         return parent::actionBatchUpdateAction();

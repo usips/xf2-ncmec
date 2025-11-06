@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\ControllerPlugin\\ReportPlugin",
+    "to_class": "USIPS\\NCMEC\\XF\\ControllerPlugin\\ReportPlugin",
+    "execute_order": 10,
+    "active": true
+}
