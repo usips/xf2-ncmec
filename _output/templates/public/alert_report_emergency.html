@@ -1,0 +1,4 @@
+{{ phrase('usips_ncmec_x_created_emregency_report_y', {
+	'name': username_link($user, false, {'defaultname': $alert.username}),
+	'title': '<a href="' . link('reports', $content) . '#report-comment-' . $alert.extra_data.comment.report_comment_id . '" class="fauxBlockLink-blockLink">' . $content.title . '</a>'
+}) }}

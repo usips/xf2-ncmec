@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Service\\Report\\CreatorService",
+    "to_class": "USIPS\\NCMEC\\XF\\Service\\Report\\CreatorService",
+    "execute_order": 10,
+    "active": true
+}

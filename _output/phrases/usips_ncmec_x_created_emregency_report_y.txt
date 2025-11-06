@@ -1,0 +1,1 @@
+{name} created an <strong>emergency report</strong> concerning {title}.

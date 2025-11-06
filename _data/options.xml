@@ -1,19 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<options>
-    <option>
-        <group_id>usips_ncmec</group_id>
-        <option_id>usips_ncmec_enabled</option_id>
-        <title>option.usips_ncmec_enabled</title>
-        <explain>option.usips_ncmec_enabled_explain</explain>
-        <edit_format>checkbox</edit_format>
-        <data_type>boolean</data_type>
-        <default_value>1</default_value>
-        <edit_format_params></edit_format_params>
-        <sub_options></sub_options>
-        <validation_class></validation_class>
-        <validation_method></validation_method>
-        <validation_error></validation_error>
-        <advanced></advanced>
-        <addon_id>USIPS/NCMEC</addon_id>
-    </option>
-</options>
+<options/>

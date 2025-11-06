@@ -480,6 +480,10 @@
 		<xf:hiddenval name="criteria">{$criteria|json}</xf:hiddenval>
 	</xf:if>
 </xf:form>]]></template>
+  <template type="public" title="alert_report_emergency" version_id="0" version_string="1.0.0"><![CDATA[{{ phrase('usips_ncmec_x_created_emregency_report_y', {
+	'name': username_link($user, false, {'defaultname': $alert.username}),
+	'title': '<a href="' . link('reports', $content) . '#report-comment-' . $alert.extra_data.comment.report_comment_id . '" class="fauxBlockLink-blockLink">' . $content.title . '</a>'
+}) }}]]></template>
   <template type="public" title="usips_ncmec_approval_queue_macro_item_message_type" version_id="0" version_string="1.0.0"><![CDATA[<xf:macro id="message_macros::attachments" arg-attachments="{{ $content.Attachments }}" arg-message="{{ $content }}" arg-canView="{{ true }}" />]]></template>
   <template type="public" title="usips_ncmec_report_create" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('report_content') }}</xf:title>
 

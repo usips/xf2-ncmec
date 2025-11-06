@@ -49,6 +49,11 @@
         "version_string": "1.0.0",
         "hash": "48ab960e71610b3f5370313eccc844bd"
     },
+    "public/alert_report_emergency.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "9b0b5dcf561c35204bfb9fcd640d6365"
+    },
     "public/usips_ncmec_approval_queue_macro_item_message_type.html": {
         "version_id": 0,
         "version_string": "1.0.0",

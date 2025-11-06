@@ -1,10 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<option_groups>
-    <group>
-        <group_id>usips_ncmec</group_id>
-        <title>option_group.usips_ncmec</title>
-        <description>option_group.usips_ncmec_explain</description>
-        <display_order>1</display_order>
-        <addon_id>USIPS/NCMEC</addon_id>
-    </group>
-</option_groups>
+<option_groups/>

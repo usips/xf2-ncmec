@@ -1,0 +1,1 @@
+If set to true, this user is attached to an ongoing incident report. This is useful for setting up UserPromotions to disable features like attachments.

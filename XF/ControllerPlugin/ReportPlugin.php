@@ -7,24 +7,31 @@ use XF\Service\Report\CreatorService;
 
 class ReportPlugin extends XFCP_ReportPlugin
 {
-    protected function setupReportCreate($contentType, \XF\Mvc\Entity\Entity $content)
+    protected function setupReportCreate($contentType, Entity $content)
     {
         $reportType = $this->request->filter('report_type', 'str');
+        $message = $this->request->filter('message', 'str');
 
-        if ($reportType === 'emergency')
+        if ($reportType === 'emergency' && $message === '')
         {
-            echo "emergency hook works";
-            exit;
+            $this->request->set('message', 'User has submitted report as an emergency.');
         }
 
-        // If report_type is 'standard' or not set, proceed with standard logic
-        return parent::setupReportCreate($contentType, $content);
+        /** @var CreatorService $creator */
+        $creator = parent::setupReportCreate($contentType, $content);
+
+        if ($reportType === 'emergency' && method_exists($creator, 'enableEmergencyHandling'))
+        {
+            $creator->enableEmergencyHandling($content);
+        }
+
+        return $creator;
     }
 
     public function actionReport($contentType, Entity $content, $confirmUrl, $returnUrl, $options = [])
     {
         $options = array_merge([
-            'view' => 'XF:Report\Report',
+            'view' => 'XF:Report\\Report',
             'template' => 'usips_ncmec_report_create',
             'extraViewParams' => [],
         ], $options);

@@ -6,6 +6,10 @@
   <phrase title="admin_navigation.usips_ncmec_attachments_latest" version_id="0" version_string="1.0.0"><![CDATA[Newest Attachments]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
   <phrase title="admin_permission.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[Manage NCMEC incidents]]></phrase>
+  <phrase title="user_field_choice.usips_ncmec_in_incident_0" version_id="0" version_string="1.0.0"><![CDATA[No]]></phrase>
+  <phrase title="user_field_choice.usips_ncmec_in_incident_1" version_id="0" version_string="1.0.0"><![CDATA[Yes]]></phrase>
+  <phrase title="user_field_desc.usips_ncmec_in_incident" version_id="0" version_string="1.0.0"><![CDATA[If set to true, this user is attached to an ongoing incident report. This is useful for setting up UserPromotions to disable features like attachments.]]></phrase>
+  <phrase title="user_field_title.usips_ncmec_in_incident" version_id="0" version_string="1.0.0"><![CDATA[Active in NCMEC Incident]]></phrase>
   <phrase title="usips_ncmec_additional_info" version_id="0" version_string="1.0.0"><![CDATA[Additional Info]]></phrase>
   <phrase title="usips_ncmec_additional_info_explain" version_id="0" version_string="1.0.0"><![CDATA[Passed as a value in the <a href="https://report.cybertip.org/ispws/documentation/index.html#xml-report">/report/additionalInfo</a> if provided.]]></phrase>
   <phrase title="usips_ncmec_associate_users" version_id="0" version_string="1.0.0"><![CDATA[Associate users]]></phrase>
@@ -16,9 +20,11 @@
   <phrase title="usips_ncmec_associating_user_with_incident" version_id="0" version_string="1.0.0"><![CDATA[Associating users with incident]]></phrase>
   <phrase title="usips_ncmec_attachments" version_id="0" version_string="1.0.0"><![CDATA[Attachments]]></phrase>
   <phrase title="usips_ncmec_confirm_associating_x_users" version_id="0" version_string="1.0.0"><![CDATA[Confirm associating these {total} users with an NCMEC Incident]]></phrase>
+  <phrase title="usips_ncmec_confirm_incident_deletion" version_id="0" version_string="1.0.0"><![CDATA[Confirm deletion of draft incident]]></phrase>
   <phrase title="usips_ncmec_content_time_limit" version_id="0" version_string="1.0.0"><![CDATA[Content time limit]]></phrase>
   <phrase title="usips_ncmec_content_time_limit_explain" version_id="0" version_string="1.0.0"><![CDATA[Matched users will be attached to the abuse report regardless of when they were created. The batch will only associate content created in this timeframe. This is useful to limit damage done to old accounts, for instance compromised account.]]></phrase>
   <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create Incident]]></phrase>
+  <phrase title="usips_ncmec_emergency_report_default_message" version_id="0" version_string="1.0.0"><![CDATA[Report was submitted as an emergency.]]></phrase>
   <phrase title="usips_ncmec_failed_lines" version_id="0" version_string="1.0.0"><![CDATA[Rejected Input]]></phrase>
   <phrase title="usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incident]]></phrase>
   <phrase title="usips_ncmec_incident_draft" version_id="0" version_string="1.0.0"><![CDATA[Draft]]></phrase>
@@ -46,5 +52,6 @@ internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
   <phrase title="usips_ncmec_report_type_emergency" version_id="0" version_string="1.0.0"><![CDATA[Emergency report]]></phrase>
   <phrase title="usips_ncmec_report_type_explain" version_id="0" version_string="1.0.0"><![CDATA[Please use emergency reports only for violations of law which require immediate attention.]]></phrase>
   <phrase title="usips_ncmec_report_type_standard" version_id="0" version_string="1.0.0"><![CDATA[Standard report]]></phrase>
-  <phrase title="option_group.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC]]></phrase>
-  <phrase title="option_group.usips_ncmec_explain" version_id="0" version_string="1.0.0"><![CDATA[Settings for NCMEC incident management and reporting.]]></phrase>
+  <phrase title="usips_ncmec_x_created_emregency_report_y" version_id="0" version_string="1.0.0"><![CDATA[{name} created an <strong>emergency report</strong> concerning {title}.]]></phrase>
+  <phrase title="usips_ncmec_you_must_confirm_to_proceed" version_id="0" version_string="1.0.0"><![CDATA[You must confirm your intention to associate users with an incident to proceed.]]></phrase>
+</phrases>
