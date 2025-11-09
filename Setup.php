@@ -18,8 +18,10 @@ class Setup extends AbstractSetup
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
             $table->addColumn('username', 'varchar', 50);
+            $table->addColumn('report_id', 'int')->nullable();
             $table->addColumn('is_finalized', 'tinyint', 1)->setDefault(0);
             $table->addPrimaryKey('incident_id');
+            $table->addKey(['report_id']);
         });
 
         $this->schemaManager()->createTable('xf_usips_ncmec_incident_attachment_data', function(Create $table)
@@ -54,14 +56,12 @@ class Setup extends AbstractSetup
         $this->schemaManager()->createTable('xf_usips_ncmec_report', function(Create $table)
         {
             $table->addColumn('report_id', 'int');
-            $table->addColumn('incident_id', 'int');
             $table->addColumn('created_date', 'int');
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
             $table->addColumn('username', 'varchar', 50);
             $table->addColumn('is_finished', 'tinyint', 1)->setDefault(0);
             $table->addPrimaryKey('report_id');
-            $table->addKey(['incident_id']);
             $table->addKey(['user_id']);
         });
 

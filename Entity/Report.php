@@ -8,7 +8,6 @@ use XF\Mvc\Entity\Structure;
 /**
  * COLUMNS
  * @property int $report_id
- * @property int $incident_id
  * @property int $created_date
  * @property int $last_update_date
  * @property int $user_id
@@ -16,7 +15,7 @@ use XF\Mvc\Entity\Structure;
  * @property bool $is_finished
  *
  * RELATIONS
- * @property-read Incident $Incident
+ * @property-read \XF\Mvc\Entity\AbstractCollection<Incident> $Incidents
  * @property-read \XF\Entity\User $User
  * @property-read \XF\Mvc\Entity\AbstractCollection<\USIPS\NCMEC\Entity\ReportLog> $ReportLogs
  */
@@ -29,7 +28,6 @@ class Report extends Entity
         $structure->primaryKey = 'report_id';
         $structure->columns = [
             'report_id' => ['type' => self::UINT, 'required' => true, 'autoIncrement' => false],
-            'incident_id' => ['type' => self::UINT, 'required' => true],
             'created_date' => ['type' => self::UINT, 'default' => \XF::$time],
             'last_update_date' => ['type' => self::UINT, 'default' => \XF::$time],
             'user_id' => ['type' => self::UINT, 'required' => true],
@@ -37,11 +35,10 @@ class Report extends Entity
             'is_finished' => ['type' => self::BOOL, 'default' => false],
         ];
         $structure->relations = [
-            'Incident' => [
+            'Incidents' => [
                 'entity' => 'USIPS\NCMEC:Incident',
-                'type' => self::TO_ONE,
-                'conditions' => 'incident_id',
-                'primary' => true,
+                'type' => self::TO_MANY,
+                'conditions' => 'report_id',
             ],
             'User' => [
                 'entity' => 'XF:User',

@@ -33,14 +33,8 @@ class Deleter extends AbstractService
 
         try
         {
-            // Prevent deletion when reports exist; compliance requires retaining them
-            $reportCount = $this->db()->fetchOne('
-                SELECT COUNT(*)
-                FROM xf_usips_ncmec_report
-                WHERE incident_id = ?
-            ', $this->incident->incident_id);
-
-            if ($reportCount > 0)
+            // Prevent deletion when the incident is tied to a report
+            if ($this->incident->report_id)
             {
                 throw new PrintableException('Cannot delete incident because associated reports and logs must be retained.');
             }
