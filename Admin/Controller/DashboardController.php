@@ -6,6 +6,7 @@ use USIPS\NCMEC\Entity\Incident;
 use \XF;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\ParameterBag;
+use XF\Mvc\Reply\AbstractReply;
 
 class DashboardController extends AbstractController
 {
@@ -38,12 +39,27 @@ class DashboardController extends AbstractController
                 $connectionStatus = true;
             }
         }
+
+        // Fetch all non-finalized incidents (limit 50)
+        $incidents = $this->finder('USIPS\NCMEC:Incident')
+            ->where('is_finalized', 0)
+            ->order('created_date', 'DESC')
+            ->limit(50)
+            ->fetch();
+
+        // Fetch last 10 reports
+        $reports = $this->finder('USIPS\NCMEC:Report')
+            ->order('created_date', 'DESC')
+            ->limit(10)
+            ->fetch();
         
         $viewParams = [
             'apiConfigured' => $apiConfigured,
             'connectionStatus' => $connectionStatus,
             'connectionError' => $connectionError,
-            'environment' => $environment
+            'environment' => $environment,
+            'incidents' => $incidents,
+            'reports' => $reports
         ];
         return $this->view('USIPS\NCMEC:Dashboard', 'usips_ncmec_dashboard', $viewParams);
     }
@@ -60,7 +76,7 @@ class DashboardController extends AbstractController
 
             $configurer = $this->getConfigurer($config);
 
-            if (!$configurer->test($error))
+            if (!$configurer->test($error, true))
             {
                 return $this->error($error);
             }
@@ -90,7 +106,7 @@ class DashboardController extends AbstractController
 
         $configurer = $this->getConfigurer($config);
 
-        if (!$configurer->test($error))
+        if (!$configurer->test($error, true))
         {
             return $this->error($error);
         }

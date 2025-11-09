@@ -3,8 +3,18 @@
 namespace USIPS\NCMEC\Service\Incident;
 
 use USIPS\NCMEC\Entity\Incident;
+use XF\PrintableException;
 use XF\Service\AbstractService;
 
+/**
+ * Service to handle deletion of NCMEC Incidents.
+ * 
+ * Deletion is only allowed if there are no associated reports,
+ * to comply with data retention requirements.
+ * 
+ * Note: This service only deletes the incident and its direct associations.
+ * Report creation (which handles users, content, and file cleanup) is done elsewhere.
+ */
 class Deleter extends AbstractService
 {
     protected $incident;
@@ -23,20 +33,24 @@ class Deleter extends AbstractService
 
         try
         {
+            // Prevent deletion when reports exist; compliance requires retaining them
+            $reportCount = $this->db()->fetchOne('
+                SELECT COUNT(*)
+                FROM xf_usips_ncmec_report
+                WHERE incident_id = ?
+            ', $this->incident->incident_id);
+
+            if ($reportCount > 0)
+            {
+                throw new PrintableException('Cannot delete incident because associated reports and logs must be retained.');
+            }
+
             // Get user IDs before deleting associations
             $userIds = $this->db()->fetchAllColumn('
                 SELECT user_id 
                 FROM xf_usips_ncmec_incident_user 
                 WHERE incident_id = ?
             ', $this->incident->incident_id);
-
-            // Delete report logs first (leaf table)
-            $this->db()->delete('xf_usips_ncmec_report_log', 'report_id IN (
-                SELECT report_id FROM xf_usips_ncmec_report WHERE incident_id = ?
-            )', $this->incident->incident_id);
-
-            // Delete reports
-            $this->db()->delete('xf_usips_ncmec_report', 'incident_id = ?', $this->incident->incident_id);
 
             // Delete incident attachment data and update counts
             $this->deleteIncidentAttachmentData();

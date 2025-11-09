@@ -53,35 +53,37 @@ class Setup extends AbstractSetup
 
         $this->schemaManager()->createTable('xf_usips_ncmec_report', function(Create $table)
         {
-            $table->addColumn('report_id', 'int')->autoIncrement();
+            $table->addColumn('report_id', 'int');
             $table->addColumn('incident_id', 'int');
             $table->addColumn('created_date', 'int');
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
             $table->addColumn('username', 'varchar', 50);
-            $table->addColumn('ncmec_report_id', 'varchar', 255);
             $table->addColumn('is_finished', 'tinyint', 1)->setDefault(0);
             $table->addPrimaryKey('report_id');
             $table->addKey(['incident_id']);
             $table->addKey(['user_id']);
         });
 
-        $this->schemaManager()->createTable('xf_usips_ncmec_report_log', function(Create $table)
+        $this->schemaManager()->createTable('xf_usips_ncmec_api_log', function(Create $table)
         {
             $table->addColumn('log_id', 'int')->autoIncrement();
-            $table->addColumn('report_id', 'int');
-            $table->addColumn('user_id', 'int');
-            $table->addColumn('username', 'varchar', 50);
-            $table->addColumn('created_date', 'int');
-            $table->addColumn('last_update_date', 'int');
-            $table->addColumn('api_method', 'varchar', 10);
-            $table->addColumn('api_endpoint', 'varchar', 500);
-            $table->addColumn('api_data', 'blob');
-            $table->addColumn('response_code', 'int');
-            $table->addColumn('response_data', 'blob');
+            $table->addColumn('report_id', 'int')->nullable();
+            $table->addColumn('user_id', 'int')->setDefault(0);
+            $table->addColumn('request_date', 'int')->setDefault(0);
+            $table->addColumn('request_method', 'varchar', 10);  // GET, POST
+            $table->addColumn('request_url', 'varchar', 500);  // Full URL including base
+            $table->addColumn('request_endpoint', 'varchar', 100);  // Endpoint path only
+            $table->addColumn('request_data', 'mediumblob');  // JSON serialized request data (NO file data)
+            $table->addColumn('response_code', 'int')->nullable();  // HTTP response code
+            $table->addColumn('response_data', 'mediumblob');  // XML/text response from NCMEC
+            $table->addColumn('environment', 'varchar', 20);  // test, live
+            $table->addColumn('success', 'tinyint', 1)->setDefault(0);  // Whether the API call succeeded
             $table->addPrimaryKey('log_id');
             $table->addKey(['report_id']);
             $table->addKey(['user_id']);
+            $table->addKey(['request_date']);
+            $table->addKey(['environment', 'request_date']);
         });
 
         // Add denormalized column to track incident relationships
@@ -184,7 +186,7 @@ class Setup extends AbstractSetup
         $sm->dropTable('xf_usips_ncmec_incident_attachment_data');
         $sm->dropTable('xf_usips_ncmec_incident_content');
         $sm->dropTable('xf_usips_ncmec_incident_user');
-        $sm->dropTable('xf_usips_ncmec_report_log');
+        $sm->dropTable('xf_usips_ncmec_api_log');
         $sm->dropTable('xf_usips_ncmec_report');
         $sm->dropTable('xf_usips_ncmec_incident');
 

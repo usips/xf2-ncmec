@@ -36,6 +36,7 @@
   <phrase title="usips_ncmec_configure_api" version_id="0" version_string="1.0.0"><![CDATA[Configure API]]></phrase>
   <phrase title="usips_ncmec_confirm_associating_x_users" version_id="0" version_string="1.0.0"><![CDATA[Confirm associating these {total} users with an NCMEC Incident]]></phrase>
   <phrase title="usips_ncmec_confirm_incident_deletion" version_id="0" version_string="1.0.0"><![CDATA[Confirm deletion of draft incident]]></phrase>
+  <phrase title="usips_ncmec_connection_error_x" version_id="0" version_string="1.0.0"><![CDATA[Connection error: {error}]]></phrase>
   <phrase title="usips_ncmec_connection_successful" version_id="0" version_string="1.0.0"><![CDATA[Connection successful.]]></phrase>
   <phrase title="usips_ncmec_content_time_limit" version_id="0" version_string="1.0.0"><![CDATA[Content time limit]]></phrase>
   <phrase title="usips_ncmec_content_time_limit_explain" version_id="0" version_string="1.0.0"><![CDATA[Matched users will be attached to the abuse report regardless of when they were created. The batch will only associate content created in this timeframe. This is useful to limit damage done to old accounts, for instance compromised account.]]></phrase>
@@ -68,14 +69,14 @@ internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
   <phrase title="usips_ncmec_lookup_restart" version_id="0" version_string="1.0.0"><![CDATA[Lookup and Forget]]></phrase>
   <phrase title="usips_ncmec_lookup_submit" version_id="0" version_string="1.0.0"><![CDATA[Lookup]]></phrase>
   <phrase title="usips_ncmec_new_incident_will_be_created" version_id="0" version_string="1.0.0"><![CDATA[A new incident will be created.]]></phrase>
-  <phrase title="usips_ncmec_no_incidents" version_id="0" version_string="1.0.0"><![CDATA[There are no incidents available.]]></phrase>
-  <phrase title="usips_ncmec_no_results" version_id="0" version_string="1.0.0"><![CDATA[No results matched your input.]]></phrase>
   <phrase title="usips_ncmec_quick_actions" version_id="0" version_string="1.0.0"><![CDATA[Immediate Response]]></phrase>
+  <phrase title="usips_ncmec_report" version_id="0" version_string="1.0.0"><![CDATA[Report]]></phrase>
   <phrase title="usips_ncmec_report_logs" version_id="0" version_string="1.0.0"><![CDATA[Report Logs]]></phrase>
   <phrase title="usips_ncmec_report_type" version_id="0" version_string="1.0.0"><![CDATA[Report type]]></phrase>
   <phrase title="usips_ncmec_report_type_emergency" version_id="0" version_string="1.0.0"><![CDATA[Emergency report]]></phrase>
   <phrase title="usips_ncmec_report_type_explain" version_id="0" version_string="1.0.0"><![CDATA[Please use emergency reports only for violations of law which require immediate attention.]]></phrase>
   <phrase title="usips_ncmec_report_type_standard" version_id="0" version_string="1.0.0"><![CDATA[Standard report]]></phrase>
+  <phrase title="usips_ncmec_reports" version_id="0" version_string="1.0.0"><![CDATA[Reports]]></phrase>
   <phrase title="usips_ncmec_save_configuration" version_id="0" version_string="1.0.0"><![CDATA[Save configuration]]></phrase>
   <phrase title="usips_ncmec_test_connection" version_id="0" version_string="1.0.0"><![CDATA[Test connection]]></phrase>
   <phrase title="usips_ncmec_x_created_emregency_report_y" version_id="0" version_string="1.0.0"><![CDATA[{name} created an <strong>emergency report</strong> concerning {title}.]]></phrase>

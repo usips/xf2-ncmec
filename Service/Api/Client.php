@@ -48,6 +48,12 @@ class Client extends AbstractService
     /** @var string */
     protected $baseUrl;
     
+    /** @var int|null */
+    protected $reportId;
+
+    /** @var array|null */
+    protected $lastRequestLogData;
+    
     public function __construct(\XF\App $app, string $username, string $password, string $environment = self::ENVIRONMENT_TEST)
     {
         parent::__construct($app);
@@ -56,6 +62,16 @@ class Client extends AbstractService
         $this->password = $password;
         $this->environment = $environment;
         $this->baseUrl = $this->determineBaseUrl($environment);
+        $this->reportId = null;
+        $this->lastRequestLogData = null;
+    }
+    
+    /**
+     * Set the internal report ID for logging context
+     */
+    public function setReportId(?int $reportId): void
+    {
+        $this->reportId = $reportId;
     }
     
     /**
@@ -91,18 +107,27 @@ class Client extends AbstractService
      * Test connection and authentication with NCMEC API
      * 
      * @param string|null $error Error message if connection fails
+     * @param bool $logSuccess Whether to log successful status checks (default false)
      * @return bool True if connection successful
      */
-    public function testConnection(&$error = null): bool
+    public function testConnection(&$error = null, bool $logSuccess = false): bool
     {
         try
         {
-            $response = $this->get(self::ENDPOINT_STATUS);
+            $response = $this->get(self::ENDPOINT_STATUS, false);
             $xml = $this->parseXml($response);
             
             if (!$xml)
             {
                 $error = \XF::phrase('usips_ncmec_invalid_response_from_server');
+
+                $lastRequestData = $this->getLastRequestLogData() ?? [];
+                $responseBody = $lastRequestData['response_data'] ?? '';
+
+                $this->logFromLastRequest(false, [
+                    'request_data' => ['context' => 'status_check', 'error_type' => 'invalid_xml'],
+                    'response_data' => 'Invalid XML response: ' . $responseBody
+                ]);
                 return false;
             }
             
@@ -113,15 +138,42 @@ class Client extends AbstractService
                 $error = \XF::phrase('usips_ncmec_api_error_x', [
                     'error' => (string)$xml->responseDescription
                 ]);
+
+                $lastRequestData = $this->getLastRequestLogData() ?? [];
+                $responseBody = $lastRequestData['response_data'] ?? '';
+
+                $this->logFromLastRequest(false, [
+                    'request_data' => ['context' => 'status_check', 'error_type' => 'api_error', 'ncmec_code' => $responseCode],
+                    'response_code' => 200,
+                    'response_data' => 'NCMEC error: ' . (string)$xml->responseDescription . ($responseBody !== '' ? " | Body: " . $responseBody : '')
+                ]);
                 return false;
             }
             
+            if ($logSuccess)
+            {
+                $this->logFromLastRequest(true, [
+                    'request_data' => ['context' => 'status_check']
+                ]);
+            }
+
             return true;
         }
         catch (\Exception $e)
         {
             $error = \XF::phrase('usips_ncmec_connection_error_x', [
                 'error' => $e->getMessage()
+            ]);
+
+            $lastRequestData = $this->getLastRequestLogData() ?? [];
+            $responseBody = $lastRequestData['response_data'] ?? '';
+            $responsePayload = $responseBody !== ''
+                ? 'HTTP exception: ' . $e->getMessage() . " | Body: " . $responseBody
+                : $e->getMessage();
+
+            $this->logFromLastRequest(false, [
+                'request_data' => ['context' => 'status_check', 'error_type' => 'exception'],
+                'response_data' => $responsePayload
             ]);
             return false;
         }
@@ -224,11 +276,13 @@ class Client extends AbstractService
      * Make a GET request to the API
      * 
      * @param string $endpoint API endpoint (relative to base URL)
+     * @param bool $shouldLog Whether to log this request (default true, false for successful /status)
      * @return string Response body
      * @throws \Exception
      */
-    protected function get(string $endpoint): string
+    protected function get(string $endpoint, bool $shouldLog = true): string
     {
+        $this->resetLastRequestLogData();
         $url = $this->baseUrl . $endpoint;
         
         $ch = curl_init();
@@ -243,6 +297,17 @@ class Client extends AbstractService
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
         curl_close($ch);
+        
+        $success = empty($error) && $httpCode === 200;
+
+        $responseData = $response !== false ? $response : ($error ?: '');
+
+        $this->storeLastRequestLogData('GET', $endpoint, [], $httpCode, $responseData, $success);
+        
+        if ($shouldLog)
+        {
+            $this->logFromLastRequest($success);
+        }
         
         if ($error)
         {
@@ -267,6 +332,7 @@ class Client extends AbstractService
      */
     protected function post(string $endpoint, string $xmlBody): string
     {
+        $this->resetLastRequestLogData();
         $url = $this->baseUrl . $endpoint;
         
         $ch = curl_init();
@@ -287,6 +353,15 @@ class Client extends AbstractService
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
         curl_close($ch);
+        
+    $success = empty($error) && $httpCode === 200;
+
+    $requestData = ['xml_length' => strlen($xmlBody)];
+    $responseData = $response !== false ? $response : ($error ?: '');
+
+    $this->storeLastRequestLogData('POST', $endpoint, $requestData, $httpCode, $responseData, $success);
+
+    $this->logFromLastRequest($success);
         
         if ($error)
         {
@@ -311,6 +386,7 @@ class Client extends AbstractService
      */
     protected function postMultipart(string $endpoint, array $fields): string
     {
+        $this->resetLastRequestLogData();
         $url = $this->baseUrl . $endpoint;
         
         $ch = curl_init();
@@ -328,6 +404,30 @@ class Client extends AbstractService
         $error = curl_error($ch);
         curl_close($ch);
         
+        $success = empty($error) && $httpCode === 200;
+
+        $logData = [];
+        foreach ($fields as $key => $value)
+        {
+            if ($value instanceof \CURLFile)
+            {
+                $logData[$key] = [
+                    'filename' => basename($value->getFilename()),
+                    'mime' => $value->getMimeType(),
+                ];
+            }
+            else
+            {
+                $logData[$key] = $value;
+            }
+        }
+
+        $responseData = $response !== false ? $response : ($error ?: '');
+
+        $this->storeLastRequestLogData('POST', $endpoint, $logData, $httpCode, $responseData, $success);
+
+        $this->logFromLastRequest($success);
+        
         if ($error)
         {
             throw new \Exception($error);
@@ -341,6 +441,74 @@ class Client extends AbstractService
         return $response;
     }
     
+    protected function resetLastRequestLogData(): void
+    {
+        $this->lastRequestLogData = null;
+    }
+
+    protected function storeLastRequestLogData(
+        string $method,
+        string $endpoint,
+        array $requestData,
+        ?int $responseCode,
+        string $responseData,
+        bool $success
+    ): void
+    {
+        $this->lastRequestLogData = [
+            'method' => $method,
+            'endpoint' => $endpoint,
+            'request_data' => $requestData,
+            'response_code' => $responseCode,
+            'response_data' => $responseData,
+            'success' => $success,
+        ];
+    }
+
+    protected function getLastRequestLogData(): ?array
+    {
+        return $this->lastRequestLogData;
+    }
+
+    protected function logFromLastRequest(bool $success, array $override = []): void
+    {
+        $data = $this->lastRequestLogData ?? [
+            'method' => 'GET',
+            'endpoint' => self::ENDPOINT_STATUS,
+            'request_data' => [],
+            'response_code' => null,
+            'response_data' => '',
+        ];
+
+        $method = $override['method'] ?? $data['method'];
+        $endpoint = $override['endpoint'] ?? $data['endpoint'];
+
+        $requestData = $data['request_data'] ?? [];
+        if (isset($override['request_data']))
+        {
+            if (is_array($override['request_data']))
+            {
+                $requestData = array_merge($requestData, $override['request_data']);
+            }
+            else
+            {
+                $requestData = $override['request_data'];
+            }
+        }
+
+        $responseCode = $override['response_code'] ?? $data['response_code'];
+        $responseData = $override['response_data'] ?? $data['response_data'];
+
+        $this->logRequest(
+            $method,
+            $endpoint,
+            $requestData,
+            $responseCode,
+            $responseData,
+            $success
+        );
+    }
+
     /**
      * Parse XML string into SimpleXMLElement
      * 
@@ -374,5 +542,44 @@ class Client extends AbstractService
         {
             libxml_use_internal_errors(false);
         }
+    }
+    
+    /**
+     * Log an API request to the database
+     * 
+     * @param string $method HTTP method (GET, POST)
+     * @param string $endpoint Endpoint path (e.g., /submit, /status)
+     * @param array $requestData Request data (NEVER include file data)
+     * @param int|null $responseCode HTTP response code
+     * @param string $responseData Response body or error message
+     * @param bool $success Whether the request succeeded
+     */
+    protected function logRequest(
+        string $method,
+        string $endpoint,
+        array $requestData,
+        ?int $responseCode,
+        string $responseData,
+        bool $success
+    ): void
+    {
+        $visitor = \XF::visitor();
+        
+        /** @var \USIPS\NCMEC\Entity\ApiLog $log */
+        $log = $this->em()->create('USIPS\NCMEC:ApiLog');
+        $log->bulkSet([
+            'report_id' => $this->reportId,
+            'user_id' => $visitor->user_id,
+            'request_date' => \XF::$time,
+            'request_method' => $method,
+            'request_url' => $this->baseUrl . $endpoint,
+            'request_endpoint' => $endpoint,
+            'request_data' => $requestData,
+            'response_code' => $responseCode,
+            'response_data' => $responseData,
+            'environment' => $this->environment,
+            'success' => $success,
+        ]);
+        $log->save();
     }
 }

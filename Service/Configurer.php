@@ -77,9 +77,10 @@ class Configurer extends AbstractService
      * Test connection and authentication with NCMEC API
      * 
      * @param string|null $error Error message if connection fails
+     * @param bool $logSuccess Whether to log successful status checks (default false)
      * @return bool True if connection successful
      */
-    public function test(&$error = null): bool
+    public function test(&$error = null, bool $logSuccess = false): bool
     {
         if (!$this->hasActiveConfig())
         {
@@ -94,7 +95,7 @@ class Configurer extends AbstractService
             return false;
         }
 
-        return $client->testConnection($error);
+        return $client->testConnection($error, $logSuccess);
     }
 
     /**

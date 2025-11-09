@@ -5,6 +5,21 @@ namespace USIPS\NCMEC\Entity;
 use XF\Mvc\Entity\Entity;
 use XF\Mvc\Entity\Structure;
 
+/**
+ * COLUMNS
+ * @property int $report_id
+ * @property int $incident_id
+ * @property int $created_date
+ * @property int $last_update_date
+ * @property int $user_id
+ * @property string $username
+ * @property bool $is_finished
+ *
+ * RELATIONS
+ * @property-read Incident $Incident
+ * @property-read \XF\Entity\User $User
+ * @property-read \XF\Mvc\Entity\AbstractCollection<\USIPS\NCMEC\Entity\ReportLog> $ReportLogs
+ */
 class Report extends Entity
 {
     public static function getStructure(Structure $structure)
@@ -13,13 +28,12 @@ class Report extends Entity
         $structure->shortName = 'USIPS\NCMEC:Report';
         $structure->primaryKey = 'report_id';
         $structure->columns = [
-            'report_id' => ['type' => self::UINT, 'autoIncrement' => true],
+            'report_id' => ['type' => self::UINT, 'required' => true, 'autoIncrement' => false],
             'incident_id' => ['type' => self::UINT, 'required' => true],
             'created_date' => ['type' => self::UINT, 'default' => \XF::$time],
             'last_update_date' => ['type' => self::UINT, 'default' => \XF::$time],
             'user_id' => ['type' => self::UINT, 'required' => true],
             'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
-            'ncmec_report_id' => ['type' => self::STR, 'maxLength' => 255],
             'is_finished' => ['type' => self::BOOL, 'default' => false],
         ];
         $structure->relations = [
