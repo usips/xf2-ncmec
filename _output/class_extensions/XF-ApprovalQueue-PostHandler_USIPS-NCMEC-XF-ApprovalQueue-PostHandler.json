@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\ApprovalQueue\\PostHandler",
+    "to_class": "USIPS\\NCMEC\\XF\\ApprovalQueue\\PostHandler",
+    "execute_order": 10,
+    "active": true
+}

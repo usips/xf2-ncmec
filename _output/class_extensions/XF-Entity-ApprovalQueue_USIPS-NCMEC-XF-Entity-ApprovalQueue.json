@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Entity\\ApprovalQueue",
+    "to_class": "USIPS\\NCMEC\\XF\\Entity\\ApprovalQueue",
+    "execute_order": 10,
+    "active": true
+}

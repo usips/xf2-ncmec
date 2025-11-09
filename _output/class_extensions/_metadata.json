@@ -2,8 +2,23 @@
     "XF-Admin-Controller-UserController_USIPS-NCMEC-XF-Admin-Controller-UserController.json": {
         "hash": "4cd8e316cd8a856f153e9eb046641a4f"
     },
+    "XF-ApprovalQueue-PostHandler_USIPS-NCMEC-XF-ApprovalQueue-PostHandler.json": {
+        "hash": "69d1041a4e0cc51884590b386f4d6d40"
+    },
+    "XF-ApprovalQueue-ProfilePostCommentHandler_USIPS-NCMEC-XF-ApprovalQueue-ProfilePostCommentHandler.json": {
+        "hash": "49fb0ee76ae01167dfbe56f653f869d1"
+    },
+    "XF-ApprovalQueue-ProfilePostHandler_USIPS-NCMEC-XF-ApprovalQueue-ProfilePostHandler.json": {
+        "hash": "87f54e4e7da3e5d083e572cbd1c1084a"
+    },
+    "XF-ApprovalQueue-ThreadHandler_USIPS-NCMEC-XF-ApprovalQueue-ThreadHandler.json": {
+        "hash": "f4fb63ff80418b28765ed517f5c62bf3"
+    },
     "XF-ControllerPlugin-ReportPlugin_USIPS-NCMEC-XF-ControllerPlugin-ReportPlugin.json": {
         "hash": "72e3d85086a6da286b998208933a3179"
+    },
+    "XF-Entity-ApprovalQueue_USIPS-NCMEC-XF-Entity-ApprovalQueue.json": {
+        "hash": "065168d7c32f5224ebc1e0eadecc5c60"
     },
     "XF-Entity-AttachmentData_USIPS-NCMEC-XF-Entity-AttachmentData.json": {
         "hash": "430c3e3a7445b8691640cce3fc49cada"

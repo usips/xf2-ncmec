@@ -287,6 +287,12 @@
         "version_string": "1.0.0",
         "hash": "0b85f9864a7fe429139d82721e581378"
     },
+    "usips_ncmec_flag_csam.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "08ada5559807333a2747c21ba948247a"
+    },
     "usips_ncmec_incident.txt": {
         "global_cache": false,
         "version_id": 0,

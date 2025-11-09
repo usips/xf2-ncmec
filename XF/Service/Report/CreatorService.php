@@ -3,8 +3,10 @@
 namespace USIPS\NCMEC\XF\Service\Report;
 
 use Throwable;
+use XF\Entity\Post;
 use XF\Entity\Report;
 use XF\Entity\ReportComment;
+use XF\Entity\Thread;
 use XF\Mvc\Entity\Entity;
 use XF\Service\Report\NotifierService;
 
@@ -71,6 +73,9 @@ class CreatorService extends XFCP_CreatorService
             return;
         }
 
+        $threadToModerate = $this->identifyThreadForEmergencyModeration($content);
+        $skipPostMessageState = ($threadToModerate && $content instanceof Post);
+
         $stateColumns = [
             'message_state',
             'discussion_state',
@@ -88,6 +93,11 @@ class CreatorService extends XFCP_CreatorService
         foreach ($stateColumns as $column)
         {
             if (!$content->isValidColumn($column))
+            {
+                continue;
+            }
+
+            if ($skipPostMessageState && $column === 'message_state')
             {
                 continue;
             }
@@ -120,6 +130,61 @@ class CreatorService extends XFCP_CreatorService
             }
         }
 
+        if ($threadToModerate)
+        {
+            $this->moderateThreadForEmergency($threadToModerate);
+        }
+
         $this->usipsEmergencyContent = null;
+    }
+
+    protected function identifyThreadForEmergencyModeration(Entity $content): ?Thread
+    {
+        if (!($content instanceof Post))
+        {
+            return null;
+        }
+
+        $thread = $content->Thread;
+        if (!$thread || !$thread->exists())
+        {
+            return null;
+        }
+
+        if (!$content->isFirstPost())
+        {
+            return null;
+        }
+
+        if ($content->getExistingValue('message_state') !== 'visible')
+        {
+            return null;
+        }
+
+        if (!$thread->isValidColumn('discussion_state'))
+        {
+            return null;
+        }
+
+        if ($thread->discussion_state !== 'visible')
+        {
+            return null;
+        }
+
+        return $thread;
+    }
+
+    protected function moderateThreadForEmergency(Thread $thread): void
+    {
+        try
+        {
+            $thread->discussion_state = 'moderated';
+            $thread->rebuildReplyCount();
+            $thread->save(true, false);
+        }
+        catch (Throwable $e)
+        {
+            \XF::logException($e, false, 'Failed to moderate thread for emergency report: ');
+        }
     }
 }

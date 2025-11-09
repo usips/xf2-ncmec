@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\ApprovalQueue\\ProfilePostCommentHandler",
+    "to_class": "USIPS\\NCMEC\\XF\\ApprovalQueue\\ProfilePostCommentHandler",
+    "execute_order": 10,
+    "active": true
+}
