@@ -3,14 +3,18 @@
 namespace USIPS\NCMEC\Service;
 
 use XF\Service\AbstractService;
+use USIPS\NCMEC\Service\Api\Client as ApiClient;
 
+/**
+ * NCMEC API Configuration Service
+ * 
+ * Handles configuration management for NCMEC API credentials.
+ * For actual API calls, use the Api\Client service.
+ */
 class Configurer extends AbstractService
 {
     public const ENVIRONMENT_TEST = 'test';
     public const ENVIRONMENT_LIVE = 'live';
-
-    public const BASE_URL_TEST = 'https://exttest.cybertip.org/ispws';
-    public const BASE_URL_LIVE = 'https://report.cybertip.org/ispws';
 
     protected $config;
 
@@ -26,31 +30,56 @@ class Configurer extends AbstractService
         $this->config = $config;
     }
 
-    public function getConfig()
+    /**
+     * Get current configuration
+     */
+    public function getConfig(): array
     {
         return $this->config;
     }
 
-    public function hasActiveConfig()
+    /**
+     * Check if credentials are configured
+     */
+    public function hasActiveConfig(): bool
     {
         return !empty($this->config['username']) && !empty($this->config['password']);
     }
 
-    public function getBaseUrl()
+    /**
+     * Get the environment from config
+     */
+    public function getEnvironment(): string
     {
-        $environment = $this->config['environment'] ?? self::ENVIRONMENT_TEST;
-
-        if ($environment === self::ENVIRONMENT_LIVE)
-        {
-            return self::BASE_URL_LIVE;
-        }
-        else
-        {
-            return self::BASE_URL_TEST;
-        }
+        return $this->config['environment'] ?? self::ENVIRONMENT_TEST;
     }
 
-    public function test(&$error = null)
+    /**
+     * Get an API client instance with current configuration
+     * 
+     * @return ApiClient|null API client or null if not configured
+     */
+    public function getApiClient(): ?ApiClient
+    {
+        if (!$this->hasActiveConfig())
+        {
+            return null;
+        }
+
+        return $this->service('USIPS\NCMEC:Api\Client',
+            $this->config['username'],
+            $this->config['password'],
+            $this->getEnvironment()
+        );
+    }
+
+    /**
+     * Test connection and authentication with NCMEC API
+     * 
+     * @param string|null $error Error message if connection fails
+     * @return bool True if connection successful
+     */
+    public function test(&$error = null): bool
     {
         if (!$this->hasActiveConfig())
         {
@@ -58,113 +87,20 @@ class Configurer extends AbstractService
             return false;
         }
 
-        try
+        $client = $this->getApiClient();
+        if (!$client)
         {
-            $response = $this->makeRequest('/status');
-            
-            // Parse XML response
-            $xml = $this->parseXml($response);
-            
-            if (!$xml)
-            {
-                $error = \XF::phrase('usips_ncmec_invalid_response_from_server');
-                return false;
-            }
-
-            $responseCode = (string)$xml->responseCode;
-            
-            if ($responseCode !== '0')
-            {
-                $error = \XF::phrase('usips_ncmec_api_error_x', [
-                    'error' => (string)$xml->responseDescription
-                ]);
-                return false;
-            }
-
-            return true;
-        }
-        catch (\Exception $e)
-        {
-            $error = \XF::phrase('usips_ncmec_connection_error_x', [
-                'error' => $e->getMessage()
-            ]);
+            $error = \XF::phrase('usips_ncmec_api_not_configured');
             return false;
         }
+
+        return $client->testConnection($error);
     }
 
-    public function makeRequest($endpoint, $method = 'GET', $body = null)
-    {
-        $url = $this->getBaseUrl() . $endpoint;
-        
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->config['username'] . ':' . $this->config['password']);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        
-        if ($method === 'POST')
-        {
-            curl_setopt($ch, CURLOPT_POST, true);
-            if ($body)
-            {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                    'Content-Type: application/xml',
-                    'Content-Length: ' . strlen($body)
-                ]);
-            }
-        }
-        
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
-        
-        if ($error)
-        {
-            throw new \Exception($error);
-        }
-        
-        if ($httpCode !== 200)
-        {
-            throw new \Exception("HTTP Error: {$httpCode}");
-        }
-        
-        return $response;
-    }
-
-    public function parseXml($xmlString)
-    {
-        if (empty($xmlString))
-        {
-            return null;
-        }
-
-        // Suppress XML parsing errors and handle them manually
-        libxml_use_internal_errors(true);
-        
-        try
-        {
-            $xml = simplexml_load_string($xmlString);
-            
-            if ($xml === false)
-            {
-                $errors = libxml_get_errors();
-                libxml_clear_errors();
-                return null;
-            }
-            
-            return $xml;
-        }
-        finally
-        {
-            libxml_use_internal_errors(false);
-        }
-    }
-
-    public function saveConfig()
+    /**
+     * Save configuration to options
+     */
+    public function saveConfig(): void
     {
         /** @var \XF\Repository\Option $optionRepo */
         $optionRepo = $this->repository('XF:Option');
