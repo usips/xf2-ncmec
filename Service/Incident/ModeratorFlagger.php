@@ -2,9 +2,15 @@
 
 namespace USIPS\NCMEC\Service\Incident;
 
+use USIPS\NCMEC\Entity\Incident;
+use XF\Entity\ApprovalQueue;
+use XF\Entity\Post;
+use XF\Entity\Report;
+use XF\Entity\Thread;
 use XF\Entity\User;
 use XF\Mvc\Entity\Entity;
 use XF\Service\AbstractService;
+use XF\Service\Report\CommenterService;
 
 class ModeratorFlagger extends AbstractService
 {
@@ -21,18 +27,18 @@ class ModeratorFlagger extends AbstractService
         $this->contentUser = $this->resolveContentUser();
     }
 
-    public function flag(): void
+    public function flag(): ?Incident
     {
         $actor = \XF::visitor();
         if (!$actor->user_id)
         {
-            return;
+            return null;
         }
 
         $contentUser = $this->contentUser;
         if (!$contentUser)
         {
-            return;
+            return null;
         }
 
         /** @var Creator $creator */
@@ -50,7 +56,7 @@ class ModeratorFlagger extends AbstractService
 
         if (!$incident)
         {
-            return;
+            return null;
         }
 
         $primaryItem = $this->buildContentItem($this->content, $contentUser);
@@ -59,14 +65,14 @@ class ModeratorFlagger extends AbstractService
 
         try
         {
+            $additionalItems = $this->collectPendingApprovalContentItems($contentUser);
+            if ($additionalItems)
+            {
+                $contentItems = $this->mergeContentItems($contentItems, $additionalItems);
+            }
+
             $creator->associateContentByIds($contentItems);
             $creator->associateUsersByIds([$contentUser->user_id]);
-
-            $collectedItems = $creator->collectUserContentWithinTimeLimit($contentUser->user_id, 0);
-            if (!empty($collectedItems))
-            {
-                $contentItems = $this->mergeContentItems($contentItems, $collectedItems);
-            }
         }
         catch (\Throwable $e)
         {
@@ -76,30 +82,15 @@ class ModeratorFlagger extends AbstractService
         $incident->fastUpdate('last_update_date', \XF::$time);
 
         $this->queueAssociationJobs($incident->incident_id, $contentUser->user_id, $contentItems);
+
+        $this->closeReportsForContent($contentItems, $incident);
+
+        return $incident;
     }
 
     protected function resolveContentUser(): ?User
     {
-        if ($this->content instanceof User)
-        {
-            return $this->content;
-        }
-
-        if (isset($this->content->User) && $this->content->User instanceof User)
-        {
-            return $this->content->User;
-        }
-
-        if ($this->content->isValidColumn('user_id'))
-        {
-            $userId = (int)$this->content->get('user_id');
-            if ($userId)
-            {
-                return $this->em()->find('XF:User', $userId);
-            }
-        }
-
-        return null;
+        return $this->extractContentOwner($this->content);
     }
 
     protected function buildContentItem(Entity $entity, User $owner): array
@@ -163,5 +154,158 @@ class ModeratorFlagger extends AbstractService
         }
 
         return array_values($indexed);
+    }
+
+    protected function collectPendingApprovalContentItems(User $user): array
+    {
+        $items = [];
+
+        /** @var \XF\Mvc\Entity\Finder $finder */
+        $finder = $this->finder('XF:ApprovalQueue');
+        $finder->with(['Content', 'Content.User']);
+
+        /** @var ApprovalQueue $queueItem */
+        foreach ($finder->fetch() as $queueItem)
+        {
+            $content = $queueItem->Content;
+            if (!$content)
+            {
+                continue;
+            }
+
+            $owner = $this->extractContentOwner($content);
+            if (!$owner || $owner->user_id !== $user->user_id)
+            {
+                continue;
+            }
+
+            $items[] = $this->buildContentItem($content, $owner);
+        }
+
+        return $items;
+    }
+
+    protected function extractContentOwner(Entity $entity): ?User
+    {
+        if ($entity instanceof User)
+        {
+            return $entity;
+        }
+
+        if (isset($entity->User) && $entity->User instanceof User)
+        {
+            return $entity->User;
+        }
+
+        if ($entity->isValidColumn('user_id'))
+        {
+            $userId = (int) $entity->get('user_id');
+            if ($userId)
+            {
+                return $this->em()->find('XF:User', $userId);
+            }
+        }
+
+        return null;
+    }
+
+    protected function closeReportsForContent(array $contentItems, Incident $incident): void
+    {
+        $processed = [];
+
+        foreach ($contentItems as $item)
+        {
+            if (empty($item['content_type']) || empty($item['content_id']))
+            {
+                continue;
+            }
+
+            $this->closeReportsByContentRef($item['content_type'], $item['content_id'], $incident, $processed);
+
+            if ($item['content_type'] !== 'thread')
+            {
+                continue;
+            }
+
+            $thread = $this->em()->find('XF:Thread', (int) $item['content_id']);
+            if (!$thread instanceof Thread || !$thread->first_post_id)
+            {
+                continue;
+            }
+
+            $firstPost = $thread->FirstPost;
+            if (!$firstPost instanceof Post)
+            {
+                $firstPost = $this->em()->find('XF:Post', $thread->first_post_id);
+            }
+
+            if (!$firstPost instanceof Post)
+            {
+                continue;
+            }
+
+            $threadOwnerId = (int) ($item['user_id'] ?? 0);
+            if ($threadOwnerId && $firstPost->user_id !== $threadOwnerId)
+            {
+                continue;
+            }
+
+            $this->closeReportsByContentRef('post', $firstPost->post_id, $incident, $processed);
+        }
+    }
+
+    protected function closeReportsByContentRef(string $contentType, int $contentId, Incident $incident, array &$processed): void
+    {
+        $reports = $this->finder('XF:Report')
+            ->where('content_type', $contentType)
+            ->where('content_id', $contentId)
+            ->where('report_state', ['open', 'assigned'])
+            ->fetch();
+
+        /** @var Report $report */
+        foreach ($reports as $report)
+        {
+            if (isset($processed[$report->report_id]))
+            {
+                continue;
+            }
+
+            $this->closeReport($report, $incident);
+            $processed[$report->report_id] = true;
+        }
+    }
+
+    protected function closeReport(Report $report, Incident $incident): void
+    {
+        $commentMessage = $this->buildIncidentReferenceMessage($incident);
+
+        try
+        {
+            /** @var CommenterService $commenter */
+            $commenter = $this->service(CommenterService::class, $report);
+            $commenter->setMessage($commentMessage);
+            $commenter->setReportState('resolved');
+
+            if (!$commenter->validate($errors))
+            {
+                \XF::logError('Failed to close report #' . $report->report_id . ' while flagging CSAM: ' . implode('; ', $errors));
+                return;
+            }
+
+            $commenter->save();
+            $commenter->sendNotifications();
+        }
+        catch (\Throwable $e)
+        {
+            \XF::logException($e, false, 'Failed to close report while flagging CSAM: ');
+        }
+    }
+
+    protected function buildIncidentReferenceMessage(Incident $incident): string
+    {
+    $url = $this->app->router('admin')->buildLink('canonical:ncmec-incidents/view', $incident);
+        $title = \XF::escapeString($incident->title);
+
+        return sprintf('Flagged as CSAM in [url="%s"]%s[/url].', $url, $title);
     }
 }

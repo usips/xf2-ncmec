@@ -40,7 +40,7 @@ class ApprovalQueue extends XFCP_ApprovalQueue
             return $actions;
         }
 
-        $actions['flag_csam'] = \XF::phrase('usips_ncmec_flag_csam');
+        $actions['flag_csam'] = \XF::phrase('report_state.flag_as_csam');
 
         return $actions;
     }

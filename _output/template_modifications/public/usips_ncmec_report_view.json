@@ -1,0 +1,9 @@
+{
+    "template": "report_view",
+    "description": "Adds the \"Flag as CSAM\" option to the Report view.",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "preg_replace",
+    "find": "/(<xf:radiorow[^>]*name=\"report_state\"[^>]*>)(.*?)(<\\/xf:radiorow>)/s",
+    "replace": "<xf:include template=\"usips_ncmec_report_state\" />"
+}

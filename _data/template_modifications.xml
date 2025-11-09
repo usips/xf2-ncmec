@@ -11,6 +11,10 @@
     <replace><![CDATA[{{ phrase('unassociated') }}
 									<span class="dataList-secondRow">{$attachment.getContentTypePhrase()|parens}</span>]]></replace>
   </modification>
+  <modification type="public" template="report_view" modification_key="usips_ncmec_report_view" description="Adds the &quot;Flag as CSAM&quot; option to the Report view." execution_order="10" enabled="1" action="preg_replace">
+    <find><![CDATA[/(<xf:radiorow[^>]*name="report_state"[^>]*>)(.*?)(<\/xf:radiorow>)/s]]></find>
+    <replace><![CDATA[<xf:include template="usips_ncmec_report_state" />]]></replace>
+  </modification>
   <modification type="admin" template="user_batch_update_confirm" modification_key="usips_ncmec_user_batch_update_confirm" description="Adds the NCMEC Incident action to the User Batch Update Confirmation page." execution_order="10" enabled="1" action="preg_replace">
     <find><![CDATA[#</xf:form>(?!.*</xf:form>)#s
 ]]></find>

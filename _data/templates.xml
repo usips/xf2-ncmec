@@ -704,4 +704,11 @@
 		<xf:submitrow submit="{{ phrase('report_verb') }}" />
 	</div>
 </xf:form>]]></template>
+  <template type="public" title="usips_ncmec_report_state" version_id="0" version_string="1.0.0"><![CDATA[<xf:radiorow name="report_state" label="{{ phrase('status') }}">
+	<xf:option value="" label="{{ phrase('do_not_change') }}" selected="true" />
+	<xf:option value="assigned" label="{{ $report.report_state == 'assigned' ? phrase('unassign') : phrase('report_state.assigned') }}" />
+	<xf:option value="resolved" label="{{ phrase('report_state.resolved') }}" />
+	<xf:option value="rejected" label="{{ phrase('report_state.rejected') }}" />
+	<xf:option value="flag_as_csam" label="{{ phrase('report_state.flag_as_csam') }}" />
+</xf:radiorow>]]></template>
 </templates>
