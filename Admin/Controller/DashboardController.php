@@ -16,8 +16,88 @@ class DashboardController extends AbstractController
 
     public function actionIndex(ParameterBag $params)
     {
-        $viewParams = [];
+        $configurer = $this->getConfigurer();
+        
+        $apiConfigured = $configurer->hasActiveConfig();
+        $connectionStatus = false;
+        $connectionError = null;
+        $environment = null;
+        
+        if ($apiConfigured)
+        {
+            $config = $configurer->getConfig();
+            $environment = $config['environment'] ?? 'test';
+            
+            // Test connection
+            if (!$configurer->test($error))
+            {
+                $connectionError = $error;
+            }
+            else
+            {
+                $connectionStatus = true;
+            }
+        }
+        
+        $viewParams = [
+            'apiConfigured' => $apiConfigured,
+            'connectionStatus' => $connectionStatus,
+            'connectionError' => $connectionError,
+            'environment' => $environment
+        ];
         return $this->view('USIPS\NCMEC:Dashboard', 'usips_ncmec_dashboard', $viewParams);
+    }
+
+    public function actionConfig()
+    {
+        if ($this->isPost())
+        {
+            $config = $this->filter([
+                'username' => 'str',
+                'password' => 'str',
+                'environment' => 'str'
+            ]);
+
+            $configurer = $this->getConfigurer($config);
+
+            if (!$configurer->test($error))
+            {
+                return $this->error($error);
+            }
+
+            $viewParams = [
+                'config' => $config,
+                'environment' => $config['environment']
+            ];
+            return $this->view('USIPS\NCMEC:Config\Confirm', 'usips_ncmec_config_confirm', $viewParams);
+        }
+        else
+        {
+            $viewParams = [];
+            return $this->view('USIPS\NCMEC:Config', 'usips_ncmec_config', $viewParams);
+        }
+    }
+
+    public function actionConfigSave()
+    {
+        $this->assertPostOnly();
+
+        $config = $this->filter([
+            'username' => 'str',
+            'password' => 'str',
+            'environment' => 'str'
+        ]);
+
+        $configurer = $this->getConfigurer($config);
+
+        if (!$configurer->test($error))
+        {
+            return $this->error($error);
+        }
+
+        $configurer->saveConfig();
+
+        return $this->redirect($this->buildLink('ncmec'));
     }
 
     public function actionRegistrationToggle()
@@ -76,5 +156,15 @@ class DashboardController extends AbstractController
         {
             return $this->error(\XF::phrase('this_action_is_only_available_via_post'));
         }
+    }
+
+    /**
+     * @param array|null $config
+     *
+     * @return \USIPS\NCMEC\Service\Configurer
+     */
+    protected function getConfigurer(array $config = null)
+    {
+        return $this->service('USIPS\NCMEC:Configurer', $config);
     }
 }

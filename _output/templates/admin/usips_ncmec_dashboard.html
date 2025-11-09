@@ -1,15 +1,43 @@
 <xf:title>{{ phrase('usips_ncmec_dashboard') }}</xf:title>
 
-<xf:pageaction if="$es">
-	<xf:button href="{{ link('enhanced-search/config') }}" icon="config" overlay="true">{{ phrase('xfes_reconfigure') }}
+<xf:pageaction>
+	<xf:button href="{{ link('ncmec/config') }}" icon="config" overlay="true">{{ phrase('usips_ncmec_configure_api') }}
 	</xf:button>
 </xf:pageaction>
+
+<xf:if is="!$apiConfigured">
+	<div class="blockMessage blockMessage--important blockMessage--iconic">
+		{{ phrase('usips_ncmec_api_not_configured') }}
+	</div>
+<xf:elseif is="$connectionError" />
+	<div class="blockMessage blockMessage--error blockMessage--iconic">
+		{$connectionError}
+	</div>
+</xf:if>
+
+<div class="block">
+	<div class="block-container">
+		<h2 class="block-header">{{ phrase('usips_ncmec_api_status') }}</h2>
+		<div class="block-body">
+			<xf:formrow label="{{ phrase('usips_ncmec_api_configured') }}">
+				{{ $apiConfigured ? phrase('yes') : phrase('no') }}
+			</xf:formrow>
+
+			<xf:if is="$apiConfigured">
+				<xf:formrow label="{{ phrase('usips_ncmec_environment') }}">
+					{{ $environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
+				</xf:formrow>
+			</xf:if>
+		</div>
+	</div>
+</div>
 
 <div class="block">
 	<div class="block-container">
 		<h2 class="block-header">{{ phrase('usips_ncmec_quick_actions') }}</h2>
 		<div class="block-body">
 			<xf:formrow label="{{ phrase('enable_registration') }}" rowtype="button">
+				{{ $xf.options.registrationSetup.enabled ? phrase('yes') : phrase('no') }}
 				<xf:button href="{{ link('ncmec/registration/toggle') }}" class="button--link" data-xf-click="switch"
 					data-sk-enable="{{ phrase('enable') }}" data-sk-disable="{{ phrase('disable') }}">
 					{{ $xf.options.registrationSetup.enabled ? phrase('disable') : phrase('enable') }}
@@ -18,61 +46,12 @@
 
 			<xf:if is="is_addon_active('Siropu/ReferralContests')">
 				<xf:formrow label="{{ phrase('option.siropuReferralContestsInvitationOnly') }}" rowtype="button">
+					{{ $xf.options.siropuReferralContestsInvitationOnly ? phrase('yes') : phrase('no') }}
 					<xf:button href="{{ link('ncmec/invite-only/toggle') }}" class="button--link" data-xf-click="switch"
 						data-sk-enable="{{ phrase('enable') }}" data-sk-disable="{{ phrase('disable') }}">
 						{{ $xf.options.siropuReferralContestsInvitationOnly ? phrase('disable') : phrase('enable') }}
 					</xf:button>
 				</xf:formrow>
-			</xf:if>
-
-
-			<xf:formrow label="{{ phrase('xfes_elasticsearch_server') }}">{$es.printableBaseUrl}/{$es.index}
-			</xf:formrow>
-
-			<xf:if is="$version">
-				<xf:formrow label="{{ phrase('xfes_version') }}">{$version}</xf:formrow>
-
-				<xf:if is="$stats">
-					<xf:formrow label="{{ phrase('xfes_stats') }}">
-						<dl class="pairs pairs--columns pairs--fixedSmall">
-							<dt>{{ phrase('xfes_documents') }}</dt>
-							<dd>{$stats.docs.count|number} {{ parens($stats.store.size_in_bytes|file_size) }}</dd>
-						</dl>
-						<dl class="pairs pairs--columns pairs--fixedSmall">
-							<dt>{{ phrase('xfes_index_updates') }}</dt>
-							<dd>{$stats.indexing.index_total|number}</dd>
-						</dl>
-						<dl class="pairs pairs--columns pairs--fixedSmall">
-							<dt>{{ phrase('xfes_searches') }}</dt>
-							<dd>
-								{$stats.search.query_total|number}
-								<xf:if is="$stats.search.query_total">
-									{{ parens(phrase('xfes_x_milliseconds_average', {'time':
-									number(($stats.search.query_time_in_millis + $stats.search.fetch_time_in_millis) /
-									($stats.search.query_total + $stats.search.fetch_total))})) }}
-								</xf:if>
-							</dd>
-						</dl>
-						<dl class="pairs pairs--columns pairs--fixedSmall">
-							<dt>{{ phrase('xfes_allocated_memory') }}</dt>
-							<dd>
-								{$stats.segments.memory_in_bytes|file_size}
-							</dd>
-						</dl>
-					</xf:formrow>
-				</xf:if>
-
-				<xf:if is="$isOptimizable">
-					<xf:formrow label="{{ phrase('xfes_optimization_required') }}" rowtype="button">
-						{{ phrase('yes') }}
-						<xf:button href="{{ link('enhanced-search/optimize') }}" data-xf-click="overlay">{{
-							phrase('xfes_optimize_now') }}</xf:button>
-						<div class="formRow-explain">{{ phrase('xfes_optimizing_index_can_reduce_space_required') }}
-						</div>
-					</xf:formrow>
-					<xf:else />
-					<xf:formrow label="{{ phrase('xfes_optimization_required') }}">{{ phrase('no') }}</xf:formrow>
-				</xf:if>
 			</xf:if>
 		</div>
 	</div>

@@ -1,8 +1,8 @@
 {
-    "admin/option_template_usipsNcmecApiConfig.html": {
+    "admin/option_template_usipsNcmecApi.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "9f137bed96f9b16de0722c9f57c7a269"
+        "hash": "62ef0b8e7335f6e5f13b3b0b03758bad"
     },
     "admin/usips_ncmec.less": {
         "version_id": 0,
@@ -24,10 +24,20 @@
         "version_string": "1.0.0",
         "hash": "c728a27babcf3e0a6417437495d03651"
     },
+    "admin/usips_ncmec_config.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "9f9469745b2deed4f3cf9c615ad772dd"
+    },
+    "admin/usips_ncmec_config_confirm.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "ed09edf992be0470f24b381bcb2c102a"
+    },
     "admin/usips_ncmec_dashboard.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "ee7c048a77c323afc31dbf640a11e865"
+        "hash": "01b93aee2c7b8a4880c94a726eb6a2e9"
     },
     "admin/usips_ncmec_incident_create.html": {
         "version_id": 0,

@@ -1,0 +1,29 @@
+<xf:formrow label="{$option.title}" hint="{$hintHtml}" explain="{$explainHtml}" rowclass="{$rowClass}">
+
+	<xf:if is="!empty($option.option_value.username)">
+		<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dt>{{ phrase('usips_ncmec_environment') }}</dt>
+			<dd>
+				{{ $option.option_value.environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
+			</dd>
+		</dl>
+
+		<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dt>{{ phrase('user_name') }}</dt>
+			<dd>{$option.option_value.username}</dd>
+		</dl>
+
+		<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dt>{{ phrase('password') }}</dt>
+			<dd>********</dd>
+		</dl>
+		<xf:else />
+		<div>{{ phrase('usips_ncmec_api_not_configured') }}</div>
+	</xf:if>
+
+	<div class="u-inputSpacer">
+		<xf:button href="{{ link('ncmec/config') }}" data-xf-click="overlay">
+			{{ !empty($option.option_value.username) ? phrase('change') : phrase('usips_ncmec_configure_api') }}
+		</xf:button>
+	</div>
+</xf:formrow>

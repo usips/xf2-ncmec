@@ -1,0 +1,24 @@
+<xf:title>{{ phrase('usips_ncmec_confirm_api_configuration') }}</xf:title>
+
+<xf:form action="{{ link('ncmec/config/save') }}" class="block">
+    <xf:hiddenval name="username">{$config.username}</xf:hiddenval>
+    <xf:hiddenval name="password">{$config.password}</xf:hiddenval>
+    <xf:hiddenval name="environment">{$config.environment}</xf:hiddenval>
+
+    <div class="block-container">
+        <div class="block-body">
+            <div class="blockMessage blockMessage--success blockMessage--iconic">
+                {{ phrase('usips_ncmec_connection_successful') }}
+            </div>
+
+            <xf:formrow label="{{ phrase('usips_ncmec_environment') }}">
+                {{ $environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
+            </xf:formrow>
+
+            <xf:formrow label="{{ phrase('user_name') }}">
+                {$config.username}
+            </xf:formrow>
+        </div>
+        <xf:submitrow icon="save" submit="{{ phrase('usips_ncmec_save_configuration') }}" />
+    </div>
+</xf:form>

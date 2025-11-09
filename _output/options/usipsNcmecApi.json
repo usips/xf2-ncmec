@@ -1,17 +1,17 @@
 {
     "edit_format": "template",
-    "edit_format_params": "option_template_uneditable",
+    "edit_format_params": "option_template_usipsNcmecApi",
     "data_type": "array",
     "sub_options": [
-        "apiKey",
-        "apiSecret",
+        "username",
+        "password",
         "environment",
         "*"
     ],
     "validation_class": "",
     "validation_method": "",
     "advanced": false,
-    "default_value": "{\"apiKey\":\"\",\"apiSecret\":\"\",\"environment\":\"test\"}",
+    "default_value": "{\"username\":\"\",\"password\":\"\",\"environment\":\"test\"}",
     "relations": {
         "usips_ncmec": 10
     }

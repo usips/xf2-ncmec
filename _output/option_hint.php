@@ -11,7 +11,7 @@
 namespace XF;
 
 /**
- * @property array{apiKey: string, apiSecret: string, environment: string}|null $usipsNcmecApiConfig NCMEC API Credentials
+ * @property array{username: string, password: string, environment: string}|null $usipsNcmecApi NCMEC API
  */
 class Options
 {
