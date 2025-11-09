@@ -4,8 +4,18 @@
   <phrase title="admin_navigation.usips_ncmec_attachment_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_attachments" version_id="0" version_string="1.0.0"><![CDATA[Attachments]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_attachments_latest" version_id="0" version_string="1.0.0"><![CDATA[Newest Attachments]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[Dashboard]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_incident_list" version_id="0" version_string="1.0.0"><![CDATA[Active Incidents]]></phrase>
   <phrase title="admin_permission.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[Manage NCMEC incidents]]></phrase>
+  <phrase title="invite_only_disabled" version_id="0" version_string="1.0.0"><![CDATA[Invitations no longer required]]></phrase>
+  <phrase title="invite_only_enabled" version_id="0" version_string="1.0.0"><![CDATA[Invitations now required]]></phrase>
+  <phrase title="option.usipsNcmecApiConfig" version_id="0" version_string="1.0.0"><![CDATA[NCMEC API Credentials]]></phrase>
+  <phrase title="option_explain.usipsNcmecApiConfig" version_id="0" version_string="1.0.0"><![CDATA[Enter your basic access authentication credentials provided by the NCMEC for your ESP.]]></phrase>
+  <phrase title="option_group.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting]]></phrase>
+  <phrase title="option_group_description.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC reporting credentials and environment settings.]]></phrase>
+  <phrase title="registration_disabled" version_id="0" version_string="1.0.0"><![CDATA[Registrations disabled]]></phrase>
+  <phrase title="registrations_enabled" version_id="0" version_string="1.0.0"><![CDATA[Registrations enabled]]></phrase>
   <phrase title="user_field_choice.usips_ncmec_in_incident_0" version_id="0" version_string="1.0.0"><![CDATA[No]]></phrase>
   <phrase title="user_field_choice.usips_ncmec_in_incident_1" version_id="0" version_string="1.0.0"><![CDATA[Yes]]></phrase>
   <phrase title="user_field_desc.usips_ncmec_in_incident" version_id="0" version_string="1.0.0"><![CDATA[If set to true, this user is attached to an ongoing incident report. This is useful for setting up UserPromotions to disable features like attachments.]]></phrase>
@@ -24,6 +34,7 @@
   <phrase title="usips_ncmec_content_time_limit" version_id="0" version_string="1.0.0"><![CDATA[Content time limit]]></phrase>
   <phrase title="usips_ncmec_content_time_limit_explain" version_id="0" version_string="1.0.0"><![CDATA[Matched users will be attached to the abuse report regardless of when they were created. The batch will only associate content created in this timeframe. This is useful to limit damage done to old accounts, for instance compromised account.]]></phrase>
   <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create Incident]]></phrase>
+  <phrase title="usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting Dashboard]]></phrase>
   <phrase title="usips_ncmec_emergency_report_default_message" version_id="0" version_string="1.0.0"><![CDATA[Report was submitted as an emergency.]]></phrase>
   <phrase title="usips_ncmec_failed_lines" version_id="0" version_string="1.0.0"><![CDATA[Rejected Input]]></phrase>
   <phrase title="usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incident]]></phrase>
@@ -47,6 +58,7 @@ internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
   <phrase title="usips_ncmec_new_incident_will_be_created" version_id="0" version_string="1.0.0"><![CDATA[A new incident will be created.]]></phrase>
   <phrase title="usips_ncmec_no_incidents" version_id="0" version_string="1.0.0"><![CDATA[There are no incidents available.]]></phrase>
   <phrase title="usips_ncmec_no_results" version_id="0" version_string="1.0.0"><![CDATA[No results matched your input.]]></phrase>
+  <phrase title="usips_ncmec_quick_actions" version_id="0" version_string="1.0.0"><![CDATA[Immediate Response]]></phrase>
   <phrase title="usips_ncmec_report_logs" version_id="0" version_string="1.0.0"><![CDATA[Report Logs]]></phrase>
   <phrase title="usips_ncmec_report_type" version_id="0" version_string="1.0.0"><![CDATA[Report type]]></phrase>
   <phrase title="usips_ncmec_report_type_emergency" version_id="0" version_string="1.0.0"><![CDATA[Emergency report]]></phrase>

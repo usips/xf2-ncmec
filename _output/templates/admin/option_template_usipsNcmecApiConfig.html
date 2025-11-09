@@ -1,0 +1,24 @@
+<xf:set var="$hasExisting" value="{{ !empty($option.option_value.apiKey) }}" />
+
+<xf:formrow rowtype="input" label="{{ phrase('usips_ncmec_option_api_key') }}">
+	<xf:textbox name="{$inputName}[apiKey]" 
+		value="{{ $hasExisting ? '********************' : '' }}"
+		explain="{{ phrase('usips_ncmec_option_api_key_explain') }}"
+		placeholder="{{ $hasExisting ? 'Enter new API key to change' : 'Enter API key' }}"
+		maxlength="255" />
+</xf:formrow>
+
+<xf:formrow rowtype="input" label="API Secret">
+	<xf:passwordbox name="{$inputName}[apiSecret]" 
+		value="{{ $hasExisting ? '********************' : '' }}" 
+		placeholder="{{ $hasExisting ? 'Enter new API secret to change' : 'Enter API secret' }}"
+		maxlength="255"
+		autocomplete="new-password" />
+</xf:formrow>
+
+<xf:formrow rowtype="input" label="Environment">
+	<xf:select name="{$inputName}[environment]" value="{$option.option_value.environment}">
+		<xf:option value="test">Test</xf:option>
+		<xf:option value="live">Live</xf:option>
+	</xf:select>
+</xf:formrow>

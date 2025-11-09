@@ -1,2 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<options/>
+<options>
+  <option option_id="usipsNcmecApiConfig" edit_format="template" data_type="array" advanced="0">
+    <default_value>{"apiKey":"","apiSecret":"","environment":"test"}</default_value>
+    <edit_format_params>option_template_uneditable</edit_format_params>
+    <sub_options>apiKey
+apiSecret
+environment
+*</sub_options>
+    <relation group_id="usips_ncmec" display_order="10"/>
+  </option>
+</options>

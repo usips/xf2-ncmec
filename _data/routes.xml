@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <routes>
+  <route route_type="admin" route_prefix="ncmec" controller="USIPS\NCMEC:Dashboard" context="usips_ncmec_dashboard"/>
   <route route_type="admin" route_prefix="ncmec-attachments" format=":int&lt;attachment_id,filename&gt;/" controller="USIPS\NCMEC:Attachment" context="usips_ncmec_attachments"/>
   <route route_type="admin" route_prefix="ncmec-incidents" format=":int&lt;incident_id,title&gt;/" controller="USIPS\NCMEC:Incident" context="usips_ncmec_incident"/>
 </routes>

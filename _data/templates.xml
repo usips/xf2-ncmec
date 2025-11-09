@@ -1,5 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates>
+  <template type="admin" title="option_template_usipsNcmecApiConfig" version_id="0" version_string="1.0.0"><![CDATA[<xf:set var="$hasExisting" value="{{ !empty($option.option_value.apiKey) }}" />
+
+<xf:formrow rowtype="input" label="{{ phrase('usips_ncmec_option_api_key') }}">
+	<xf:textbox name="{$inputName}[apiKey]" 
+		value="{{ $hasExisting ? '********************' : '' }}"
+		explain="{{ phrase('usips_ncmec_option_api_key_explain') }}"
+		placeholder="{{ $hasExisting ? 'Enter new API key to change' : 'Enter API key' }}"
+		maxlength="255" />
+</xf:formrow>
+
+<xf:formrow rowtype="input" label="API Secret">
+	<xf:passwordbox name="{$inputName}[apiSecret]" 
+		value="{{ $hasExisting ? '********************' : '' }}" 
+		placeholder="{{ $hasExisting ? 'Enter new API secret to change' : 'Enter API secret' }}"
+		maxlength="255"
+		autocomplete="new-password" />
+</xf:formrow>
+
+<xf:formrow rowtype="input" label="Environment">
+	<xf:select name="{$inputName}[environment]" value="{$option.option_value.environment}">
+		<xf:option value="test">Test</xf:option>
+		<xf:option value="live">Live</xf:option>
+	</xf:select>
+</xf:formrow>]]></template>
   <template type="admin" title="usips_ncmec.less" version_id="0" version_string="1.0.0"><![CDATA[@_attach-thumbSize: xf-option('attachmentThumbnailDimensions', px);
 @_bg-color: rgba(200, 200, 200, 0.25);
 @_max-thumbSize: 300px;
@@ -169,6 +193,85 @@
     <xf:else />
     <div class="blockMessage">{{ phrase('usips_ncmec_no_results') }}</div>
 </xf:if>]]></template>
+  <template type="admin" title="usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_dashboard') }}</xf:title>
+
+<xf:pageaction if="$es">
+	<xf:button href="{{ link('enhanced-search/config') }}" icon="config" overlay="true">{{ phrase('xfes_reconfigure') }}
+	</xf:button>
+</xf:pageaction>
+
+<div class="block">
+	<div class="block-container">
+		<h2 class="block-header">{{ phrase('usips_ncmec_quick_actions') }}</h2>
+		<div class="block-body">
+			<xf:formrow label="{{ phrase('enable_registration') }}" rowtype="button">
+				<xf:button href="{{ link('ncmec/registration/toggle') }}" class="button--link" data-xf-click="switch"
+					data-sk-enable="{{ phrase('enable') }}" data-sk-disable="{{ phrase('disable') }}">
+					{{ $xf.options.registrationSetup.enabled ? phrase('disable') : phrase('enable') }}
+				</xf:button>
+			</xf:formrow>
+
+			<xf:if is="is_addon_active('Siropu/ReferralContests')">
+				<xf:formrow label="{{ phrase('option.siropuReferralContestsInvitationOnly') }}" rowtype="button">
+					<xf:button href="{{ link('ncmec/invite-only/toggle') }}" class="button--link" data-xf-click="switch"
+						data-sk-enable="{{ phrase('enable') }}" data-sk-disable="{{ phrase('disable') }}">
+						{{ $xf.options.siropuReferralContestsInvitationOnly ? phrase('disable') : phrase('enable') }}
+					</xf:button>
+				</xf:formrow>
+			</xf:if>
+
+
+			<xf:formrow label="{{ phrase('xfes_elasticsearch_server') }}">{$es.printableBaseUrl}/{$es.index}
+			</xf:formrow>
+
+			<xf:if is="$version">
+				<xf:formrow label="{{ phrase('xfes_version') }}">{$version}</xf:formrow>
+
+				<xf:if is="$stats">
+					<xf:formrow label="{{ phrase('xfes_stats') }}">
+						<dl class="pairs pairs--columns pairs--fixedSmall">
+							<dt>{{ phrase('xfes_documents') }}</dt>
+							<dd>{$stats.docs.count|number} {{ parens($stats.store.size_in_bytes|file_size) }}</dd>
+						</dl>
+						<dl class="pairs pairs--columns pairs--fixedSmall">
+							<dt>{{ phrase('xfes_index_updates') }}</dt>
+							<dd>{$stats.indexing.index_total|number}</dd>
+						</dl>
+						<dl class="pairs pairs--columns pairs--fixedSmall">
+							<dt>{{ phrase('xfes_searches') }}</dt>
+							<dd>
+								{$stats.search.query_total|number}
+								<xf:if is="$stats.search.query_total">
+									{{ parens(phrase('xfes_x_milliseconds_average', {'time':
+									number(($stats.search.query_time_in_millis + $stats.search.fetch_time_in_millis) /
+									($stats.search.query_total + $stats.search.fetch_total))})) }}
+								</xf:if>
+							</dd>
+						</dl>
+						<dl class="pairs pairs--columns pairs--fixedSmall">
+							<dt>{{ phrase('xfes_allocated_memory') }}</dt>
+							<dd>
+								{$stats.segments.memory_in_bytes|file_size}
+							</dd>
+						</dl>
+					</xf:formrow>
+				</xf:if>
+
+				<xf:if is="$isOptimizable">
+					<xf:formrow label="{{ phrase('xfes_optimization_required') }}" rowtype="button">
+						{{ phrase('yes') }}
+						<xf:button href="{{ link('enhanced-search/optimize') }}" data-xf-click="overlay">{{
+							phrase('xfes_optimize_now') }}</xf:button>
+						<div class="formRow-explain">{{ phrase('xfes_optimizing_index_can_reduce_space_required') }}
+						</div>
+					</xf:formrow>
+					<xf:else />
+					<xf:formrow label="{{ phrase('xfes_optimization_required') }}">{{ phrase('no') }}</xf:formrow>
+				</xf:if>
+			</xf:if>
+		</div>
+	</div>
+</div>]]></template>
   <template type="admin" title="usips_ncmec_incident_create" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_create_incident') }}</xf:title>
 
 <xf:form action="{{ link('ncmec-incidents/create') }}" class="block">

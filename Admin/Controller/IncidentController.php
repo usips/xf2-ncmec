@@ -2,7 +2,7 @@
 
 namespace USIPS\NCMEC\Admin\Controller;
 
-use USIPS\NCMEC\Entity\Incident;;
+use USIPS\NCMEC\Entity\Incident;
 use \XF;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\ParameterBag;

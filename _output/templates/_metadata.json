@@ -1,4 +1,9 @@
 {
+    "admin/option_template_usipsNcmecApiConfig.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "9f137bed96f9b16de0722c9f57c7a269"
+    },
     "admin/usips_ncmec.less": {
         "version_id": 0,
         "version_string": "1.0.0",
@@ -18,6 +23,11 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "c728a27babcf3e0a6417437495d03651"
+    },
+    "admin/usips_ncmec_dashboard.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "ee7c048a77c323afc31dbf640a11e865"
     },
     "admin/usips_ncmec_incident_create.html": {
         "version_id": 0,

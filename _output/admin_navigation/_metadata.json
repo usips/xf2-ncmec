@@ -11,7 +11,13 @@
     "usips_ncmec_attachments_latest.json": {
         "hash": "a5ea77376b513c44937ad91ece501082"
     },
+    "usips_ncmec_dashboard.json": {
+        "hash": "a6bd78d6e518698d448aea23fb05af71"
+    },
     "usips_ncmec_incident.json": {
-        "hash": "c5538bd0bfe6512b25e4cdeb7f667ed9"
+        "hash": "dc0053a30fc238f6d59dcf2f4d8ac0e2"
+    },
+    "usips_ncmec_incident_list.json": {
+        "hash": "ba32517543e27a6661f45c0d349bf1cc"
     }
 }
