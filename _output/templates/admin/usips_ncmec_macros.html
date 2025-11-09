@@ -17,15 +17,12 @@
 			<span class="usips-attachment">
 				<input type="checkbox" class="usips-attachmentCheckbox"
 					id="usips_attachment_{$attachment.attachment_id}" name="attachment_ids[]"
-					value="{{ $attachment.attachment_id }}" {{ in_array($attachment.attachment_id, $checked) ? 'checked'
-					: '' }} />
+					value="{{ $attachment.attachment_id }}" {{ in_array($attachment.attachment_id, $checked) ? 'checked' : '' }} />
 				<label class="usips-attachmentLabel" for="usips_attachment_{$attachment.attachment_id}">
 					<div class="usips-attachmentOverlay">
 						<div class="usips-attachmentInfo">
 							<ul>
-								<li>
-									{$attachment.content_type}
-								</li>
+								<li>{$attachment.content_type}</li>
 								<xf:if is="$attachment.content_id == 0">
 									<li>{{ phrase('draft') }}</li>
 								</xf:if>
@@ -148,18 +145,18 @@
 	</div>
 </xf:macro>
 
-<xf:macro id="user_avatar_block" arg-users="{{ [] }}">
+<xf:macro id="user_avatar_block" arg-users="{{ [] }}" arg-incident="{{ false }}">
 	<xf:if is="$users is not empty">
 		<div class="block-body">
-			<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$users}" />
+			<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$users}" arg-incident="{$incident}" />
 		</div>
 	</xf:if>
 </xf:macro>
 
-<xf:macro id="user_avatar_list" arg-users="{{ [] }}">
+<xf:macro id="user_avatar_list" arg-users="{{ [] }}" arg-incident="{{ false }}">
 	<div class="user-avatars">
 		<xf:foreach loop="$users" value="$user">
-			<xf:avatar user="$user.User" size="s" />
+			<xf:avatar user="$user.User" size="s" href="{{ $incident ? link('ncmec-incidents/user', $user) : '' }}"/>
 		</xf:foreach>
 	</div>
 </xf:macro>

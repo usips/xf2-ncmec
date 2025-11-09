@@ -14,7 +14,12 @@
 				'val:attach_date_desc': phrase('most_recent'),
 				'val:attach_date_asc': phrase('least_recent')
 			} }}" arg-menu="attachments/filter" arg-menuTitle="{{ phrase('filter') }}" />
-		<xf:macro name="usips_ncmec_macros::attachment_block" arg-attachments="{{ $attachments }}" />
+
+		<xf:if is="$attachments is not empty">
+			<div class="block-body">
+				<xf:macro name="usips_ncmec_macros::attachment_list" arg-attachments="{{ $attachments }}" />
+			</div>
+		</xf:if>
 		<xf:submitrow sticky="true">
 			<xf:html>
 				<xf:button type="submit" name="submit" icon="siren">{{ phrase('usips_ncmec_create_incident') }}

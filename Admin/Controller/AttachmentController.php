@@ -180,6 +180,11 @@ class AttachmentController extends AbstractController
 
     public function actionView(ParameterBag $params)
     {
+        /**
+         * Reminder: Attachment entities are the objects exposed to the UI. Their AttachmentData
+         * payloads contain the binary content but cannot be viewed directly without an Attachment
+         * wrapper. Always resolve the Attachment first when serving files.
+         */
         /** @var \XF\Entity\Attachment $attachment */
         $attachment = $this->em()->find(Attachment::class, $params->attachment_id);
         if (!$attachment)

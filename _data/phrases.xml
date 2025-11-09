@@ -27,6 +27,7 @@
   <phrase title="usips_ncmec_api_error_x" version_id="0" version_string="1.0.0"><![CDATA[API error: {error}]]></phrase>
   <phrase title="usips_ncmec_api_not_configured" version_id="0" version_string="1.0.0"><![CDATA[The NCMEC API has not been configured.]]></phrase>
   <phrase title="usips_ncmec_api_status" version_id="0" version_string="1.0.0"><![CDATA[NCMEC API Status]]></phrase>
+  <phrase title="usips_ncmec_associate" version_id="0" version_string="1.0.0"><![CDATA[Associate]]></phrase>
   <phrase title="usips_ncmec_associate_users" version_id="0" version_string="1.0.0"><![CDATA[Associate users]]></phrase>
   <phrase title="usips_ncmec_associate_with_incident" version_id="0" version_string="1.0.0"><![CDATA[Associate with Incident]]></phrase>
   <phrase title="usips_ncmec_associated_attachment_data" version_id="0" version_string="1.0.0"><![CDATA[Associated attachment data]]></phrase>
@@ -40,7 +41,8 @@
   <phrase title="usips_ncmec_connection_error_x" version_id="0" version_string="1.0.0"><![CDATA[Connection error: {error}]]></phrase>
   <phrase title="usips_ncmec_connection_successful" version_id="0" version_string="1.0.0"><![CDATA[Connection successful.]]></phrase>
   <phrase title="usips_ncmec_content_time_limit" version_id="0" version_string="1.0.0"><![CDATA[Content time limit]]></phrase>
-  <phrase title="usips_ncmec_content_time_limit_explain" version_id="0" version_string="1.0.0"><![CDATA[Matched users will be attached to the abuse report regardless of when they were created. The batch will only associate content created in this timeframe. This is useful to limit damage done to old accounts, for instance compromised account.]]></phrase>
+  <phrase title="usips_ncmec_content_time_limit_explain" version_id="0" version_string="1.0.0"><![CDATA[User generated content authored within this timespan will be associated with this incident.]]></phrase>
+  <phrase title="usips_ncmec_content_time_limit_explain_batch" version_id="0" version_string="1.0.0"><![CDATA[All matched users will be added to this incident. Their content will also be added to the incident if it is within this timeframe. You may not want to associate entire post histories when dealing with compromised accounts.]]></phrase>
   <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create Incident]]></phrase>
   <phrase title="usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting Dashboard]]></phrase>
   <phrase title="usips_ncmec_emergency_report_default_message" version_id="0" version_string="1.0.0"><![CDATA[Report was submitted as an emergency.]]></phrase>
@@ -54,6 +56,7 @@
   <phrase title="usips_ncmec_incident_draft" version_id="0" version_string="1.0.0"><![CDATA[Draft]]></phrase>
   <phrase title="usips_ncmec_incident_finalized" version_id="0" version_string="1.0.0"><![CDATA[Finalized]]></phrase>
   <phrase title="usips_ncmec_incident_status" version_id="0" version_string="1.0.0"><![CDATA[Incident status]]></phrase>
+  <phrase title="usips_ncmec_incident_user" version_id="0" version_string="1.0.0"><![CDATA[User involved in Incident]]></phrase>
   <phrase title="usips_ncmec_incidents" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
   <phrase title="usips_ncmec_invalid_response_from_server" version_id="0" version_string="1.0.0"><![CDATA[Invalid response from NCMEC server.]]></phrase>
   <phrase title="usips_ncmec_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>

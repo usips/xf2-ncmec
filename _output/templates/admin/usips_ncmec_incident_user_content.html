@@ -1,0 +1,48 @@
+<xf:title>{{ phrase('usips_ncmec_incident_user') }}</xf:title>
+
+<xf:breadcrumb href="{{ link('ncmec-incidents/view', $incident) }}">{$incident.title}</xf:breadcrumb>
+
+<xf:pageaction if="true">
+    <xf:button href="{{ link('ncmec-incidents/user/delete', $user) }}" icon="delete" overlay="true" />
+</xf:pageaction>
+
+<xf:form action="{{ link('ncmec-incidents/user/associate-timestamp', $incidentUser) }}" ajax="true" class="block">
+	<div class="block-container">
+		<xf:formrow label="{{ phrase('usips_ncmec_content_time_limit') }}"
+					explain="{{ phrase('usips_ncmec_content_time_limit_explain') }}">
+			<xf:select name="time_limit_seconds">
+				<xf:option value="3600">{{ phrase('1_hour') }}</xf:option>
+				<xf:option value="86400">{{ phrase('1_day') }}</xf:option>
+				<xf:option value="172800" selected="{{ true }}">{{ phrase('48_hours') }}</xf:option>
+				<xf:option value="604800">{{ phrase('1_week') }}</xf:option>
+				<xf:option value="2592000">{{ phrase('1_month') }}</xf:option>
+				<xf:option value="0">{{ phrase('all_time') }}</xf:option>
+			</xf:select>
+		</xf:formrow>
+		<xf:submitrow>
+			<xf:html>
+				<xf:button type="submit" name="submit" icon="attach">{{ phrase('usips_ncmec_associate') }}
+				</xf:button>
+			</xf:html>
+		</xf:submitrow>
+	</div>
+</xf:form>
+
+<xf:form action="{{ link('ncmec-incidents/user/update-attachments', $incidentUser) }}" ajax="true" class="block">
+	<div class="block-container">
+		<h2 class="block-header">{{ phrase('usips_ncmec_attachments') }}</h2>
+		<xf:if is="$availableAttachments is not empty">
+			<div class="block-body">
+				<xf:macro name="usips_ncmec_macros::attachment_block" arg-incident="{$incident}" arg-attachments="{$availableAttachments}" arg-checked="{$associatedAttachmentIds}" />
+			</div>
+			<xf:else />
+			<div class="block-body block-row">{{ phrase('no_results_found') }}</div>
+		</xf:if>
+		<xf:submitrow sticky="true">
+			<xf:html>
+				<xf:button type="submit" name="submit" icon="save">{{ phrase('save') }}
+				</xf:button>
+			</xf:html>
+		</xf:submitrow>
+	</div>
+</xf:form>

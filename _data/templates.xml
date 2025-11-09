@@ -148,7 +148,12 @@
 				'val:attach_date_desc': phrase('most_recent'),
 				'val:attach_date_asc': phrase('least_recent')
 			} }}" arg-menu="attachments/filter" arg-menuTitle="{{ phrase('filter') }}" />
-		<xf:macro name="usips_ncmec_macros::attachment_block" arg-attachments="{{ $attachments }}" />
+
+		<xf:if is="$attachments is not empty">
+			<div class="block-body">
+				<xf:macro name="usips_ncmec_macros::attachment_list" arg-attachments="{{ $attachments }}" />
+			</div>
+		</xf:if>
 		<xf:submitrow sticky="true">
 			<xf:html>
 				<xf:button type="submit" name="submit" icon="siren">{{ phrase('usips_ncmec_create_incident') }}
@@ -427,6 +432,54 @@
 </xf:pageaction>
 
 <xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" />]]></template>
+  <template type="admin" title="usips_ncmec_incident_user_content" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_incident_user') }}</xf:title>
+
+<xf:breadcrumb href="{{ link('ncmec-incidents/view', $incident) }}">{$incident.title}</xf:breadcrumb>
+
+<xf:pageaction if="true">
+    <xf:button href="{{ link('ncmec-incidents/user/delete', $user) }}" icon="delete" overlay="true" />
+</xf:pageaction>
+
+<xf:form action="{{ link('ncmec-incidents/user/associate-timestamp', $incidentUser) }}" ajax="true" class="block">
+	<div class="block-container">
+		<xf:formrow label="{{ phrase('usips_ncmec_content_time_limit') }}"
+					explain="{{ phrase('usips_ncmec_content_time_limit_explain') }}">
+			<xf:select name="time_limit_seconds">
+				<xf:option value="3600">{{ phrase('1_hour') }}</xf:option>
+				<xf:option value="86400">{{ phrase('1_day') }}</xf:option>
+				<xf:option value="172800" selected="{{ true }}">{{ phrase('48_hours') }}</xf:option>
+				<xf:option value="604800">{{ phrase('1_week') }}</xf:option>
+				<xf:option value="2592000">{{ phrase('1_month') }}</xf:option>
+				<xf:option value="0">{{ phrase('all_time') }}</xf:option>
+			</xf:select>
+		</xf:formrow>
+		<xf:submitrow>
+			<xf:html>
+				<xf:button type="submit" name="submit" icon="attach">{{ phrase('usips_ncmec_associate') }}
+				</xf:button>
+			</xf:html>
+		</xf:submitrow>
+	</div>
+</xf:form>
+
+<xf:form action="{{ link('ncmec-incidents/user/update-attachments', $incidentUser) }}" ajax="true" class="block">
+	<div class="block-container">
+		<h2 class="block-header">{{ phrase('usips_ncmec_attachments') }}</h2>
+		<xf:if is="$availableAttachments is not empty">
+			<div class="block-body">
+				<xf:macro name="usips_ncmec_macros::attachment_block" arg-incident="{$incident}" arg-attachments="{$availableAttachments}" arg-checked="{$associatedAttachmentIds}" />
+			</div>
+			<xf:else />
+			<div class="block-body block-row">{{ phrase('no_results_found') }}</div>
+		</xf:if>
+		<xf:submitrow sticky="true">
+			<xf:html>
+				<xf:button type="submit" name="submit" icon="save">{{ phrase('save') }}
+				</xf:button>
+			</xf:html>
+		</xf:submitrow>
+	</div>
+</xf:form>]]></template>
   <template type="admin" title="usips_ncmec_incident_view" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_incident') }}</xf:title>
 
 <xf:pageaction if="true">
@@ -465,7 +518,7 @@
     </div>
 </xf:form>
 
-<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{{ $incident.IncidentUsers }}" />]]></template>
+<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$incident.IncidentUsers}" arg-incident="{$incident}" />]]></template>
   <template type="admin" title="usips_ncmec_macros" version_id="0" version_string="1.0.0"><![CDATA[<xf:macro id="attachment_block" arg-attachments="{{ [] }}" arg-checked="{{ [] }}" arg-incident="{{ false }}">
 	<xf:if is="$attachments is not empty">
 		<div class="block-body">
@@ -485,15 +538,12 @@
 			<span class="usips-attachment">
 				<input type="checkbox" class="usips-attachmentCheckbox"
 					id="usips_attachment_{$attachment.attachment_id}" name="attachment_ids[]"
-					value="{{ $attachment.attachment_id }}" {{ in_array($attachment.attachment_id, $checked) ? 'checked'
-					: '' }} />
+					value="{{ $attachment.attachment_id }}" {{ in_array($attachment.attachment_id, $checked) ? 'checked' : '' }} />
 				<label class="usips-attachmentLabel" for="usips_attachment_{$attachment.attachment_id}">
 					<div class="usips-attachmentOverlay">
 						<div class="usips-attachmentInfo">
 							<ul>
-								<li>
-									{$attachment.content_type}
-								</li>
+								<li>{$attachment.content_type}</li>
 								<xf:if is="$attachment.content_id == 0">
 									<li>{{ phrase('draft') }}</li>
 								</xf:if>
@@ -616,18 +666,18 @@
 	</div>
 </xf:macro>
 
-<xf:macro id="user_avatar_block" arg-users="{{ [] }}">
+<xf:macro id="user_avatar_block" arg-users="{{ [] }}" arg-incident="{{ false }}">
 	<xf:if is="$users is not empty">
 		<div class="block-body">
-			<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$users}" />
+			<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$users}" arg-incident="{$incident}" />
 		</div>
 	</xf:if>
 </xf:macro>
 
-<xf:macro id="user_avatar_list" arg-users="{{ [] }}">
+<xf:macro id="user_avatar_list" arg-users="{{ [] }}" arg-incident="{{ false }}">
 	<div class="user-avatars">
 		<xf:foreach loop="$users" value="$user">
-			<xf:avatar user="$user.User" size="s" />
+			<xf:avatar user="$user.User" size="s" href="{{ $incident ? link('ncmec-incidents/user', $user) : '' }}"/>
 		</xf:foreach>
 	</div>
 </xf:macro>]]></template>
@@ -657,7 +707,7 @@
 			</xf:formrow>
 
 			<xf:formrow label="{{ phrase('usips_ncmec_content_time_limit') }}"
-				explain="{{ phrase('usips_ncmec_content_time_limit_explain') }}">
+				explain="{{ phrase('usips_ncmec_content_time_limit_explain_batch') }}">
 				<xf:select name="time_limit_seconds">
 					<xf:option value="3600">{{ phrase('1_hour') }}</xf:option>
 					<xf:option value="86400">{{ phrase('1_day') }}</xf:option>
