@@ -1,0 +1,1 @@
+Please confirm removing {user} and all associated content and uploads from "{incident}".

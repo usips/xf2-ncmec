@@ -3,8 +3,11 @@
 namespace USIPS\NCMEC\Service\Incident;
 
 use USIPS\NCMEC\Entity\Incident;
+use XF\Entity\Attachment;
+use XF\Entity\User;
+use XF\Mvc\Entity\Entity;
 use XF\Service\AbstractService;
-use XF\Mvc\Entity\Finder;
+use XF\Util\Str;
 
 class Creator extends AbstractService
 {
@@ -45,16 +48,25 @@ class Creator extends AbstractService
     // Attachment association methods
     public function associateAttachments(iterable $attachments)
     {
-        $attachmentManager = $this->service('USIPS\NCMEC:Incident\AttachmentManager');
-        
+        $dataIds = [];
+
         foreach ($attachments as $attachment)
         {
-            $attachmentManager->addAttachmentToIncident(
-                $this->incident->incident_id,
-                $attachment->Data->data_id,
-                $attachment->Data->user_id,
-                $attachment->Data->User->username
-            );
+            if (!$attachment instanceof Attachment || !$attachment->Data)
+            {
+                continue;
+            }
+
+            $dataId = (int) $attachment->Data->data_id;
+            if ($dataId)
+            {
+                $dataIds[] = $dataId;
+            }
+        }
+
+        if ($dataIds)
+        {
+            $this->associateAttachmentsByDataIds(array_unique($dataIds));
         }
     }
 
@@ -68,73 +80,169 @@ class Creator extends AbstractService
         }
     }
 
+    /**
+     * Associate arbitrary attachment payloads by data id and ensure uploader users are linked.
+     */
     public function associateAttachmentsByDataIds(array $dataIds)
     {
-        $attachmentManager = $this->service('USIPS\NCMEC:Incident\AttachmentManager');
-        
-        foreach ($dataIds as $dataId)
+        $dataIds = array_unique(array_map('intval', $dataIds));
+        if (!$dataIds)
         {
-            $attachmentData = $this->em()->find('XF:AttachmentData', $dataId);
-            if ($attachmentData)
+            return;
+        }
+
+        $attachmentManager = $this->service('USIPS\NCMEC:Incident\AttachmentManager');
+
+        $attachmentDataSet = $this->finder('XF:AttachmentData')
+            ->where('data_id', $dataIds)
+            ->with('User')
+            ->fetch();
+
+        if (!$attachmentDataSet)
+        {
+            return;
+        }
+
+        $userIds = [];
+
+        foreach ($attachmentDataSet as $data)
+        {
+            if (!$data->user_id)
             {
-                $attachmentManager->addAttachmentToIncident(
-                    $this->incident->incident_id,
-                    $dataId,
-                    $attachmentData->user_id,
-                    $attachmentData->User->username
-                );
+                continue;
             }
+
+            $username = $data->User ? $data->User->username : '';
+
+            $created = $attachmentManager->addAttachmentToIncident(
+                $this->incident->incident_id,
+                $data->data_id,
+                $data->user_id,
+                Str::substr($username, 0, 50)
+            );
+
+            if ($created)
+            {
+                $attachmentManager->updateIncidentCount($data->data_id);
+            }
+
+            $userIds[] = $data->user_id;
+        }
+
+        if ($userIds)
+        {
+            $this->associateUsersByIds(array_unique($userIds));
         }
     }
 
     // User association methods
+    /**
+     * Ensure each attachment uploader is recorded as an incident user without duplicating logic.
+     */
     public function associateAttachmentUsers(iterable $attachments)
     {
         $userIds = [];
-        $users = [];
+
         foreach ($attachments as $attachment)
         {
-            $userId = $attachment->Data->user_id;
-            if (!isset($users[$userId]))
+            if (!$attachment instanceof Attachment || !$attachment->Data)
             {
-                $users[$userId] = $attachment->Data->User;
+                continue;
+            }
+
+            $userId = (int) $attachment->Data->user_id;
+            if ($userId)
+            {
+                $userIds[] = $userId;
             }
         }
-        foreach ($users as $user)
+
+        if ($userIds)
         {
-            $incidentUser = $this->em()->create('USIPS\NCMEC:IncidentUser');
-            $incidentUser->incident_id = $this->incident->incident_id;
-            $incidentUser->user_id = $user->user_id;
-            $incidentUser->username = \XF\Util\Str::substr($user->username, 0, 50);
-            $incidentUser->save();
+            $this->associateUsersByIds(array_unique($userIds));
         }
     }
 
+    /**
+     * Link users to the active incident, refreshing usernames and user-field state as needed.
+     */
     public function associateUsersByIds(array $userIds)
     {
+        $userIds = array_unique(array_map('intval', $userIds));
+        if (!$userIds)
+        {
+            return;
+        }
+
+        /** @var \USIPS\NCMEC\Service\UserField $userFieldService */
+        $userFieldService = $this->service('USIPS\NCMEC:UserField');
+
         foreach ($userIds as $userId)
         {
             $user = $this->em()->find('XF:User', $userId);
-            if ($user)
+            if (!$user)
             {
-                // Check if user is already associated
-                $existing = $this->finder('USIPS\NCMEC:IncidentUser')
-                    ->where('incident_id', $this->incident->incident_id)
-                    ->where('user_id', $userId)
-                    ->fetchOne();
+                continue;
+            }
 
-                if (!$existing)
+            $desiredUsername = Str::substr($user->username, 0, 50);
+
+            $existing = $this->finder('USIPS\NCMEC:IncidentUser')
+                ->where('incident_id', $this->incident->incident_id)
+                ->where('user_id', $userId)
+                ->fetchOne();
+
+            if ($existing)
+            {
+                if ($existing->username !== $desiredUsername)
                 {
-                    $incidentUser = $this->em()->create('USIPS\NCMEC:IncidentUser');
-                    $incidentUser->incident_id = $this->incident->incident_id;
-                    $incidentUser->user_id = $userId;
-                    $incidentUser->username = \XF\Util\Str::substr($user->username, 0, 50);
-                    $incidentUser->save();
-
-                    // Update user field to indicate user is in incident
-                    $userFieldService = $this->service('USIPS\NCMEC:UserField');
-                    $userFieldService->updateIncidentField($userId, true);
+                    $existing->username = $desiredUsername;
+                    $existing->save();
                 }
+
+                continue;
+            }
+
+            $incidentUser = $this->em()->create('USIPS\NCMEC:IncidentUser');
+            $incidentUser->incident_id = $this->incident->incident_id;
+            $incidentUser->user_id = $userId;
+            $incidentUser->username = $desiredUsername;
+            $incidentUser->save();
+
+            $userFieldService->updateIncidentField($userId, true);
+        }
+    }
+
+    /**
+     * High-level helper that links a user and, optionally, their recent content and attachments.
+     */
+    public function associateUserCascade(int $userId, int $timeLimitSeconds = 0, bool $includeContent = true, bool $includeAttachments = true): void
+    {
+        $userId = (int) $userId;
+        if (!$userId)
+        {
+            return;
+        }
+
+        $limit = max(0, (int) $timeLimitSeconds);
+
+        $this->associateUsersByIds([$userId]);
+
+        if ($includeContent)
+        {
+            $contentItems = $this->collectUserContentWithinTimeLimit($userId, $limit);
+            if ($contentItems)
+            {
+                $this->associateContentByIds($contentItems);
+            }
+        }
+
+        if ($includeAttachments)
+        {
+            $attachmentDataIds = $this->collectUserAttachmentDataWithinTimeLimit($userId, $limit);
+            if ($attachmentDataIds)
+            {
+                $this->associateAttachmentsByDataIds($attachmentDataIds);
             }
         }
     }
@@ -161,6 +269,18 @@ class Creator extends AbstractService
 
         // Disassociate the content
         $this->disassociateContent($contentPairs);
+
+        // Remove any attachment data rows that were directly linked to the user (including drafts)
+        $incidentAttachments = $this->finder('USIPS\NCMEC:IncidentAttachmentData')
+            ->where('incident_id', $this->incident->incident_id)
+            ->where('user_id', $userIds)
+            ->fetch();
+
+        if ($incidentAttachments->count())
+        {
+            $dataIds = $incidentAttachments->pluckNamed('data_id');
+            $this->disassociateAttachments($dataIds);
+        }
 
         // Finally, disassociate the users
         $this->db()->delete('xf_usips_ncmec_incident_user', 'incident_id = ? AND user_id IN (' . $this->db()->quote($userIds) . ')', $this->incident->incident_id);
@@ -218,27 +338,180 @@ class Creator extends AbstractService
         }
     }
 
+    /**
+     * Attach content records to the incident, hydrating missing owner details when possible.
+     */
     public function associateContentByIds(array $contentItems)
     {
+        $pendingUserIds = [];
+
         foreach ($contentItems as $contentData)
         {
-            // Check if content is already associated
+            if (empty($contentData['content_type']) || empty($contentData['content_id']))
+            {
+                continue;
+            }
+
+            $contentType = $contentData['content_type'];
+            $contentId = (int) $contentData['content_id'];
+            $userId = isset($contentData['user_id']) ? (int) $contentData['user_id'] : 0;
+            $username = $contentData['username'] ?? '';
+
+            if (!$userId || $username === '')
+            {
+                $entity = $this->findContentEntityInstance($contentType, $contentId);
+                if ($entity)
+                {
+                    $owner = $this->resolveContentOwner($entity);
+                    if ($owner)
+                    {
+                        if (!$userId)
+                        {
+                            $userId = $owner->user_id;
+                        }
+                        if ($username === '')
+                        {
+                            $username = Str::substr($owner->username, 0, 50);
+                        }
+                    }
+                }
+            }
+
+            if (!$userId)
+            {
+                continue;
+            }
+
+            if ($userId)
+            {
+                $pendingUserIds[] = $userId;
+            }
+
+            $username = Str::substr($username, 0, 50);
+
             $existing = $this->finder('USIPS\NCMEC:IncidentContent')
                 ->where('incident_id', $this->incident->incident_id)
-                ->where('content_type', $contentData['content_type'])
-                ->where('content_id', $contentData['content_id'])
+                ->where('content_type', $contentType)
+                ->where('content_id', $contentId)
                 ->fetchOne();
 
-            if (!$existing)
+            if ($existing)
             {
-                $incidentContent = $this->em()->create('USIPS\NCMEC:IncidentContent');
-                $incidentContent->incident_id = $this->incident->incident_id;
-                $incidentContent->content_type = $contentData['content_type'];
-                $incidentContent->content_id = $contentData['content_id'];
-                $incidentContent->user_id = $contentData['user_id'];
-                $incidentContent->username = \XF\Util\Str::substr($contentData['username'], 0, 50);
-                $incidentContent->save();
+                if ($existing->username !== $username)
+                {
+                    $existing->username = $username;
+                    $existing->save();
+                }
+
+                continue;
             }
+
+            $incidentContent = $this->em()->create('USIPS\NCMEC:IncidentContent');
+            $incidentContent->incident_id = $this->incident->incident_id;
+            $incidentContent->content_type = $contentType;
+            $incidentContent->content_id = $contentId;
+            $incidentContent->user_id = $userId;
+            $incidentContent->username = $username;
+            $incidentContent->save();
+        }
+
+        if ($pendingUserIds)
+        {
+            $this->associateUsersByIds(array_unique($pendingUserIds));
+        }
+    }
+
+    /**
+     * Associate content while cascading any attachment and uploader relationships in one pass.
+     */
+    public function associateContentCascade(array $contentItems): void
+    {
+        $normalized = $this->normalizeContentItems($contentItems);
+        if (!$normalized)
+        {
+            return;
+        }
+
+        $prepared = [];
+        $attachmentDataIds = [];
+        $userIds = [];
+
+        foreach ($normalized as $item)
+        {
+            $contentType = $item['content_type'];
+            $contentId = $item['content_id'];
+
+            $entity = $this->findContentEntityInstance($contentType, $contentId);
+            if (!$entity)
+            {
+                continue;
+            }
+
+            $owner = null;
+            if (!empty($item['user_id']) && !empty($item['username']))
+            {
+                $owner = $this->em()->find('XF:User', (int) $item['user_id']);
+            }
+            if (!$owner)
+            {
+                $owner = $this->resolveContentOwner($entity);
+            }
+
+            $userId = $owner ? $owner->user_id : (int) ($item['user_id'] ?? 0);
+            $username = $item['username'] ?? '';
+            if ($username === '' && $owner)
+            {
+                $username = Str::substr($owner->username, 0, 50);
+            }
+
+            if ($userId)
+            {
+                $userIds[] = $userId;
+            }
+
+            $prepared[] = [
+                'content_type' => $contentType,
+                'content_id' => $contentId,
+                'user_id' => $userId,
+                'username' => $username,
+            ];
+
+            $attachments = $this->finder('XF:Attachment')
+                ->where('content_type', $contentType)
+                ->where('content_id', $contentId)
+                ->with(['Data', 'Data.User'])
+                ->fetch();
+
+            /** @var Attachment $attachment */
+            foreach ($attachments as $attachment)
+            {
+                if (!$attachment->Data)
+                {
+                    continue;
+                }
+
+                $attachmentDataIds[] = $attachment->Data->data_id;
+
+                if ($attachment->Data->user_id)
+                {
+                    $userIds[] = (int) $attachment->Data->user_id;
+                }
+            }
+        }
+
+        if ($prepared)
+        {
+            $this->associateContentByIds($prepared);
+        }
+
+        if ($userIds)
+        {
+            $this->associateUsersByIds(array_unique(array_filter($userIds)));
+        }
+
+        if ($attachmentDataIds)
+        {
+            $this->associateAttachmentsByDataIds(array_unique($attachmentDataIds));
         }
     }
 
@@ -279,15 +552,119 @@ class Creator extends AbstractService
     }
 
     // Helper methods
-    protected function getContentEntity($contentType)
+    /**
+     * Resolve a content type to its entity class using local overrides plus XenForo's registry.
+     */
+    protected function getContentEntity(string $contentType): ?string
     {
         $entities = [
             'post' => 'XF:Post',
             'thread' => 'XF:Thread',
             'profile_post' => 'XF:ProfilePost',
-            // Add more as needed
         ];
-        return $entities[$contentType] ?? null;
+
+        if (isset($entities[$contentType]))
+        {
+            return $entities[$contentType];
+        }
+
+        return \XF::app()->getContentTypeEntity($contentType, false) ?: null;
+    }
+
+    /**
+     * Look up a concrete entity instance for the supplied content reference if possible.
+     */
+    protected function findContentEntityInstance(string $contentType, int $contentId): ?Entity
+    {
+        $entityClass = $this->getContentEntity($contentType);
+        if (!$entityClass)
+        {
+            return null;
+        }
+
+        return $this->em()->find($entityClass, $contentId);
+    }
+
+    /**
+     * Normalize mixed content descriptors into a predictable associative array structure.
+     */
+    protected function normalizeContentItems(array $contentItems): array
+    {
+        $normalized = [];
+
+        foreach ($contentItems as $item)
+        {
+            if ($item instanceof Entity)
+            {
+                $normalized[] = [
+                    'content_type' => $item->getEntityContentType(),
+                    'content_id' => $item->getEntityId(),
+                    'user_id' => $item->isValidColumn('user_id') ? (int) $item->get('user_id') : 0,
+                    'username' => '',
+                ];
+                continue;
+            }
+
+            if (!is_array($item))
+            {
+                continue;
+            }
+
+            if (isset($item['content_type'], $item['content_id']))
+            {
+                $normalized[] = [
+                    'content_type' => $item['content_type'],
+                    'content_id' => (int) $item['content_id'],
+                    'user_id' => isset($item['user_id']) ? (int) $item['user_id'] : 0,
+                    'username' => $item['username'] ?? '',
+                ];
+                continue;
+            }
+
+            if (count($item) >= 2)
+            {
+                $normalized[] = [
+                    'content_type' => $item[0],
+                    'content_id' => (int) $item[1],
+                    'user_id' => isset($item[2]) ? (int) $item[2] : 0,
+                    'username' => $item[3] ?? '',
+                ];
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Attempt to determine the owning user for an arbitrary content entity.
+     */
+    protected function resolveContentOwner(?Entity $entity): ?User
+    {
+        if (!$entity)
+        {
+            return null;
+        }
+
+        if ($entity instanceof User)
+        {
+            return $entity;
+        }
+
+        if (isset($entity->User) && $entity->User instanceof User)
+        {
+            return $entity->User;
+        }
+
+        if ($entity->isValidColumn('user_id'))
+        {
+            $userId = (int) $entity->get('user_id');
+            if ($userId)
+            {
+                return $this->em()->find('XF:User', $userId);
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -371,10 +748,10 @@ class Creator extends AbstractService
     /**
      * Collects all attachments for a user within a specified time limit
      * @param int $userId The user ID to collect attachments for
-     * @param int $timeLimitSeconds Time limit in seconds (0 = no limit)
+     * @param int $timeLimitSeconds Time limit in seconds (0 = no limit) (defaults to 48 hours)
      * @return array Array of attachment data IDs
      */
-    public function collectUserAttachmentDataWithinTimeLimit($userId, $timeLimitSeconds = 172800) // 48 hours default
+    public function collectUserAttachmentDataWithinTimeLimit($userId, $timeLimitSeconds = 172800)
     {
         // Query attachment data directly since xf_attachment doesn't have user_id
         $finder = $this->finder('XF:AttachmentData')

@@ -15,7 +15,7 @@
         "global_cache": false,
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "f4256be219da6007046e9061992436c5"
+        "hash": "0cd5d4bcb54a730c197d85a9368e84b6"
     },
     "admin_navigation.usips_ncmec_dashboard.txt": {
         "global_cache": false,
@@ -394,6 +394,24 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "d22052ddc4a2b3e2e330e051f45f6ac8"
+    },
+    "usips_ncmec_remove_user.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "1bccc64c117ca5845f5c37d8abb2a99e"
+    },
+    "usips_ncmec_remove_user_from_incident.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "094c3ce9fc53a0fe2ac0004ab3feb635"
+    },
+    "usips_ncmec_remove_user_from_incident_confirm.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "8ccf17cce267856f52d30cdaf49f3fd0"
     },
     "usips_ncmec_report.txt": {
         "global_cache": false,

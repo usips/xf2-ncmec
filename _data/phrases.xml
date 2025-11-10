@@ -3,7 +3,7 @@
   <phrase title="admin_navigation.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_attachment_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_attachments" version_id="0" version_string="1.0.0"><![CDATA[Attachments]]></phrase>
-  <phrase title="admin_navigation.usips_ncmec_attachments_latest" version_id="0" version_string="1.0.0"><![CDATA[Newest Attachments]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_attachments_latest" version_id="0" version_string="1.0.0"><![CDATA[Attachment Browser]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[Dashboard]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_incident_list" version_id="0" version_string="1.0.0"><![CDATA[Active Incidents]]></phrase>
@@ -74,6 +74,9 @@ internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
   <phrase title="usips_ncmec_lookup_submit" version_id="0" version_string="1.0.0"><![CDATA[Lookup]]></phrase>
   <phrase title="usips_ncmec_new_incident_will_be_created" version_id="0" version_string="1.0.0"><![CDATA[A new incident will be created.]]></phrase>
   <phrase title="usips_ncmec_quick_actions" version_id="0" version_string="1.0.0"><![CDATA[Immediate Response]]></phrase>
+  <phrase title="usips_ncmec_remove_user" version_id="0" version_string="1.0.0"><![CDATA[Remove user]]></phrase>
+  <phrase title="usips_ncmec_remove_user_from_incident" version_id="0" version_string="1.0.0"><![CDATA[Remove user from incident]]></phrase>
+  <phrase title="usips_ncmec_remove_user_from_incident_confirm" version_id="0" version_string="1.0.0"><![CDATA[Please confirm removing {user} and all associated content and uploads from "{incident}".]]></phrase>
   <phrase title="usips_ncmec_report" version_id="0" version_string="1.0.0"><![CDATA[Report]]></phrase>
   <phrase title="usips_ncmec_report_flagged_as_csam" version_id="0" version_string="1.0.0"><![CDATA[Reported content has been flagged as CSAM.]]></phrase>
   <phrase title="usips_ncmec_report_logs" version_id="0" version_string="1.0.0"><![CDATA[Report Logs]]></phrase>

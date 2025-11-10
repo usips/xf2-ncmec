@@ -3,13 +3,13 @@
 <xf:breadcrumb href="{{ link('ncmec-incidents/view', $incident) }}">{$incident.title}</xf:breadcrumb>
 
 <xf:pageaction if="true">
-    <xf:button href="{{ link('ncmec-incidents/user/delete', $user) }}" icon="delete" overlay="true" />
+	<xf:button href="{{ link('ncmec-incidents/user/delete', $incidentUser) }}" icon="delete" overlay="true" />
 </xf:pageaction>
 
 <xf:form action="{{ link('ncmec-incidents/user/associate-timestamp', $incidentUser) }}" ajax="true" class="block">
 	<div class="block-container">
 		<xf:formrow label="{{ phrase('usips_ncmec_content_time_limit') }}"
-					explain="{{ phrase('usips_ncmec_content_time_limit_explain') }}">
+			explain="{{ phrase('usips_ncmec_content_time_limit_explain') }}">
 			<xf:select name="time_limit_seconds">
 				<xf:option value="3600">{{ phrase('1_hour') }}</xf:option>
 				<xf:option value="86400">{{ phrase('1_day') }}</xf:option>
@@ -33,7 +33,8 @@
 		<h2 class="block-header">{{ phrase('usips_ncmec_attachments') }}</h2>
 		<xf:if is="$availableAttachments is not empty">
 			<div class="block-body">
-				<xf:macro name="usips_ncmec_macros::attachment_block" arg-incident="{$incident}" arg-attachments="{$availableAttachments}" arg-checked="{$associatedAttachmentIds}" />
+				<xf:macro name="usips_ncmec_macros::attachment_block" arg-incident="{$incident}"
+					arg-attachments="{$availableAttachments}" arg-checked="{$associatedAttachmentIds}" />
 			</div>
 			<xf:else />
 			<div class="block-body block-row">{{ phrase('no_results_found') }}</div>

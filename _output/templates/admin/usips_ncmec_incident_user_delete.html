@@ -1,0 +1,14 @@
+<xf:title>{{ phrase('usips_ncmec_remove_user_from_incident') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-incidents/user/delete', $incidentUser) }}" class="block" ajax="true">
+    <div class="block-container">
+        <div class="block-body block-row">
+            {{ phrase('usips_ncmec_remove_user_from_incident_confirm', {
+            'user': $user.username,
+            'incident': $incident.title
+            }) }}
+        </div>
+        <xf:submitrow icon="delete" submit="{{ phrase('usips_ncmec_remove_user') }}" sticky="true" />
+    </div>
+    <xf:hiddenval name="_xfRedirect">{{ link('ncmec-incidents/view', $incident) }}</xf:hiddenval>
+</xf:form>

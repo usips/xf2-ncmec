@@ -50,21 +50,7 @@ class AssociateUser extends AbstractRebuildJob
         $creator->setIncident($incident);
 
         try {
-            // Associate this specific user
-            $creator->associateUsersByIds([$id]);
-
-            // Collect and associate their content and attachments within time limit
-            $contentItems = $creator->collectUserContentWithinTimeLimit($id, $timeLimitSeconds);
-            if (!empty($contentItems))
-            {
-                $creator->associateContentByIds($contentItems);
-            }
-
-            $attachmentDataIds = $creator->collectUserAttachmentDataWithinTimeLimit($id, $timeLimitSeconds);
-            if (!empty($attachmentDataIds))
-            {
-                $creator->associateAttachmentsByDataIds($attachmentDataIds);
-            }
+            $creator->associateUserCascade($id, $timeLimitSeconds);
 
             // Update promotions for this user after association is complete
             $this->getUserPromotionService()->updateUser($id);

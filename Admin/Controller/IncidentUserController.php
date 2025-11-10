@@ -8,7 +8,6 @@ use USIPS\NCMEC\Service\Incident\UserContentSelector;
 use XF\Admin\Controller\AbstractController;
 use XF\Entity\User;
 use XF\Mvc\ParameterBag;
-use XF\Util\Str;
 
 class IncidentUserController extends AbstractController
 {
@@ -80,60 +79,47 @@ class IncidentUserController extends AbstractController
         /** @var \USIPS\NCMEC\Service\Incident\Creator $creator */
         $creator = $this->service('USIPS\\NCMEC:Incident\\Creator');
         $creator->setIncident($incident);
-
-        $contentItems = $creator->collectUserContentWithinTimeLimit($user->user_id, $timeLimitSeconds);
-        if ($contentItems)
-        {
-            $creator->associateContentByIds($contentItems);
-        }
-
-        $attachmentDataIds = $creator->collectUserAttachmentDataWithinTimeLimit($user->user_id, $timeLimitSeconds);
-        if ($attachmentDataIds)
-        {
-            $attachmentDataIds = array_unique(array_map('intval', $attachmentDataIds));
-
-            /** @var \USIPS\NCMEC\Service\Incident\AttachmentManager $attachmentManager */
-            $attachmentManager = $this->service('USIPS\\NCMEC:Incident\\AttachmentManager');
-
-            $attachmentData = $this->finder('XF:AttachmentData')
-                ->where('data_id', $attachmentDataIds)
-                ->with('User')
-                ->fetch();
-
-            foreach ($attachmentData as $data)
-            {
-                if ((int) $data->user_id !== $user->user_id)
-                {
-                    continue;
-                }
-
-                $username = $data->User ? $data->User->username : $user->username;
-
-                $created = $attachmentManager->addAttachmentToIncident(
-                    $incident->incident_id,
-                    $data->data_id,
-                    $data->user_id,
-                    Str::substr($username, 0, 50)
-                );
-
-                if ($created)
-                {
-                    $attachmentManager->updateIncidentCount($data->data_id);
-                }
-            }
-        }
-
-        $desiredUsername = Str::substr($user->username, 0, 50);
-        if ($incidentUser->username !== $desiredUsername)
-        {
-            $incidentUser->username = $desiredUsername;
-            $incidentUser->save();
-        }
+        $creator->associateUserCascade($user->user_id, $timeLimitSeconds);
 
         return $this->redirect(
             $this->buildLink('ncmec-incidents/user', $incidentUser),
             \XF::phrase('changes_saved')
         );
+    }
+
+    public function actionDelete(ParameterBag $params)
+    {
+        $incident = $this->assertIncidentExists($params->incident_id);
+        $user = $this->assertUserExists($params->user_id);
+        $incidentUser = $this->assertIncidentUserExists($incident, $user);
+
+        if ($this->isPost())
+        {
+            $this->assertPostOnly();
+
+            $uniqueId = 'ncmec_disassociate_' . $incident->incident_id . '_' . $user->user_id . '_' . \XF::$time;
+
+            \XF::app()->jobManager()->enqueueUnique($uniqueId, 'USIPS\NCMEC:DisassociateUser', [
+                'incident_id' => $incident->incident_id,
+                'user_ids' => [$user->user_id],
+            ]);
+
+            return $this->redirect(
+                $this->buildLink('tools/run-job', null, [
+                    'only' => $uniqueId,
+                    '_xfRedirect' => $this->buildLink('ncmec-incidents/view', $incident),
+                ]),
+                \XF::phrase('changes_saved')
+            );
+        }
+
+        $viewParams = [
+            'incident' => $incident,
+            'user' => $user,
+            'incidentUser' => $incidentUser,
+        ];
+
+        return $this->view('USIPS\NCMEC:IncidentUser\Delete', 'usips_ncmec_incident_user_delete', $viewParams);
     }
 
     public function actionUpdateAttachments(ParameterBag $params)

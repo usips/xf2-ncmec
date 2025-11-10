@@ -57,7 +57,12 @@
     "admin/usips_ncmec_incident_user_content.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "b2d51c2815529be067c20f5e29354244"
+        "hash": "488fe3518061913ca81c3b0944f8cd85"
+    },
+    "admin/usips_ncmec_incident_user_delete.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "b8bb54b314933e90e61c09f9b382fd33"
     },
     "admin/usips_ncmec_incident_view.html": {
         "version_id": 0,
