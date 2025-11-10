@@ -11,12 +11,18 @@
 		<xf:formrow label="{{ phrase('usips_ncmec_content_time_limit') }}"
 			explain="{{ phrase('usips_ncmec_content_time_limit_explain') }}">
 			<xf:select name="time_limit_seconds">
-				<xf:option value="3600">{{ phrase('1_hour') }}</xf:option>
-				<xf:option value="86400">{{ phrase('1_day') }}</xf:option>
-				<xf:option value="172800" selected="{{ true }}">{{ phrase('48_hours') }}</xf:option>
-				<xf:option value="604800">{{ phrase('1_week') }}</xf:option>
-				<xf:option value="2592000">{{ phrase('1_month') }}</xf:option>
-				<xf:option value="0">{{ phrase('all_time') }}</xf:option>
+				<xf:option value="-1" selected="{{ $timeLimitSelection == -1 }}">{{
+					phrase('usips_ncmec_use_default_timespan', {'duration': $timeLimitDefaultDescription ?:
+					phrase('all_time')}) }}</xf:option>
+				<xf:option value="3600" selected="{{ $timeLimitSelection == 3600 }}">{{ phrase('1_hour') }}</xf:option>
+				<xf:option value="86400" selected="{{ $timeLimitSelection == 86400 }}">{{ phrase('1_day') }}</xf:option>
+				<xf:option value="172800" selected="{{ $timeLimitSelection == 172800 }}">{{ phrase('x_hours', {'count':
+					48}) }}</xf:option>
+				<xf:option value="604800" selected="{{ $timeLimitSelection == 604800 }}">{{ phrase('1_week') }}
+				</xf:option>
+				<xf:option value="2592000" selected="{{ $timeLimitSelection == 2592000 }}">{{ phrase('1_month') }}
+				</xf:option>
+				<xf:option value="0" selected="{{ $timeLimitSelection == 0 }}">{{ phrase('all_time') }}</xf:option>
 			</xf:select>
 		</xf:formrow>
 		<xf:submitrow>

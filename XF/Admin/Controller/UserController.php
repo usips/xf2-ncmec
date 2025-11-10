@@ -3,6 +3,7 @@
 namespace USIPS\NCMEC\XF\Admin\Controller;
 
 use USIPS\NCMEC\Job\AssociateUser;
+use USIPS\NCMEC\Util\TimeLimit;
 use XF\Admin\Controller\UserController as BaseUserController;
 use XF\Searcher\User;
 
@@ -19,6 +20,9 @@ class UserController extends BaseUserController
                 ->where('is_finalized', 0)
                 ->order('created_date', 'DESC')
                 ->fetch();
+            $viewParams['timeLimitDefault'] = TimeLimit::getDefaultSeconds();
+            $viewParams['timeLimitSelection'] = TimeLimit::normalizeSelection(null);
+            $viewParams['timeLimitDefaultDescription'] = TimeLimit::describeDefault();
             $response->setParams($viewParams);
         }
 
@@ -55,7 +59,8 @@ class UserController extends BaseUserController
             }
 
             $incidentId = $this->filter('incident_id', 'uint');
-            $timeLimitSeconds = $this->filter('time_limit_seconds', 'uint');
+            $timeLimitSelection = $this->filter('time_limit_seconds', 'int');
+            $timeLimitSelection = TimeLimit::normalizeSelection($timeLimitSelection);
             $incident = null;
 
             if ($incidentId)
@@ -75,7 +80,7 @@ class UserController extends BaseUserController
             \XF::app()->jobManager()->enqueueUnique($uniqueId, 'USIPS\NCMEC:AssociateUser', [
                 'incident_id' => $incident->incident_id,
                 'user_ids' => $userIds,
-                'time_limit_seconds' => $timeLimitSeconds
+                'time_limit_seconds' => $timeLimitSelection
             ]);
 
             return $this->redirect(

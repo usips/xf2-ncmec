@@ -5,6 +5,7 @@ namespace USIPS\NCMEC\Service\Incident;
 use USIPS\NCMEC\Entity\Incident;
 use USIPS\NCMEC\Entity\IncidentAttachmentData;
 use USIPS\NCMEC\Entity\IncidentContent;
+use USIPS\NCMEC\Util\TimeLimit;
 use XF\Entity\Attachment;
 use XF\Entity\User;
 use XF\Mvc\Entity\ArrayCollection;
@@ -204,8 +205,8 @@ class UserContentSelector extends AbstractService
         $creator = $this->service(Creator::class);
         $creator->setIncident($this->incident);
 
-        $timeLimit = $timeLimitSeconds ?? 0;
-        return $creator->collectUserContentWithinTimeLimit($this->user->user_id, $timeLimit);
+    $timeLimit = TimeLimit::resolve($timeLimitSeconds);
+    return $creator->collectUserContentWithinTimeLimit($this->user->user_id, $timeLimit);
     }
 
     protected function collectUserAttachmentData(?int $timeLimitSeconds = null): array
@@ -214,8 +215,8 @@ class UserContentSelector extends AbstractService
         $creator = $this->service(Creator::class);
         $creator->setIncident($this->incident);
 
-        $timeLimit = $timeLimitSeconds ?? 0;
-        return $creator->collectUserAttachmentDataWithinTimeLimit($this->user->user_id, $timeLimit);
+    $timeLimit = TimeLimit::resolve($timeLimitSeconds);
+    return $creator->collectUserAttachmentDataWithinTimeLimit($this->user->user_id, $timeLimit);
     }
 
     protected function hydrateContentEntities(array $contentItems, ?ArrayCollection $associatedContent = null): array

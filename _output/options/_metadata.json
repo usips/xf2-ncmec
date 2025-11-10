@@ -1,5 +1,8 @@
 {
     "usipsNcmecApi.json": {
         "hash": "6d41c02387ce498d31cd39fe5db64c00"
+    },
+    "usipsNcmecDefaultTimespan.json": {
+        "hash": "b645e29c342180de5ddac1a29029e9ee"
     }
 }

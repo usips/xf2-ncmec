@@ -2,6 +2,7 @@
 
 namespace USIPS\NCMEC\Job;
 
+use USIPS\NCMEC\Util\TimeLimit;
 use XF\Job\AbstractRebuildJob;
 
 class AssociateUser extends AbstractRebuildJob
@@ -12,7 +13,7 @@ class AssociateUser extends AbstractRebuildJob
     protected $defaultData = [
         'incident_id' => 0,
         'user_ids' => [], // Array of user IDs to associate
-        'time_limit_seconds' => 172800, // 48 hours default
+        'time_limit_seconds' => -1,
     ];
 
     protected function getNextIds($start, $batch)
@@ -32,7 +33,7 @@ class AssociateUser extends AbstractRebuildJob
     protected function rebuildById($id)
     {
         $incidentId = $this->data['incident_id'];
-        $timeLimitSeconds = $this->data['time_limit_seconds'] ?? 172800;
+    $timeLimitSeconds = TimeLimit::resolve($this->data['time_limit_seconds'] ?? null);
 
         if (!$incidentId)
         {

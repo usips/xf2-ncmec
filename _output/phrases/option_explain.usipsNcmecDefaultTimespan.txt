@@ -1,0 +1,3 @@
+Certain moderation actions automatically grab recently created content by the user. This is to help reduce false positives when dealing with an older compromised account. You may change the search range for these actions.
+
+0 is <strong>all</strong> content.

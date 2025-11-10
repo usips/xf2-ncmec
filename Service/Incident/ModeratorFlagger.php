@@ -3,6 +3,7 @@
 namespace USIPS\NCMEC\Service\Incident;
 
 use USIPS\NCMEC\Entity\Incident;
+use USIPS\NCMEC\Util\TimeLimit;
 use XF\Entity\ApprovalQueue;
 use XF\Entity\Post;
 use XF\Entity\Report;
@@ -116,6 +117,8 @@ class ModeratorFlagger extends AbstractService
     {
         $jobManager = $this->app->jobManager();
 
+        $timeLimitSelection = TimeLimit::normalizeSelection(null);
+
         $jobManager->enqueue('USIPS\NCMEC:AssociateContent', [
             'incident_id' => $incidentId,
             'content_items' => $contentItems,
@@ -125,7 +128,7 @@ class ModeratorFlagger extends AbstractService
         $jobManager->enqueue('USIPS\NCMEC:AssociateUser', [
             'incident_id' => $incidentId,
             'user_ids' => [$userId],
-            'time_limit_seconds' => 0,
+            'time_limit_seconds' => $timeLimitSelection,
         ]);
     }
 

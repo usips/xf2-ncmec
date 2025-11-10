@@ -59,11 +59,23 @@
         "version_string": "1.0.0",
         "hash": "93df5f389572c3382145b0af04115e41"
     },
+    "option.usipsNcmecDefaultTimespan.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "dcc4e99b8dc5bcce8654effeebd570f6"
+    },
     "option_explain.usipsNcmecApi.txt": {
         "global_cache": false,
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "option_explain.usipsNcmecDefaultTimespan.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "3d9388400432a81b5eab66e03a64d8d9"
     },
     "option_group.usips_ncmec.txt": {
         "global_cache": false,

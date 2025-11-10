@@ -5,6 +5,7 @@ namespace USIPS\NCMEC\Admin\Controller;
 use USIPS\NCMEC\Entity\Incident;
 use USIPS\NCMEC\Entity\IncidentUser;
 use USIPS\NCMEC\Service\Incident\UserContentSelector;
+use USIPS\NCMEC\Util\TimeLimit;
 use XF\Admin\Controller\AbstractController;
 use XF\Entity\User;
 use XF\Mvc\ParameterBag;
@@ -22,11 +23,13 @@ class IncidentUserController extends AbstractController
         $user = $this->assertUserExists($params->user_id);
         $incidentUser = $this->assertIncidentUserExists($incident, $user);
 
-        $timeLimit = $this->filter('time_limit', 'uint');
-        if (!$timeLimit)
+        $rawTimeLimit = $this->filter('time_limit_seconds', '?int');
+        if ($rawTimeLimit === null)
         {
-            $timeLimit = 172800; // default to 48 hours
+            $rawTimeLimit = $this->filter('time_limit', '?int');
         }
+        $timeLimitSelection = TimeLimit::normalizeSelection($rawTimeLimit);
+        $timeLimit = TimeLimit::resolve($timeLimitSelection);
 
         /** @var UserContentSelector $selector */
         $selector = $this->service(UserContentSelector::class, $incident, $user);
@@ -57,6 +60,9 @@ class IncidentUserController extends AbstractController
             'user' => $user,
             'incidentUser' => $incidentUser,
             'timeLimit' => $timeLimit,
+            'timeLimitSelection' => $timeLimitSelection,
+            'timeLimitDefault' => TimeLimit::getDefaultSeconds(),
+            'timeLimitDefaultDescription' => TimeLimit::describeDefault(),
             'availableContent' => $availableContent,
             'availableAttachments' => $availableAttachments,
             'associatedContent' => $associatedContent,
@@ -74,12 +80,14 @@ class IncidentUserController extends AbstractController
         $user = $this->assertUserExists($params->user_id);
         $incidentUser = $this->assertIncidentUserExists($incident, $user);
 
-        $timeLimitSeconds = $this->filter('time_limit_seconds', 'uint');
+        $timeLimitSeconds = $this->filter('time_limit_seconds', 'int');
+        $timeLimitSeconds = TimeLimit::normalizeSelection($timeLimitSeconds);
+        $resolvedTimeLimit = TimeLimit::resolve($timeLimitSeconds);
 
         /** @var \USIPS\NCMEC\Service\Incident\Creator $creator */
         $creator = $this->service('USIPS\\NCMEC:Incident\\Creator');
         $creator->setIncident($incident);
-        $creator->associateUserCascade($user->user_id, $timeLimitSeconds);
+        $creator->associateUserCascade($user->user_id, $resolvedTimeLimit);
 
         return $this->redirect(
             $this->buildLink('ncmec-incidents/user', $incidentUser),

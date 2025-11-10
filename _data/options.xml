@@ -9,4 +9,10 @@ environment
 *</sub_options>
     <relation group_id="usips_ncmec" display_order="10"/>
   </option>
+  <option option_id="usipsNcmecDefaultTimespan" edit_format="spinbox" data_type="unsigned_integer" advanced="0">
+    <default_value>48</default_value>
+    <edit_format_params>min=0
+units={{ phrase('units_hours') }}</edit_format_params>
+    <relation group_id="usips_ncmec" display_order="200"/>
+  </option>
 </options>

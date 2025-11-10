@@ -3,6 +3,7 @@
 namespace USIPS\NCMEC\Service\Incident;
 
 use USIPS\NCMEC\Entity\Incident;
+use USIPS\NCMEC\Util\TimeLimit;
 use XF\Entity\Attachment;
 use XF\Entity\User;
 use XF\Mvc\Entity\Entity;
@@ -216,7 +217,7 @@ class Creator extends AbstractService
     /**
      * High-level helper that links a user and, optionally, their recent content and attachments.
      */
-    public function associateUserCascade(int $userId, int $timeLimitSeconds = 0, bool $includeContent = true, bool $includeAttachments = true): void
+    public function associateUserCascade(int $userId, ?int $timeLimitSeconds = null, bool $includeContent = true, bool $includeAttachments = true): void
     {
         $userId = (int) $userId;
         if (!$userId)
@@ -224,7 +225,7 @@ class Creator extends AbstractService
             return;
         }
 
-        $limit = max(0, (int) $timeLimitSeconds);
+        $limit = TimeLimit::resolve($timeLimitSeconds);
 
         $this->associateUsersByIds([$userId]);
 
@@ -673,8 +674,15 @@ class Creator extends AbstractService
      * @param int $timeLimitSeconds Time limit in seconds (0 = no limit)
      * @return array Array of content items with type, id, and user info
      */
-    public function collectUserContentWithinTimeLimit($userId, $timeLimitSeconds = 172800) // 48 hours default
+    public function collectUserContentWithinTimeLimit($userId, ?int $timeLimitSeconds = null)
     {
+        $userId = (int) $userId;
+        if (!$userId)
+        {
+            return [];
+        }
+
+        $timeLimitSeconds = TimeLimit::resolve($timeLimitSeconds);
         $contentItems = [];
 
         // Get the user once to avoid multiple queries
@@ -751,8 +759,15 @@ class Creator extends AbstractService
      * @param int $timeLimitSeconds Time limit in seconds (0 = no limit) (defaults to 48 hours)
      * @return array Array of attachment data IDs
      */
-    public function collectUserAttachmentDataWithinTimeLimit($userId, $timeLimitSeconds = 172800)
+    public function collectUserAttachmentDataWithinTimeLimit($userId, ?int $timeLimitSeconds = null)
     {
+        $userId = (int) $userId;
+        if (!$userId)
+        {
+            return [];
+        }
+
+        $timeLimitSeconds = TimeLimit::resolve($timeLimitSeconds);
         // Query attachment data directly since xf_attachment doesn't have user_id
         $finder = $this->finder('XF:AttachmentData')
             ->where('user_id', $userId);
