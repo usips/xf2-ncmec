@@ -1,2 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<permissions/>
+<permissions>
+  <permission permission_group_id="general" permission_id="usipsNcmecReportEmergency" permission_type="flag" depend_permission_id="report" interface_group_id="generalPermissions" display_order="12050"/>
+</permissions>

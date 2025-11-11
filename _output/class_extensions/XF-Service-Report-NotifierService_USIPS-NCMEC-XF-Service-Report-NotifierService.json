@@ -1,6 +1,0 @@
-{
-    "from_class": "XF\\Service\\Report\\NotifierService",
-    "to_class": "USIPS\\NCMEC\\XF\\Service\\Report\\NotifierService",
-    "execute_order": 10,
-    "active": true
-}

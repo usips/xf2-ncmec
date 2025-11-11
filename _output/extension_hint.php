@@ -37,9 +37,3 @@ namespace USIPS\NCMEC\XF\Pub\Controller
 {
 	class XFCP_ReportController extends \XF\Pub\Controller\ReportController {}
 }
-
-namespace USIPS\NCMEC\XF\Service\Report
-{
-	class XFCP_CreatorService extends \XF\Service\Report\CreatorService {}
-	class XFCP_NotifierService extends \XF\Service\Report\NotifierService {}
-}

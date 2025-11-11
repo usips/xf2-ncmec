@@ -80,7 +80,7 @@ class TimeLimit
         if ($hours % 24 === 0)
         {
             $days = (int) ($hours / 24);
-            return (string) \XF::phrase('x_days', ['count' => $days]);
+            return (string) \XF::phrase('x_days', ['days' => $days]);
         }
 
         return (string) \XF::phrase('x_hours', ['count' => $hours]);

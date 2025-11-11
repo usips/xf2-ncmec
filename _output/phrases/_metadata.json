@@ -89,6 +89,12 @@
         "version_string": "1.0.0",
         "hash": "02f29920abf730debab335958399cf6a"
     },
+    "permission.general_usipsNcmecReportEmergency.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "ebe4b93bfc00f7501216efcf11d2881c"
+    },
     "registration_disabled.txt": {
         "global_cache": false,
         "version_id": 0,

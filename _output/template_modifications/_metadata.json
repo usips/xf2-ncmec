@@ -10,5 +10,8 @@
     },
     "public/usips_ncmec_report_view.json": {
         "hash": "7fc775c51960d720df3c14fa20630d61"
+    },
+    "public/usips_ncmec_report_view_attachments.json": {
+        "hash": "1448f9d9f76a55fdc4c5e3eb66b5b14d"
     }
 }

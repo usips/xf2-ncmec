@@ -18,6 +18,7 @@
 0 is <strong>all</strong> content.]]></phrase>
   <phrase title="option_group.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting]]></phrase>
   <phrase title="option_group_description.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC reporting credentials and environment settings.]]></phrase>
+  <phrase title="permission.general_usipsNcmecReportEmergency" version_id="0" version_string="1.0.0"><![CDATA[[NCMEC] Report content as emergency]]></phrase>
   <phrase title="registration_disabled" version_id="0" version_string="1.0.0"><![CDATA[Registrations disabled]]></phrase>
   <phrase title="registrations_enabled" version_id="0" version_string="1.0.0"><![CDATA[Registrations enabled]]></phrase>
   <phrase title="report_state.flag_as_csam" version_id="0" version_string="1.0.0"><![CDATA[Flag as CSAM]]></phrase>
@@ -47,7 +48,6 @@
   <phrase title="usips_ncmec_content_time_limit" version_id="0" version_string="1.0.0"><![CDATA[Content time limit]]></phrase>
   <phrase title="usips_ncmec_content_time_limit_explain" version_id="0" version_string="1.0.0"><![CDATA[User generated content authored within this timespan will be associated with this incident.]]></phrase>
   <phrase title="usips_ncmec_content_time_limit_explain_batch" version_id="0" version_string="1.0.0"><![CDATA[All matched users will be added to this incident. Their content will also be added to the incident if it is within this timeframe. You may not want to associate entire post histories when dealing with compromised accounts.]]></phrase>
-  <phrase title="usips_ncmec_use_default_timespan" version_id="0" version_string="1.0.0"><![CDATA[Use default ({duration})]]></phrase>
   <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create Incident]]></phrase>
   <phrase title="usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting Dashboard]]></phrase>
   <phrase title="usips_ncmec_emergency_report_default_message" version_id="0" version_string="1.0.0"><![CDATA[Report was submitted as an emergency.]]></phrase>
