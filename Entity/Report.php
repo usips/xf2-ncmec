@@ -8,6 +8,7 @@ use XF\Mvc\Entity\Structure;
 /**
  * COLUMNS
  * @property int $report_id
+ * @property string $activity_summary
  * @property int $created_date
  * @property int $last_update_date
  * @property int $user_id
@@ -28,6 +29,7 @@ class Report extends Entity
         $structure->primaryKey = 'report_id';
         $structure->columns = [
             'report_id' => ['type' => self::UINT, 'required' => true, 'autoIncrement' => false],
+            'activity_summary' => ['type' => self::STR, 'default' => '', 'maxLength' => 65535],
             'created_date' => ['type' => self::UINT, 'default' => \XF::$time],
             'last_update_date' => ['type' => self::UINT, 'default' => \XF::$time],
             'user_id' => ['type' => self::UINT, 'required' => true],

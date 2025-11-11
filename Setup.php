@@ -3,6 +3,7 @@
 namespace USIPS\NCMEC;
 
 use XF\AddOn\AbstractSetup;
+use XF\Db\Schema\Alter;
 use XF\Db\Schema\Create;
 
 class Setup extends AbstractSetup
@@ -56,6 +57,7 @@ class Setup extends AbstractSetup
         $this->schemaManager()->createTable('xf_usips_ncmec_report', function(Create $table)
         {
             $table->addColumn('report_id', 'int');
+            $table->addColumn('activity_summary', 'mediumtext')->nullable();
             $table->addColumn('created_date', 'int');
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
@@ -167,7 +169,7 @@ class Setup extends AbstractSetup
 
     public function upgrade(array $stepParams = [])
     {
-        // No upgrades yet
+        return $stepParams;
     }
 
     public function uninstall(array $stepParams = [])
