@@ -2,7 +2,6 @@
 
 namespace USIPS\NCMEC\Admin\Controller;
 
-use USIPS\NCMEC\Entity\Incident;
 use \XF;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\ParameterBag;
@@ -39,6 +38,29 @@ class IncidentController extends AbstractController
         ];
 
         return $this->view('USIPS\NCMEC:Incident\Listing', 'usips_ncmec_incident_list', $viewParams);
+    }
+
+    public function actionArchive(ParameterBag $params)
+    {
+        $page = $this->filterPage();
+        $perPage = 100;
+
+        $finder = $this->finder('USIPS\NCMEC:Incident')
+            ->where('is_finalized', true)
+            ->order('created_date', 'DESC')
+            ->limitByPage($page, $perPage);
+
+        $total = $finder->total();
+        $this->assertValidPage($page, $perPage, $total, 'ncmec-incidents/archive');
+
+        $viewParams = [
+            'incidents' => $finder->fetch(),
+            'page' => $page,
+            'perPage' => $perPage,
+            'total' => $total,
+        ];
+
+        return $this->view('USIPS\NCMEC:Incident\Listing', 'usips_ncmec_incident_list_archive', $viewParams);
     }
 
     public function actionCreate(ParameterBag $params)
@@ -234,4 +256,5 @@ class IncidentController extends AbstractController
 
         return $this->view('USIPS\NCMEC:Incident\View', 'usips_ncmec_incident_view', $viewParams);
     }
+
 }

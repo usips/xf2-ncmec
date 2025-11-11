@@ -29,11 +29,35 @@
         "version_string": "1.0.0",
         "hash": "515b059a6c6f39dd039d745554feba95"
     },
+    "admin_navigation.usips_ncmec_incident_all.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "6567b308f0b140d07ace8164092cefe0"
+    },
     "admin_navigation.usips_ncmec_incident_list.txt": {
         "global_cache": false,
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "a2952b0a493f0ac57f5a26bb8bf1afe4"
+    },
+    "admin_navigation.usips_ncmec_report.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "c91c7b93c28cd18741b71f727ee81ee3"
+    },
+    "admin_navigation.usips_ncmec_report_archive.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "25116eb69a402cb5c776446f7aecf412"
+    },
+    "admin_navigation.usips_ncmec_report_list.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "f9063e7b9524e6a4b36735bacbfd36d3"
     },
     "admin_permission.usips_ncmec.txt": {
         "global_cache": false,
@@ -275,6 +299,12 @@
         "version_string": "1.0.0",
         "hash": "6d814bdc6f6aa8453b670eb676afec5b"
     },
+    "usips_ncmec_create_report.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "72863a02021f293391955ae5866dfa0f"
+    },
     "usips_ncmec_dashboard.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -358,6 +388,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "515b059a6c6f39dd039d745554feba95"
+    },
+    "usips_ncmec_incidents_archive.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "f9e240f96d1277089619657ced779d39"
     },
     "usips_ncmec_invalid_response_from_server.txt": {
         "global_cache": false,
@@ -478,6 +514,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "c91c7b93c28cd18741b71f727ee81ee3"
+    },
+    "usips_ncmec_reports_archive.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "25116eb69a402cb5c776446f7aecf412"
     },
     "usips_ncmec_save_configuration.txt": {
         "global_cache": false,

@@ -2,7 +2,7 @@
     "parent_navigation_id": "usips_ncmec",
     "display_order": 200,
     "link": "",
-    "icon": "fa-clipboard",
+    "icon": "fa-file-upload",
     "admin_permission_id": "usips_ncmec",
     "debug_only": false,
     "development_only": false,

@@ -6,7 +6,11 @@
   <phrase title="admin_navigation.usips_ncmec_attachments_latest" version_id="0" version_string="1.0.0"><![CDATA[Attachment Browser]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[Dashboard]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_incident_all" version_id="0" version_string="1.0.0"><![CDATA[Finalized Incidents]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_incident_list" version_id="0" version_string="1.0.0"><![CDATA[Active Incidents]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_report" version_id="0" version_string="1.0.0"><![CDATA[Reports]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_report_archive" version_id="0" version_string="1.0.0"><![CDATA[Finalized Reports]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_report_list" version_id="0" version_string="1.0.0"><![CDATA[Active Reports]]></phrase>
   <phrase title="admin_permission.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[Manage NCMEC incidents]]></phrase>
   <phrase title="invite_only_disabled" version_id="0" version_string="1.0.0"><![CDATA[Invitations no longer required]]></phrase>
   <phrase title="invite_only_enabled" version_id="0" version_string="1.0.0"><![CDATA[Invitations now required]]></phrase>
@@ -49,6 +53,7 @@
   <phrase title="usips_ncmec_content_time_limit_explain" version_id="0" version_string="1.0.0"><![CDATA[User generated content authored within this timespan will be associated with this incident.]]></phrase>
   <phrase title="usips_ncmec_content_time_limit_explain_batch" version_id="0" version_string="1.0.0"><![CDATA[All matched users will be added to this incident. Their content will also be added to the incident if it is within this timeframe. You may not want to associate entire post histories when dealing with compromised accounts.]]></phrase>
   <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create Incident]]></phrase>
+  <phrase title="usips_ncmec_create_report" version_id="0" version_string="1.0.0"><![CDATA[Add to Report]]></phrase>
   <phrase title="usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting Dashboard]]></phrase>
   <phrase title="usips_ncmec_emergency_report_default_message" version_id="0" version_string="1.0.0"><![CDATA[Report was submitted as an emergency.]]></phrase>
   <phrase title="usips_ncmec_env_live" version_id="0" version_string="1.0.0"><![CDATA[Live Environment]]></phrase>
@@ -63,6 +68,7 @@
   <phrase title="usips_ncmec_incident_status" version_id="0" version_string="1.0.0"><![CDATA[Incident status]]></phrase>
   <phrase title="usips_ncmec_incident_user" version_id="0" version_string="1.0.0"><![CDATA[User involved in Incident]]></phrase>
   <phrase title="usips_ncmec_incidents" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
+  <phrase title="usips_ncmec_incidents_archive" version_id="0" version_string="1.0.0"><![CDATA[Archived Incidents]]></phrase>
   <phrase title="usips_ncmec_invalid_response_from_server" version_id="0" version_string="1.0.0"><![CDATA[Invalid response from NCMEC server.]]></phrase>
   <phrase title="usips_ncmec_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>
   <phrase title="usips_ncmec_lookup_description" version_id="0" version_string="1.0.0"><![CDATA[https://domain.com/attachments/1762288299348-png.8126290/
@@ -90,6 +96,7 @@ internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
   <phrase title="usips_ncmec_report_type_explain" version_id="0" version_string="1.0.0"><![CDATA[Please use emergency reports only for violations of law which require immediate attention.]]></phrase>
   <phrase title="usips_ncmec_report_type_standard" version_id="0" version_string="1.0.0"><![CDATA[Standard report]]></phrase>
   <phrase title="usips_ncmec_reports" version_id="0" version_string="1.0.0"><![CDATA[Reports]]></phrase>
+  <phrase title="usips_ncmec_reports_archive" version_id="0" version_string="1.0.0"><![CDATA[Finalized Reports]]></phrase>
   <phrase title="usips_ncmec_save_configuration" version_id="0" version_string="1.0.0"><![CDATA[Save configuration]]></phrase>
   <phrase title="usips_ncmec_test_connection" version_id="0" version_string="1.0.0"><![CDATA[Test connection]]></phrase>
   <phrase title="usips_ncmec_unable_to_flag_content" version_id="0" version_string="1.0.0"><![CDATA[Error attempting to flag content. Report this issue.]]></phrase>

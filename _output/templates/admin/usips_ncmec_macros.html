@@ -65,15 +65,21 @@
 <xf:macro id="incident_list" arg-incidents="{{ [] }}">
 	<xf:datalist class="dataList">
 		<xf:datarow rowtype="header">
+			<xf:cell></xf:cell>
 			<xf:cell>{{ phrase('title') }}</xf:cell>
 			<xf:cell>{{ phrase('user') }}</xf:cell>
 			<xf:cell>{{ phrase('date') }}</xf:cell>
 			<xf:cell>{{ phrase('status') }}</xf:cell>
 			<xf:cell></xf:cell>
-			<xf:cell></xf:cell>
 		</xf:datarow>
 		<xf:foreach loop="$incidents" value="$incident">
 			<xf:datarow>
+				<xf:if is="$incident.is_finalized">
+					<xf:cell></xf:cell>
+				<xf:else />
+					<xf:toggle name="incident_ids[]" value="{$incident.incident_id}" />
+				</xf:if>
+
 				<xf:cell>
 					<a href="{{ link('ncmec-incidents/view', $incident) }}">
 						{{ $incident.title ?: phrase('usips_ncmec_untitled_incident') }}
@@ -93,17 +99,13 @@
 						{{ phrase('usips_ncmec_incident_draft') }}
 					</xf:if>
 				</xf:cell>
-				<xf:action class="{{ false ? 'dataList-cell--highlighted' : '' }}"
-						   href="{{ link('ncmec-incidents/log', $incident) }}">
-					{{ phrase('usips_ncmec_report_logs') }}
-				</xf:action>
 				<xf:delete href="{{ link('ncmec-incidents/delete', $incident) }}" />
 			</xf:datarow>
 		</xf:foreach>
 	</xf:datalist>
 </xf:macro>
 
-<xf:macro id="incident_list_block" arg-incidents="{{ [] }}" arg-header="{{ false }}" arg-nav="{{ true }}">
+<xf:macro id="incident_list_block" arg-incidents="{{ [] }}" arg-header="{{ false }}" arg-nav="{{ true }}" arg-total="{{ 0 }}">
 	<div class="block">
 		<div class="block-container">
 			<xf:if is="{$header}">
@@ -112,6 +114,14 @@
 			<xf:if is="$incidents is not empty">
 				<div class="block-body">
 					<xf:macro id="incident_list" arg-incidents="{{ $incidents }}" />
+				</div>
+				
+				<div class="block-footer block-footer--split">
+					<span class="block-footer-counter">{{ display_totals($incidents, $total) }}</span>
+					<span class="block-footer-select"><xf:checkbox standalone="true"><xf:option check-all="< .block-container" label="{{ phrase('select_all') }}" /></xf:checkbox></span>
+					<span class="block-footer-controls">
+						<xf:button type="submit" name="create_report" icon="merge">{{ phrase('usips_ncmec_create_report') }}</xf:button>
+					</span>
 				</div>
 
 				<xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-incidents" />
