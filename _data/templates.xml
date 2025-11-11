@@ -512,9 +512,6 @@
     <div class="block-container">
         <div class="block-body">
             <xf:textboxrow name="title" value="{$incident.title}" label="{{ phrase('title') }}" />
-            <xf:textarearow name="additional_info" value="{$incident.additional_info}"
-                label="{{ phrase('usips_ncmec_additional_info') }}"
-                explain="{{ phrase('usips_ncmec_additional_info_explain') }}" rows="10" />
 
             <xf:formrow label="{{ phrase('usips_ncmec_incident_status') }}">
                 <xf:if is="$incident.is_finalized">

@@ -190,7 +190,6 @@ class IncidentController extends AbstractController
 
         $input = $this->filter([
             'title' => 'str',
-            'additional_info' => 'str',
         ]);
 
         $incident->bulkSet($input);
