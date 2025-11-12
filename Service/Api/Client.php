@@ -35,6 +35,26 @@ class Client extends AbstractService
     public const ENDPOINT_FILEINFO = '/fileinfo';
     public const ENDPOINT_FINISH = '/finish';
     public const ENDPOINT_RETRACT = '/retract';
+
+    /**
+     * Canonical incident type labels as defined by the CyberTipline Reporting API
+     * for 18 U.S. Code § 2258A reporting obligations.
+     *
+     * Keys are internal enum tokens, values are the literal strings expected by NCMEC.
+     * /report/incidentSummary/incidentType
+     *
+     *  @see https://exttest.cybertip.org/ispws/documentation/index.html#incident-summary
+     */
+    public const INCIDENT_TYPE_VALUES = [
+        'child_pornography' => 'Child Pornography (possession, manufacture, and distribution)',
+        'child_sex_trafficking' => 'Child Sex Trafficking',
+        'child_sex_tourism' => 'Child Sex Tourism',
+        'child_sexual_molestation' => 'Child Sexual Molestation',
+        'misleading_domain_name' => 'Misleading Domain Name',
+        'misleading_words_or_digital_images_on_the_internet' => 'Misleading Words or Digital Images on the Internet',
+        'online_enticement_of_children_for_sexual_acts' => 'Online Enticement of Children for Sexual Acts',
+        'unsolicited_obscene_material_sent_to_a_child' => 'Unsolicited Obscene Material Sent to a Child',
+    ];
     
     /** @var string */
     protected $username;

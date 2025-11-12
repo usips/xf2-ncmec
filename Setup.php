@@ -5,6 +5,7 @@ namespace USIPS\NCMEC;
 use XF\AddOn\AbstractSetup;
 use XF\Db\Schema\Alter;
 use XF\Db\Schema\Create;
+use USIPS\NCMEC\Service\Api\Client;
 
 class Setup extends AbstractSetup
 {
@@ -54,7 +55,10 @@ class Setup extends AbstractSetup
             $table->addPrimaryKey(['incident_id', 'user_id']);
         });
 
-        $this->schemaManager()->createTable('xf_usips_ncmec_report', function(Create $table)
+        $incidentTypeValues = $this->getIncidentTypeEnumValues();
+        $defaultIncidentType = $incidentTypeValues[0] ?? 'child_pornography';
+
+        $this->schemaManager()->createTable('xf_usips_ncmec_report', function(Create $table) use ($incidentTypeValues, $defaultIncidentType)
         {
             $table->addColumn('report_id', 'int');
             $table->addColumn('activity_summary', 'mediumtext')->nullable();
@@ -62,6 +66,9 @@ class Setup extends AbstractSetup
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
             $table->addColumn('username', 'varchar', 50);
+            $table->addColumn('incident_type', 'enum')
+                ->enumValues($incidentTypeValues)
+                ->setDefault($defaultIncidentType);
             $table->addColumn('is_finished', 'tinyint', 1)->setDefault(0);
             $table->addPrimaryKey('report_id');
             $table->addKey(['user_id']);
@@ -203,5 +210,10 @@ class Setup extends AbstractSetup
             $userField->delete();
             \XF::repository('XF:UserField')->rebuildFieldCache();
         }
+    }
+
+    protected function getIncidentTypeEnumValues(): array
+    {
+        return array_keys(Client::INCIDENT_TYPE_LABELS);
     }
 }
