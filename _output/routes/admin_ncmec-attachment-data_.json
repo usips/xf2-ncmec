@@ -1,0 +1,11 @@
+{
+    "route_type": "admin",
+    "route_prefix": "ncmec-attachment-data",
+    "sub_name": "",
+    "format": ":int<data_id,filename>/",
+    "build_class": "",
+    "build_method": "",
+    "controller": "USIPS\\NCMEC:AttachmentData",
+    "context": "usips_ncmec_attachments",
+    "action_prefix": ""
+}

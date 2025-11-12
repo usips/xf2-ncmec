@@ -4,16 +4,20 @@ namespace USIPS\NCMEC\Admin\Controller;
 
 use XF\Admin\Controller\AbstractController;
 use XF\Entity\Attachment;
-use XF\Entity\OptionGroup;
 use XF\Filterer\Attachment as AttachmentFilterer;
 use XF\Mvc\ParameterBag;
-use XF\Mvc\Reply\AbstractReply;
 use XF\Repository\AttachmentRepository;
+
+use function explode;
+use function trim;
 
 class AttachmentController extends AbstractController
 {
+    use AttachmentDeliveryTrait;
+
     protected function preDispatchController($action, ParameterBag $params)
     {
+        $this->assertAdminPermission('usips_ncmec');
         $this->assertAdminPermission('attachment');
     }
 
@@ -185,28 +189,20 @@ class AttachmentController extends AbstractController
          * payloads contain the binary content but cannot be viewed directly without an Attachment
          * wrapper. Always resolve the Attachment first when serving files.
          */
-        /** @var \XF\Entity\Attachment $attachment */
-        $attachment = $this->em()->find(Attachment::class, $params->attachment_id);
-        if (!$attachment)
-        {
-            throw $this->exception($this->notFound());
-        }
+        /** @var Attachment $attachment */
+        $attachment = $this->assertAttachmentExists($params->attachment_id, 'Data');
 
-        if (!$attachment->Data || !$attachment->Data->isDataAvailable())
+        if (!$attachment->Data)
         {
             return $this->error(\XF::phrase('attachment_cannot_be_shown_at_this_time'));
         }
 
-        $this->setResponseType('raw');
-
-        $eTag = $this->request->getServer('HTTP_IF_NONE_MATCH');
-        $return304 = ($eTag && $eTag == '"' . $attachment['attach_date'] . '"');
-
-        $viewParams = [
-            'attachment' => $attachment,
-            'return304' => $return304,
-        ];
-        return $this->view('XF:Attachment\View', '', $viewParams);
+        return $this->prepareAttachmentSendReply(
+            $attachment->Data,
+            $attachment->filename,
+            $attachment->attach_date,
+            $attachment
+        );
     }
 
     /**
@@ -257,6 +253,11 @@ class AttachmentController extends AbstractController
     protected function getAttachmentRepo()
     {
         return $this->repository(AttachmentRepository::class);
+    }
+
+    protected function assertAttachmentExists($id, $with = null)
+    {
+        return $this->assertRecordExists('XF:Attachment', $id, $with);
     }
 
     /**
