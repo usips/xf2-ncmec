@@ -59,6 +59,7 @@
   <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create Incident]]></phrase>
   <phrase title="usips_ncmec_create_report" version_id="0" version_string="1.0.0"><![CDATA[Create Report]]></phrase>
   <phrase title="usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting Dashboard]]></phrase>
+  <phrase title="usips_ncmec_disassociate" version_id="0" version_string="1.0.0"><![CDATA[Disassociate]]></phrase>
   <phrase title="usips_ncmec_draft" version_id="0" version_string="1.0.0"><![CDATA[Draft]]></phrase>
   <phrase title="usips_ncmec_edit_person" version_id="0" version_string="1.0.0"><![CDATA[Edit Person]]></phrase>
   <phrase title="usips_ncmec_emergency_report_default_message" version_id="0" version_string="1.0.0"><![CDATA[Report was submitted as an emergency.]]></phrase>

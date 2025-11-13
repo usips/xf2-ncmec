@@ -1,0 +1,15 @@
+<xf:title>{{ phrase('usips_ncmec_remove_content_from_incident') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-incidents/remove-content', $incident, {
+    'content_type': $incidentContent.content_type,
+    'content_id': $incidentContent.content_id
+}) }}" class="block" ajax="true">
+    <div class="block-container">
+        <div class="block-body">
+            {{ phrase('usips_ncmec_remove_content_confirm', {
+            'title': $contentTitle
+            }) }}
+        </div>
+        <xf:submitrow submit="{{ phrase('delete') }}" icon="delete" />
+    </div>
+</xf:form>

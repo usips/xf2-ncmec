@@ -82,7 +82,7 @@
 					<xf:toggle name="incident_ids[]" value="{$incident.incident_id}" />
 				</xf:if>
 
-				<xf:cell>
+				<xf:cell class="dataList-cell--link">
 					<a href="{{ link('ncmec-incidents/view', $incident) }}">
 						{{ $incident.title ?: phrase('usips_ncmec_untitled_incident') }}
 					</a>
@@ -160,7 +160,7 @@
 		</xf:datarow>
 		<xf:foreach loop="$reports" value="$report">
 			<xf:datarow>
-				<xf:cell>
+				<xf:cell class="dataList-cell--link">
 					<a href="{{ link('ncmec-reports/view', $report) }}">
 						{{ phrase('usips_ncmec_report_created_on_x', {'datetime': phrase('date_x_at_time_y', {
 						'date': date($report.created_date),
@@ -227,18 +227,24 @@
 	</div>
 </xf:macro>
 
-<xf:macro id="user_avatar_block" arg-users="{{ [] }}" arg-incident="{{ false }}">
-	<xf:if is="$users is not empty">
-		<div class="block-body">
-			<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$users}" arg-incident="{$incident}" />
-		</div>
-	</xf:if>
-</xf:macro>
-
 <xf:macro id="user_avatar_list" arg-users="{{ [] }}" arg-incident="{{ false }}">
 	<div class="user-avatars">
 		<xf:foreach loop="$users" value="$user">
 			<xf:avatar user="$user.User" size="s" href="{{ $incident ? link('ncmec-incidents/user', $user) : '' }}" />
 		</xf:foreach>
 	</div>
+</xf:macro>
+
+<xf:macro id="user_avatar_block" arg-users="{{ [] }}" arg-incident="{{ false }}">
+	<xf:if is="$users is not empty">
+		<div class="block">
+			<div class="block-container">
+				<h2 class="block-header">{{ phrase('usips_ncmec_users') }}</h2>
+				<div class="block-body">
+					<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$users}"
+						arg-incident="{$incident}" />
+				</div>
+			</div>
+		</div>
+	</xf:if>
 </xf:macro>

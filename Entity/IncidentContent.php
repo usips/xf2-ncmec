@@ -41,6 +41,20 @@ class IncidentContent extends Entity
      */
     public function getContent()
     {
-        return $this->app()->findByContentType($this->content_type, $this->content_id);
+        $contentType = $this->content_type;
+        $contentId = $this->content_id;
+
+        // Handle legacy thread associations - convert to first post
+        if ($contentType === 'thread')
+        {
+            $thread = $this->em()->find('XF:Thread', $contentId);
+            if ($thread && $thread->first_post_id)
+            {
+                $contentType = 'post';
+                $contentId = $thread->first_post_id;
+            }
+        }
+
+        return $this->app()->findByContentType($contentType, $contentId);
     }
 }

@@ -335,6 +335,12 @@
         "version_string": "1.0.0",
         "hash": "801246bb680d8f27ba227c32d610d746"
     },
+    "usips_ncmec_disassociate.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "9d4d7d9342553769bfba0a1210a61cd9"
+    },
     "usips_ncmec_draft.txt": {
         "global_cache": false,
         "version_id": 0,

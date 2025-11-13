@@ -33,5 +33,61 @@
     </div>
 </xf:form>
 
-<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$incident.IncidentUsers}"
-    arg-incident="{$incident}" />
+<xf:if is="$contentData">
+    <div class="block">
+        <div class="block-container">
+            <h2 class="block-header">
+                {{ phrase('usips_ncmec_associated_users') }}
+                <span class="block-counter">({$incident.IncidentUsers|count})</span>
+            </h2>
+            <div class="block-body">
+                <xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$incident.IncidentUsers}"
+                    arg-incident="{$incident}" />
+            </div>
+        </div>
+    </div>
+</xf:if>
+
+<xf:if is="$contentData">
+    <div class="block">
+        <div class="block-container">
+            <h2 class="block-header">
+                {{ phrase('usips_ncmec_associated_content') }}
+                <span class="block-counter">({$contentData|count})</span>
+            </h2>
+            <div class="block-body">
+                <xf:datalist class="dataList">
+                    <xf:datarow rowtype="header">
+                        <xf:cell>{{ phrase('title') }}</xf:cell>
+                        <xf:cell>{{ phrase('user') }}</xf:cell>
+                        <xf:cell></xf:cell>
+                    </xf:datarow>
+                    <xf:foreach loop="$contentData" value="$data">
+                        <xf:datarow>
+                            <xf:cell class="dataList-cell--link">
+                                <xf:if is="method_exists($data.content, 'getContentUrl')">
+                                    <a href="{{ $data.content.getContentUrl(true) }}" data-xf-init="preview-tooltip"
+                                        data-preview-url="{{ link('ncmec-incidents/content/preview', $data.incident_content) }}">{$data.title}</a>
+                                    <xf:else />
+                                    {$data.title}
+                                </xf:if>
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:avatar user="$data.incident_content.User" size="xxs" />
+                                <xf:username user="{$data.incident_content.User}" />
+                            </xf:cell>
+                            <xf:delete href="{{ link('ncmec-incidents/delete', $incident) }}"
+                                tooltip="{{ phrase('usips_ncmec_disassociate') }}" />
+                        </xf:datarow>
+                    </xf:foreach>
+                </xf:datalist>
+            </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ phrase('showing_x_of_y_items', {
+                    'count': $contentData|count,
+                    'total': $counts.content
+                    }) }}</span>
+            </div>
+        </div>
+    </div>
+</xf:if>

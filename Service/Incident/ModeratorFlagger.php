@@ -96,6 +96,21 @@ class ModeratorFlagger extends AbstractService
 
     protected function buildContentItem(Entity $entity, User $owner): array
     {
+        // If entity is a Thread, we should associate the first post instead
+        if ($entity instanceof Thread && $entity->first_post_id)
+        {
+            $firstPost = $entity->FirstPost;
+            if (!$firstPost instanceof Post)
+            {
+                $firstPost = $this->em()->find('XF:Post', $entity->first_post_id);
+            }
+
+            if ($firstPost instanceof Post)
+            {
+                $entity = $firstPost;
+            }
+        }
+
         return [
             'content_type' => $entity->getEntityContentType(),
             'content_id' => $entity->getEntityId(),

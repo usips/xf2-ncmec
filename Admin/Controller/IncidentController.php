@@ -236,12 +236,42 @@ class IncidentController extends AbstractController
             ->fetch()
         );
         
-        $incident->hydrateRelation('IncidentContents', $this->finder('USIPS\NCMEC:IncidentContent')
+        $incidentContents = $this->finder('USIPS\NCMEC:IncidentContent')
             ->where('incident_id', $incident->incident_id)
             ->with('User')
-            ->limit(50) // Limit for display performance
-            ->fetch()
-        );
+            ->limit(100)
+            ->fetch();
+        
+        $incident->hydrateRelation('IncidentContents', $incidentContents);
+        
+        // Load actual content entities and prepare display data
+        $contentData = [];
+        foreach ($incidentContents as $incidentContent)
+        {
+            $content = $incidentContent->getContent();
+            if ($content)
+            {
+                $contentTitle = '';
+                if (method_exists($content, 'getContentTitle'))
+                {
+                    $contentTitle = $content->getContentTitle();
+                }
+                else
+                {
+                    // Fallback for content without getContentTitle
+                    $contentTitle = \XF::phrase('content_x_y', [
+                        'type' => $incidentContent->content_type,
+                        'id' => $incidentContent->content_id
+                    ]);
+                }
+                
+                $contentData[] = [
+                    'incident_content' => $incidentContent,
+                    'content' => $content,
+                    'title' => $contentTitle,
+                ];
+            }
+        }
         
         $incident->hydrateRelation('IncidentAttachmentData', $this->finder('USIPS\NCMEC:IncidentAttachmentData')
             ->where('incident_id', $incident->incident_id)
@@ -253,9 +283,68 @@ class IncidentController extends AbstractController
         $viewParams = [
             'incident' => $incident,
             'counts' => $counts,
+            'contentData' => $contentData,
         ];
 
         return $this->view('USIPS\NCMEC:Incident\View', 'usips_ncmec_incident_view', $viewParams);
+    }
+
+    public function actionRemoveContent(ParameterBag $params)
+    {
+        $incident = $this->assertIncidentExists($params->incident_id);
+
+        if ($incident->is_finalized)
+        {
+            return $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
+        }
+
+        $contentType = $this->filter('content_type', 'str');
+        $contentId = $this->filter('content_id', 'uint');
+
+        if (!$contentType || !$contentId)
+        {
+            return $this->error(\XF::phrase('requested_page_not_found'));
+        }
+
+        $incidentContent = $this->em()->findOne('USIPS\NCMEC:IncidentContent', [
+            'incident_id' => $incident->incident_id,
+            'content_type' => $contentType,
+            'content_id' => $contentId,
+        ]);
+
+        if (!$incidentContent)
+        {
+            return $this->error(\XF::phrase('requested_page_not_found'));
+        }
+
+        if ($this->isPost())
+        {
+            $incidentContent->delete();
+            return $this->redirect($this->buildLink('ncmec-incidents/view', $incident));
+        }
+        else
+        {
+            $content = $incidentContent->getContent();
+            $contentTitle = '';
+            if ($content && method_exists($content, 'getContentTitle'))
+            {
+                $contentTitle = $content->getContentTitle();
+            }
+            else
+            {
+                $contentTitle = \XF::phrase('content_x_y', [
+                    'type' => $contentType,
+                    'id' => $contentId
+                ]);
+            }
+
+            $viewParams = [
+                'incident' => $incident,
+                'incidentContent' => $incidentContent,
+                'contentTitle' => $contentTitle,
+            ];
+            return $this->view('USIPS\NCMEC:Incident\RemoveContent', 'usips_ncmec_incident_remove_content', $viewParams);
+        }
     }
 
 }
