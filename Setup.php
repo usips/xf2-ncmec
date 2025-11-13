@@ -11,6 +11,24 @@ class Setup extends AbstractSetup
 {
     public function install(array $stepParams = [])
     {
+        $this->schemaManager()->createTable('xf_usips_ncmec_person', function(Create $table)
+        {
+            $table->addColumn('person_id', 'int')->autoIncrement();
+            $table->addColumn('created_date', 'int');
+            $table->addColumn('last_update_date', 'int');
+            $table->addColumn('user_id', 'int');
+            $table->addColumn('username', 'varchar', 50);
+            $table->addColumn('first_name', 'varchar', 100)->nullable();
+            $table->addColumn('last_name', 'varchar', 100)->nullable();
+            $table->addColumn('phones', 'mediumtext')->nullable();
+            $table->addColumn('emails', 'mediumtext')->nullable();
+            $table->addColumn('addresses', 'mediumtext')->nullable();
+            $table->addColumn('age', 'smallint')->unsigned()->nullable();
+            $table->addColumn('date_of_birth', 'date')->nullable();
+            $table->addPrimaryKey('person_id');
+            $table->addKey(['user_id']);
+        });
+
         $this->schemaManager()->createTable('xf_usips_ncmec_incident', function(Create $table)
         {
             $table->addColumn('incident_id', 'int')->autoIncrement();
@@ -192,6 +210,7 @@ class Setup extends AbstractSetup
             });
         }
         
+        $sm->dropTable('xf_usips_ncmec_person');
         $sm->dropTable('xf_usips_ncmec_incident_attachment_data');
         $sm->dropTable('xf_usips_ncmec_incident_content');
         $sm->dropTable('xf_usips_ncmec_incident_user');

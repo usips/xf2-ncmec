@@ -714,6 +714,99 @@
 		</xf:foreach>
 	</div>
 </xf:macro>]]></template>
+  <template type="admin" title="usips_ncmec_person_list" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_people' )}}</xf:title>
+
+<xf:pageaction>
+    <xf:button href="{{ link('ncmec-people/create') }}" icon="add">{{ phrase('usips_ncmec_add_person') }}</xf:button>
+</xf:pageaction>
+
+<div class="block">
+    <div class="block-container">
+        <xf:if is="$persons is not empty">
+            <div class="block-body">
+                <xf:datalist>
+                    <xf:datarow rowtype="header">
+                        <xf:cell>Name</xf:cell>
+                        <xf:cell>Age</xf:cell>
+                        <xf:cell>Created by</xf:cell>
+                        <xf:cell>Created on</xf:cell>
+                        <xf:cell>Last updated on</xf:cell>
+                        <xf:cell></xf:cell>
+                    </xf:datarow>
+                    <xf:foreach loop="$persons" value="$person">
+                        <xf:datarow>
+                            <xf:cell>
+                                <a href="{{ link('ncmec-people/view', $person) }}">{{$person.display_name}}</a>
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:if is="$person.date_of_birth">
+                                    {{ $person.getYearsOld() }} (b. {{ $person.date_of_birth }})
+                                    <xf:elseif is="$person.age !== null" />{{ $person.age|number }}
+                                    <xf:else />
+                                    &ndash;
+                                </xf:if>
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:avatar user="{$person.User}" size="xxs" />
+                                <xf:username user="{$person.User}" defaultname="{$person.username}" />
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:date time="{$person.created_date}" />
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:date time="{$person.last_update_date}" />
+                            </xf:cell>
+                            <xf:delete href="{{ link('ncmec-people/delete', $person) }}" />
+                        </xf:datarow>
+                    </xf:foreach>
+                </xf:datalist>
+            </div>
+
+            <div class="block-footer block-footer--split">
+                <span class="block-footer-counter">{{ display_totals($persons, $total) }}</span>
+            </div>
+
+            <xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-people" />
+            <xf:else />
+            <div class="block-body block-row">{{ phrase('no_results_found') }}</div>
+        </xf:if>
+    </div>
+</div>]]></template>
+  <template type="admin" title="usips_ncmec_person_view" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ $person.isInsert() ? phrase('usips_ncmec_add_person') : phrase('usips_ncmec_edit_person') }}</xf:title>
+
+<xf:form action="{{ $person.isInsert() ? link('ncmec-people/create') : link('ncmec-people/update', $person) }}"
+    ajax="true" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:textboxrow name="first_name" value="{$person.first_name}" label="{{ phrase('usips_ncmec_first_name') }}"
+                maxlength="100" />
+            <xf:textboxrow name="last_name" value="{$person.last_name}" label="{{ phrase('usips_ncmec_last_name') }}"
+                maxlength="100" />
+
+            <xf:radiorow name="age_selector" value="{$ageSelectorValue}" label="{{ phrase('age') }}" required="false"
+                explain="{{ phrase('usips_ncmec_age_selector_explain') }}">
+                <xf:option value="none" label="{{ phrase('unknown') }}" />
+                <xf:option value="date_of_birth" label="{{ phrase('date_of_birth') }}">
+                    <xf:dependent>
+                        <div class="inputGroup">
+                            <xf:textbox name="date_of_birth" value="{$person.date_of_birth}" type="date" />
+                        </div>
+                    </xf:dependent>
+                </xf:option>
+                <xf:option value="age" label="{{ phrase('age') }}">
+                    <xf:dependent>
+                        <div class="inputGroup">
+                            <xf:numberbox name="age" value="{{ $person.age !== null ? $person.age : '' }}" min="0"
+                                step="1" />
+                        </div>
+                    </xf:dependent>
+                </xf:option>
+            </xf:radiorow>
+        </div>
+
+        <xf:submitrow icon="save" sticky="true" />
+    </div>
+</xf:form>]]></template>
   <template type="admin" title="usips_ncmec_report_list" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_reports') }}</xf:title>
 
 <xf:macro id="usips_ncmec_macros::report_list_block" arg-reports="{$reports}" arg-total="{$total}" />]]></template>
@@ -772,6 +865,115 @@
 	'title': '<a href="' . link('reports', $content) . '#report-comment-' . $alert.extra_data.comment.report_comment_id . '" class="fauxBlockLink-blockLink">' . $content.title . '</a>'
 }) }}]]></template>
   <template type="public" title="usips_ncmec_approval_queue_macro_item_message_type" version_id="0" version_string="1.0.0"><![CDATA[<xf:macro id="message_macros::attachments" arg-attachments="{{ $content.Attachments }}" arg-message="{{ $content }}" arg-canView="{{ true }}" />]]></template>
+  <template type="public" title="usips_ncmec_person_edit" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ $person.isInsert() ? 'Add Person' : 'Edit Person' }}</xf:title>
+
+<xf:form action="{{ $person.isInsert() ? link('ncmec-persons/create') : link('ncmec-persons/update', $person) }}"
+    ajax="true" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:textboxrow name="first_name" value="{$person.first_name}" label="First name" maxlength="100" />
+            <xf:textboxrow name="last_name" value="{$person.last_name}" label="Last name" maxlength="100" />
+            <xf:textboxrow name="type" value="{$person.type}" label="Type" maxlength="25" />
+            <xf:textboxrow name="date_of_birth" value="{$person.date_of_birth}" label="Date of birth" type="date" />
+            <xf:numberboxrow name="age" value="{{ $person.age !== null ? $person.age : '' }}" label="Age" min="0"
+                step="1" />
+        </div>
+
+        <xf:submitrow icon="save" sticky="true" />
+    </div>
+</xf:form>]]></template>
+  <template type="public" title="usips_ncmec_person_list" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>CyberTipline People</xf:title>
+
+<xf:pageaction>
+    <xf:button href="{{ link('ncmec-persons/create') }}" icon="add">Add Person</xf:button>
+</xf:pageaction>
+
+<div class="block">
+    <div class="block-container">
+        <xf:if is="$persons is not empty">
+            <div class="block-body">
+                <xf:datalist>
+                    <xf:datarow rowtype="header">
+                        <xf:cell>ID</xf:cell>
+                        <xf:cell>Name</xf:cell>
+                        <xf:cell>Type</xf:cell>
+                        <xf:cell>Age</xf:cell>
+                        <xf:cell>DOB</xf:cell>
+                        <xf:cell>Updated</xf:cell>
+                        <xf:cell></xf:cell>
+                    </xf:datarow>
+                    <xf:foreach loop="$persons" value="$person">
+                        <xf:datarow>
+                            <xf:cell>{$person.person_id}</xf:cell>
+                            <xf:cell>
+                                <a href="{{ link('ncmec-persons/view', $person) }}">{{$person.display_name}}</a>
+                            </xf:cell>
+                            <xf:cell>{{ $person.type ?: 'person' }}</xf:cell>
+                            <xf:cell>
+                                <xf:if is="$person.age !== null">
+                                    {{ $person.age|number }}
+                                    <xf:else />
+                                    &ndash;
+                                </xf:if>
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:if is="$person.date_of_birth">
+                                    {{ $person.date_of_birth }}
+                                    <xf:else />
+                                    &ndash;
+                                </xf:if>
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:date time="{$person.last_update_date}" />
+                            </xf:cell>
+                            <xf:cell class="dataList-cell--action">
+                                <xf:button href="{{ link('ncmec-persons/view', $person) }}" size="s">View</xf:button>
+                            </xf:cell>
+                        </xf:datarow>
+                    </xf:foreach>
+                </xf:datalist>
+            </div>
+
+            <div class="block-footer block-footer--split">
+                <span class="block-footer-counter">{{ display_totals($persons, $total) }}</span>
+                <span class="block-footer-controls">
+                    <xf:button href="{{ link('ncmec-persons') }}" size="s" icon="refresh" />
+                </span>
+            </div>
+
+            <xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-persons" />
+            <xf:else />
+            <div class="block-body block-row">No records found.</div>
+        </xf:if>
+    </div>
+</div>]]></template>
+  <template type="public" title="usips_ncmec_person_view" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ $person.display_name }}</xf:title>
+
+<xf:pageaction>
+    <xf:button href="{{ link('ncmec-persons/create') }}" icon="add">New Person</xf:button>
+</xf:pageaction>
+
+<xf:form action="{{ link('ncmec-persons/update', $person) }}" ajax="true" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:textboxrow name="first_name" value="{$person.first_name}" label="First name" maxlength="100" />
+            <xf:textboxrow name="last_name" value="{$person.last_name}" label="Last name" maxlength="100" />
+            <xf:textboxrow name="type" value="{$person.type}" label="Type" maxlength="25" />
+            <xf:textboxrow name="date_of_birth" value="{$person.date_of_birth}" label="Date of birth" type="date" />
+            <xf:numberboxrow name="age" value="{{ $person.age !== null ? $person.age : '' }}" label="Age" min="0"
+                step="1" />
+
+            <xf:formrow label="Created">
+                <xf:date time="{$person.created_date}" />
+            </xf:formrow>
+            <xf:formrow label="Last updated">
+                <xf:date time="{$person.last_update_date}" />
+            </xf:formrow>
+        </div>
+
+        <xf:submitrow icon="save" sticky="true" />
+    </div>
+</xf:form>]]></template>
   <template type="public" title="usips_ncmec_report_create" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('report_content') }}</xf:title>
 
 <xf:form action="{$confirmUrl}" class="block" ajax="true" data-skip-overlay-redirect="true">

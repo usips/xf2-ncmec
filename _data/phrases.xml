@@ -8,6 +8,7 @@
   <phrase title="admin_navigation.usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_incident_all" version_id="0" version_string="1.0.0"><![CDATA[Finalized Incidents]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_incident_list" version_id="0" version_string="1.0.0"><![CDATA[Active Incidents]]></phrase>
+  <phrase title="admin_navigation.usips_ncmec_people" version_id="0" version_string="1.0.0"><![CDATA[People]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_report" version_id="0" version_string="1.0.0"><![CDATA[Reports]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_report_archive" version_id="0" version_string="1.0.0"><![CDATA[Finalized Reports]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_report_list" version_id="0" version_string="1.0.0"><![CDATA[Active Reports]]></phrase>
@@ -30,8 +31,10 @@
   <phrase title="user_field_choice.usips_ncmec_in_incident_1" version_id="0" version_string="1.0.0"><![CDATA[Yes]]></phrase>
   <phrase title="user_field_desc.usips_ncmec_in_incident" version_id="0" version_string="1.0.0"><![CDATA[If set to true, this user is attached to an ongoing incident report. This is useful for setting up UserPromotions to disable features like attachments.]]></phrase>
   <phrase title="user_field_title.usips_ncmec_in_incident" version_id="0" version_string="1.0.0"><![CDATA[Active in NCMEC Incident]]></phrase>
+  <phrase title="usips_ncmec_add_person" version_id="0" version_string="1.0.0"><![CDATA[Add Person]]></phrase>
   <phrase title="usips_ncmec_additional_info" version_id="0" version_string="1.0.0"><![CDATA[Additional Info]]></phrase>
   <phrase title="usips_ncmec_additional_info_explain" version_id="0" version_string="1.0.0"><![CDATA[Passed as a value in the <a href="https://report.cybertip.org/ispws/documentation/index.html#xml-report">/report/additionalInfo</a> if provided.]]></phrase>
+  <phrase title="usips_ncmec_age_selector_explain" version_id="0" version_string="1.0.0"><![CDATA[NCMEC requests information regarding age for offenders and victims.]]></phrase>
   <phrase title="usips_ncmec_api_configured" version_id="0" version_string="1.0.0"><![CDATA[API configured]]></phrase>
   <phrase title="usips_ncmec_api_error_x" version_id="0" version_string="1.0.0"><![CDATA[API error: {error}]]></phrase>
   <phrase title="usips_ncmec_api_not_configured" version_id="0" version_string="1.0.0"><![CDATA[The NCMEC API has not been configured.]]></phrase>
@@ -55,6 +58,7 @@
   <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create Incident]]></phrase>
   <phrase title="usips_ncmec_create_report" version_id="0" version_string="1.0.0"><![CDATA[Add to Report]]></phrase>
   <phrase title="usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting Dashboard]]></phrase>
+  <phrase title="usips_ncmec_edit_person" version_id="0" version_string="1.0.0"><![CDATA[Edit Person]]></phrase>
   <phrase title="usips_ncmec_emergency_report_default_message" version_id="0" version_string="1.0.0"><![CDATA[Report was submitted as an emergency.]]></phrase>
   <phrase title="usips_ncmec_env_live" version_id="0" version_string="1.0.0"><![CDATA[Live Environment]]></phrase>
   <phrase title="usips_ncmec_env_test" version_id="0" version_string="1.0.0"><![CDATA[Test Environment]]></phrase>
@@ -62,6 +66,7 @@
   <phrase title="usips_ncmec_esp_credentials" version_id="0" version_string="1.0.0"><![CDATA[ESP credentials]]></phrase>
   <phrase title="usips_ncmec_esp_credentials_explain" version_id="0" version_string="1.0.0"><![CDATA[Enter your basic access authentication credentials provided by the NCMEC for your ESP. These should arrive by email in a password-protected PDF, the password for which is provided in another email.]]></phrase>
   <phrase title="usips_ncmec_failed_lines" version_id="0" version_string="1.0.0"><![CDATA[Rejected Input]]></phrase>
+  <phrase title="usips_ncmec_first_name" version_id="0" version_string="1.0.0"><![CDATA[First name]]></phrase>
   <phrase title="usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incident]]></phrase>
   <phrase title="usips_ncmec_incident_draft" version_id="0" version_string="1.0.0"><![CDATA[Draft]]></phrase>
   <phrase title="usips_ncmec_incident_finalized" version_id="0" version_string="1.0.0"><![CDATA[Finalized]]></phrase>
@@ -70,6 +75,7 @@
   <phrase title="usips_ncmec_incidents" version_id="0" version_string="1.0.0"><![CDATA[Incidents]]></phrase>
   <phrase title="usips_ncmec_incidents_archive" version_id="0" version_string="1.0.0"><![CDATA[Archived Incidents]]></phrase>
   <phrase title="usips_ncmec_invalid_response_from_server" version_id="0" version_string="1.0.0"><![CDATA[Invalid response from NCMEC server.]]></phrase>
+  <phrase title="usips_ncmec_last_name" version_id="0" version_string="1.0.0"><![CDATA[Last name]]></phrase>
   <phrase title="usips_ncmec_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>
   <phrase title="usips_ncmec_lookup_description" version_id="0" version_string="1.0.0"><![CDATA[https://domain.com/attachments/1762288299348-png.8126290/
 attachments/1762288299348-png.8126290/
@@ -84,6 +90,7 @@ internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
   <phrase title="usips_ncmec_lookup_restart" version_id="0" version_string="1.0.0"><![CDATA[Lookup and Forget]]></phrase>
   <phrase title="usips_ncmec_lookup_submit" version_id="0" version_string="1.0.0"><![CDATA[Lookup]]></phrase>
   <phrase title="usips_ncmec_new_incident_will_be_created" version_id="0" version_string="1.0.0"><![CDATA[A new incident will be created.]]></phrase>
+  <phrase title="usips_ncmec_people" version_id="0" version_string="1.0.0"><![CDATA[People]]></phrase>
   <phrase title="usips_ncmec_quick_actions" version_id="0" version_string="1.0.0"><![CDATA[Immediate Response]]></phrase>
   <phrase title="usips_ncmec_remove_user" version_id="0" version_string="1.0.0"><![CDATA[Remove user]]></phrase>
   <phrase title="usips_ncmec_remove_user_from_incident" version_id="0" version_string="1.0.0"><![CDATA[Remove user from incident]]></phrase>
