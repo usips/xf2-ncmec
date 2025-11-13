@@ -1,0 +1,23 @@
+<xf:title>{{ phrase('usips_ncmec_edit_report') }}</xf:title>
+
+<xf:breadcrumb href="{{ link('ncmec-reports') }}">{{ phrase('usips_ncmec_reports') }}</xf:breadcrumb>
+<xf:breadcrumb href="{{ link('ncmec-reports/view', $report) }}">
+    {{ phrase('usips_ncmec_report_x', {'id': $report.report_id}) }}
+</xf:breadcrumb>
+
+<xf:form action="{{ link('ncmec-reports/edit', $report) }}" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:checkboxrow name="report_annotations[]" label="{{ phrase('usips_ncmec_report_annotations') }}"
+                hint="{{ phrase('usips_ncmec_report_annotations_hint') }}">
+                <xf:foreach loop="$annotationLabels" key="$key" value="$label">
+                    <xf:option name="report_annotations[]" value="{$key}"
+                        checked="{$report.report_annotations && in_array($key, $report.report_annotations)}"
+                        label="{$label}" />
+                </xf:foreach>
+            </xf:checkboxrow>
+        </div>
+
+        <xf:submitrow icon="save" sticky="true" />
+    </div>
+</xf:form>

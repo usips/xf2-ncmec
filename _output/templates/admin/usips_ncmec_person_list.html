@@ -1,0 +1,58 @@
+<xf:title>{{ phrase('usips_ncmec_people' )}}</xf:title>
+
+<xf:pageaction>
+    <xf:button href="{{ link('ncmec-people/create') }}" icon="add">{{ phrase('usips_ncmec_add_person') }}</xf:button>
+</xf:pageaction>
+
+<div class="block">
+    <div class="block-container">
+        <xf:if is="$persons is not empty">
+            <div class="block-body">
+                <xf:datalist>
+                    <xf:datarow rowtype="header">
+                        <xf:cell>Name</xf:cell>
+                        <xf:cell>Age</xf:cell>
+                        <xf:cell>Created by</xf:cell>
+                        <xf:cell>Created on</xf:cell>
+                        <xf:cell>Last updated on</xf:cell>
+                        <xf:cell></xf:cell>
+                    </xf:datarow>
+                    <xf:foreach loop="$persons" value="$person">
+                        <xf:datarow>
+                            <xf:cell>
+                                <a href="{{ link('ncmec-people/view', $person) }}">{{$person.display_name}}</a>
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:if is="$person.date_of_birth">
+                                    {{ $person.getYearsOld() }} (b. {{ $person.date_of_birth }})
+                                    <xf:elseif is="$person.age !== null" />{{ $person.age|number }}
+                                    <xf:else />
+                                    &ndash;
+                                </xf:if>
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:avatar user="{$person.User}" size="xxs" />
+                                <xf:username user="{$person.User}" defaultname="{$person.username}" />
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:date time="{$person.created_date}" />
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:date time="{$person.last_update_date}" />
+                            </xf:cell>
+                            <xf:delete href="{{ link('ncmec-people/delete', $person) }}" />
+                        </xf:datarow>
+                    </xf:foreach>
+                </xf:datalist>
+            </div>
+
+            <div class="block-footer block-footer--split">
+                <span class="block-footer-counter">{{ display_totals($persons, $total) }}</span>
+            </div>
+
+            <xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-people" />
+            <xf:else />
+            <div class="block-body block-row">{{ phrase('no_results_found') }}</div>
+        </xf:if>
+    </div>
+</div>

@@ -1,0 +1,2 @@
+Select all that apply.<br />
+See: <a href="https://exttest.cybertip.org/ispws/documentation/index.html#xml-report-annotations">/report/incidentSummary/reportAnnotations</a>

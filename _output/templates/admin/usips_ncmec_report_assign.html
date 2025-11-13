@@ -1,0 +1,47 @@
+<xf:title>{{ phrase('usips_ncmec_add_to_report') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-reports/create') }}" class="block" ajax="true">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:if is="$incidents.count() == 1">
+                <xf:set var="$incident">{$incidents|first}</xf:set>
+                <xf:formrow label="{{ phrase('usips_ncmec_incident') }}">
+                    {{ $incident.title ?: phrase('usips_ncmec_untitled_incident') }}
+                </xf:formrow>
+                <xf:else />
+                <xf:formrow label="{{ phrase('usips_ncmec_incidents') }}">
+                    {{ phrase('usips_ncmec_x_incidents', {'count': $incidents.count()}) }}
+                </xf:formrow>
+            </xf:if>
+
+            <xf:radiorow name="assignment_type" value="new" label="{{ phrase('usips_ncmec_report_assignment') }}">
+                <xf:option value="new" label="{{ phrase('usips_ncmec_create_new_report') }}" />
+                <xf:option value="existing" label="{{ phrase('usips_ncmec_add_to_existing_report') }}">
+                    <xf:dependent>
+                        <xf:if is="$availableReports.count()">
+                            <xf:select name="existing_report_id">
+                                <xf:foreach loop="$availableReports" value="$report">
+                                    <xf:option value="{$report.report_id}">
+                                        {{ phrase('usips_ncmec_report_x', {'id': $report.report_id}) }}
+                                        ({{ phrase('created_by_x_on_y', {
+                                        'name': $report.username,
+                                        'date': date_dynamic($report.created_date)
+                                        }) }})
+                                    </xf:option>
+                                </xf:foreach>
+                            </xf:select>
+                            <xf:else />
+                            <div class="inputGroup-text">{{ phrase('usips_ncmec_no_open_reports') }}</div>
+                        </xf:if>
+                    </xf:dependent>
+                </xf:option>
+            </xf:radiorow>
+
+            <xf:foreach loop="$incidentIds" value="$incidentId">
+                <xf:hiddenval name="incident_ids[]" value="{$incidentId}" />
+            </xf:foreach>
+        </div>
+
+        <xf:submitrow icon="save" submit="{{ phrase('usips_ncmec_add_to_report') }}" />
+    </div>
+</xf:form>

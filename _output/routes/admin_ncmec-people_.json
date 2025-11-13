@@ -1,0 +1,11 @@
+{
+    "route_type": "admin",
+    "route_prefix": "ncmec-people",
+    "sub_name": "",
+    "format": ":int<person_id>/",
+    "build_class": "",
+    "build_method": "",
+    "controller": "USIPS\\NCMEC:Person",
+    "context": "usips_ncmec_people",
+    "action_prefix": ""
+}

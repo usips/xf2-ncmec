@@ -1,0 +1,2 @@
+Category of the incident.<br />
+See: <a href="https://exttest.cybertip.org/ispws/documentation/index.html#incident-summary">/report/incidentSummary/incidentType</a>
