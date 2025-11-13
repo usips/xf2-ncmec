@@ -9,5 +9,7 @@
   <extension from_class="XF\Entity\ApprovalQueue" to_class="USIPS\NCMEC\XF\Entity\ApprovalQueue" execute_order="10" active="1"/>
   <extension from_class="XF\Entity\Attachment" to_class="USIPS\NCMEC\XF\Entity\Attachment" execute_order="10" active="1"/>
   <extension from_class="XF\Entity\AttachmentData" to_class="USIPS\NCMEC\XF\Entity\AttachmentData" execute_order="10" active="1"/>
+  <extension from_class="XF\Service\Report\CreatorService" to_class="USIPS\NCMEC\XF\Service\Report\CreatorService" execute_order="10" active="1"/>
+  <extension from_class="XF\Service\Report\NotifierService" to_class="USIPS\NCMEC\XF\Service\Report\NotifierService" execute_order="10" active="1"/>
   <extension from_class="XF\Pub\Controller\ReportController" to_class="USIPS\NCMEC\XF\Pub\Controller\ReportController" execute_order="10" active="1"/>
 </class_extensions>

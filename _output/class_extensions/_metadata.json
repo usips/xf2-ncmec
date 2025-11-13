@@ -28,5 +28,11 @@
     },
     "XF-Pub-Controller-ReportController_USIPS-NCMEC-XF-Pub-Controller-ReportController.json": {
         "hash": "d8f998ceecea9cdc64a1082cb117972f"
+    },
+    "XF-Service-Report-CreatorService_USIPS-NCMEC-XF-Service-Report-CreatorService.json": {
+        "hash": "52334cb4ba979fa29d5ca44d7747ccc0"
+    },
+    "XF-Service-Report-NotifierService_USIPS-NCMEC-XF-Service-Report-NotifierService.json": {
+        "hash": "b4ae7344630dd396b14b2db8109ce6f8"
     }
 }

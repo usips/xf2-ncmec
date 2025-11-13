@@ -74,8 +74,56 @@ class CreatorService extends XFCP_CreatorService
         }
 
         $threadToModerate = $this->identifyThreadForEmergencyModeration($content);
-        $skipPostMessageState = ($threadToModerate && $content instanceof Post);
 
+        $this->moderatePrimaryContentForEmergency($content);
+
+        if ($threadToModerate)
+        {
+            $this->moderateThreadForEmergency($threadToModerate);
+        }
+
+        $this->usipsEmergencyContent = null;
+    }
+
+    protected function moderatePrimaryContentForEmergency(Entity $content): void
+    {
+        try
+        {
+            if ($content instanceof Post)
+            {
+                $this->moderatePostForEmergency($content);
+                return;
+            }
+
+            if ($content instanceof Thread)
+            {
+                $this->moderateThreadForEmergency($content);
+                return;
+            }
+
+            $this->moderateGenericContentForEmergency($content);
+        }
+        catch (Throwable $e)
+        {
+            \XF::logException($e, false, 'Failed to moderate primary content for emergency report: ');
+        }
+    }
+
+    protected function moderatePostForEmergency(Post $post): void
+    {
+        if ($post->message_state === 'moderated' || $post->message_state === 'deleted')
+        {
+            return;
+        }
+
+        /** @var \XF\Service\Post\Editor $editor */
+        $editor = $this->service('XF:Post\Editor', $post);
+        $editor->setMessageState('moderated', 'Emergency report pending review');
+        $editor->save();
+    }
+
+    protected function moderateGenericContentForEmergency(Entity $content): void
+    {
         $stateColumns = [
             'message_state',
             'discussion_state',
@@ -97,11 +145,6 @@ class CreatorService extends XFCP_CreatorService
                 continue;
             }
 
-            if ($skipPostMessageState && $column === 'message_state')
-            {
-                continue;
-            }
-
             $columnInfo = $content->structureColumn($column);
             if ($columnInfo && isset($columnInfo['allowedValues']) && !in_array('moderated', $columnInfo['allowedValues'], true))
             {
@@ -118,24 +161,19 @@ class CreatorService extends XFCP_CreatorService
             $changed = true;
         }
 
-        if ($changed)
+        if (!$changed)
         {
-            try
-            {
-                $content->save(true, false);
-            }
-            catch (Throwable $e)
-            {
-                \XF::logException($e, false, 'Failed to moderate content for emergency report: ');
-            }
+            return;
         }
 
-        if ($threadToModerate)
+        try
         {
-            $this->moderateThreadForEmergency($threadToModerate);
+            $content->save(true, false);
         }
-
-        $this->usipsEmergencyContent = null;
+        catch (Throwable $e)
+        {
+            \XF::logException($e, false, 'Failed to moderate generic content for emergency report: ');
+        }
     }
 
     protected function identifyThreadForEmergencyModeration(Entity $content): ?Thread
@@ -176,11 +214,17 @@ class CreatorService extends XFCP_CreatorService
 
     protected function moderateThreadForEmergency(Thread $thread): void
     {
+        if ($thread->discussion_state === 'moderated' || $thread->discussion_state === 'deleted')
+        {
+            return;
+        }
+
         try
         {
-            $thread->discussion_state = 'moderated';
-            $thread->rebuildReplyCount();
-            $thread->save(true, false);
+            /** @var \XF\Service\Thread\Editor $editor */
+            $editor = $this->service('XF:Thread\Editor', $thread);
+            $editor->setDiscussionState('moderated', 'Emergency report pending review');
+            $editor->save();
         }
         catch (Throwable $e)
         {

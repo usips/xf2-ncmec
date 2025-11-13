@@ -1,1 +1,17 @@
-<xf:macro id="message_macros::attachments" arg-attachments="{{ $content.Attachments }}" arg-message="{{ $content }}" arg-canView="{{ true }}" />
+<xf:set var="$attachmentMessage" value="$content" />
+<xf:set var="$attachments" value="null" />
+
+<xf:if is="method_exists($content, 'hasRelation') && $content.hasRelation('Attachments') && $content.Attachments">
+    <xf:set var="$attachments" value="$content.Attachments" />
+    <xf:elseif is="$content.hasRelation('FirstPost')" />
+    <xf:set var="$firstPost" value="$content.FirstPost" />
+    <xf:if is="$firstPost && $firstPost.hasRelation('Attachments') && $firstPost.Attachments">
+        <xf:set var="$attachments" value="$firstPost.Attachments" />
+        <xf:set var="$attachmentMessage" value="$firstPost" />
+    </xf:if>
+</xf:if>
+
+<xf:if is="$attachments">
+    <xf:macro id="message_macros::attachments" arg-attachments="{{ $attachments }}"
+        arg-message="{{ $attachmentMessage }}" arg-canView="{{ true }}" />
+</xf:if>
