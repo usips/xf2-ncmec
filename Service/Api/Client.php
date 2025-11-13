@@ -55,6 +55,34 @@ class Client extends AbstractService
         'online_enticement_of_children_for_sexual_acts' => 'Online Enticement of Children for Sexual Acts',
         'unsolicited_obscene_material_sent_to_a_child' => 'Unsolicited Obscene Material Sent to a Child',
     ];
+
+    /**
+     * Report annotation tags as defined by the CyberTipline Reporting API.
+     * These are optional tags to describe the report.
+     * /report/incidentSummary/reportAnnotations
+     *
+     * Keys are internal identifiers, values are the XML element names expected by NCMEC.
+     * 
+     * @see https://exttest.cybertip.org/ispws/documentation/index.html#report-annotations
+     */
+    public const REPORT_ANNOTATION_VALUES = [
+        'sextortion' => 'sextortion',
+        'csam_solicitation' => 'csamSolicitation',
+        'minor_to_minor_interaction' => 'minorToMinorInteraction',
+        'spam' => 'spam',
+        'sadistic_online_exploitation' => 'sadisticOnlineExploitation',
+    ];
+
+    /**
+     * Human-readable labels for report annotation tags.
+     */
+    public const REPORT_ANNOTATION_LABELS = [
+        'sextortion' => 'Sextortion',
+        'csam_solicitation' => 'CSAM Solicitation',
+        'minor_to_minor_interaction' => 'Minor-to-Minor Interaction',
+        'spam' => 'Spam',
+        'sadistic_online_exploitation' => 'Sadistic Online Exploitation',
+    ];
     
     /** @var string */
     protected $username;

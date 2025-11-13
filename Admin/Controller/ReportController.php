@@ -119,11 +119,9 @@ class ReportController extends AbstractController
             {
                 /** @var \USIPS\NCMEC\Entity\Report $report */
                 $report = $this->em()->create('USIPS\NCMEC:Report');
-                $reportId = $reportRepo->getNextReportId();
                 $visitor = \XF::visitor();
 
                 $report->bulkSet([
-                    'report_id' => $reportId,
                     'user_id' => $visitor->user_id,
                     'username' => $visitor->username,
                 ]);
@@ -137,7 +135,7 @@ class ReportController extends AbstractController
                 $incident->save();
             }
 
-            return $this->redirect($this->buildLink('ncmec-incidents'), XF::phrase('changes_saved'));
+            return $this->redirect($this->buildLink('ncmec-reports/view', $report), XF::phrase('changes_saved'));
         }
 
         $viewParams = [
@@ -147,5 +145,185 @@ class ReportController extends AbstractController
         ];
 
         return $this->view('USIPS\NCMEC:Report\Assign', 'usips_ncmec_report_assign', $viewParams);
+    }
+
+    public function actionView(ParameterBag $params)
+    {
+        $report = $this->assertReportExists($params->report_id, 'User');
+
+        // Manually load TO_MANY relation
+        $incidents = $this->finder('USIPS\NCMEC:Incident')
+            ->where('report_id', $report->report_id)
+            ->with('User')
+            ->order('created_date', 'DESC')
+            ->fetch();
+
+        $report->hydrateRelation('Incidents', $incidents);
+
+        $viewParams = [
+            'report' => $report,
+        ];
+
+        return $this->view('USIPS\NCMEC:Report\View', 'usips_ncmec_report_view', $viewParams);
+    }
+
+    public function actionEdit(ParameterBag $params)
+    {
+        $report = $this->assertReportExists($params->report_id);
+
+        if ($report->is_finished)
+        {
+            return $this->error(XF::phrase('usips_ncmec_cannot_edit_finished_report'));
+        }
+
+        /** @var \USIPS\NCMEC\Service\Api\Client $apiClient */
+        $apiClient = $this->app()->service('USIPS\NCMEC:Api\Client', '', '', 'test');
+        $annotationLabels = $apiClient::REPORT_ANNOTATION_LABELS;
+
+        if ($this->isPost())
+        {
+            $form = $this->formAction();
+            $form->basicEntitySave($report, $this->filter([
+                'report_annotations' => 'array-str',
+            ]));
+
+            $report->last_update_date = \XF::$time;
+            $form->run();
+
+            return $this->redirect($this->buildLink('ncmec-reports/view', $report));
+        }
+
+        $viewParams = [
+            'report' => $report,
+            'annotationLabels' => $annotationLabels,
+        ];
+
+        return $this->view('USIPS\NCMEC:Report\Edit', 'usips_ncmec_report_edit', $viewParams);
+    }
+
+    public function actionStep1(ParameterBag $params)
+    {
+        $report = $this->assertReportExists($params->report_id);
+
+        if ($report->is_finished)
+        {
+            return $this->error(XF::phrase('usips_ncmec_cannot_edit_finished_report'));
+        }
+
+        /** @var \USIPS\NCMEC\Service\Api\Client $apiClient */
+        $apiClient = $this->app()->service('USIPS\NCMEC:Api\Client', '', '', 'test');
+        $incidentTypeLabels = $apiClient::INCIDENT_TYPE_VALUES;
+        $annotationLabels = $apiClient::REPORT_ANNOTATION_LABELS;
+
+        // Load incidents manually
+        $incidents = $this->finder('USIPS\NCMEC:Incident')
+            ->where('report_id', $report->report_id)
+            ->fetch();
+
+        // Calculate earliest incident date/time from all associated incident content
+        $earliestDateTime = null;
+        foreach ($incidents as $incident)
+        {
+            $incidentContents = $this->finder('USIPS\NCMEC:IncidentContent')
+                ->where('incident_id', $incident->incident_id)
+                ->fetch();
+
+            foreach ($incidentContents as $incidentContent)
+            {
+                $content = $incidentContent->getContent();
+                if ($content)
+                {
+                    $contentDate = $this->getContentDate($content);
+                    if ($contentDate && ($earliestDateTime === null || $contentDate < $earliestDateTime))
+                    {
+                        $earliestDateTime = $contentDate;
+                    }
+                }
+            }
+        }
+
+        // Default to report created date if no content found
+        if ($earliestDateTime === null)
+        {
+            $earliestDateTime = $report->created_date;
+        }
+
+        if ($this->isPost())
+        {
+            $input = $this->filter([
+                'incident_summary' => [
+                    'incident_type' => 'str',
+                    'report_annotations' => 'array-str',
+                    'incident_date_time_desc' => 'str',
+                ],
+            ]);
+
+            $incidentSummary = $input['incident_summary'];
+
+            if (empty($incidentSummary['incident_type']))
+            {
+                return $this->error(XF::phrase('please_select_valid_option'));
+            }
+
+            // Save to entity
+            $report->bulkSet([
+                'incident_type' => $incidentSummary['incident_type'],
+                'report_annotations' => $incidentSummary['report_annotations'],
+                'incident_date_time_desc' => $incidentSummary['incident_date_time_desc'],
+                'last_update_date' => \XF::$time,
+            ]);
+            $report->save();
+
+            // TODO: Redirect to step 2 when implemented
+            return $this->redirect($this->buildLink('ncmec-reports/view', $report), XF::phrase('changes_saved'));
+        }
+
+        $viewParams = [
+            'report' => $report,
+            'incidentTypeLabels' => $incidentTypeLabels,
+            'annotationLabels' => $annotationLabels,
+            'earliestDateTime' => $earliestDateTime,
+        ];
+
+        return $this->view('USIPS\NCMEC:Report\Step1', 'usips_ncmec_report_step1', $viewParams);
+    }
+
+    /**
+     * Get the date from a content entity
+     * Tries various common date fields
+     */
+    protected function getContentDate($entity)
+    {
+        if (!$entity)
+        {
+            return null;
+        }
+
+        $candidateFields = [
+            'post_date',
+            'message_date',
+            'media_date',
+            'album_date',
+            'comment_date',
+            'discussion_open',
+            'publish_date',
+            'creation_date',
+            'created_date',
+            'date',
+        ];
+
+        foreach ($candidateFields as $field)
+        {
+            if ($entity->isValidColumn($field))
+            {
+                $value = (int) $entity->get($field);
+                if ($value)
+                {
+                    return $value;
+                }
+            }
+        }
+
+        return null;
     }
 }

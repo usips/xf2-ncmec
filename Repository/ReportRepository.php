@@ -28,24 +28,6 @@ class ReportRepository extends Repository
     }
 
     /**
-     * Generates the next local report identifier.
-     */
-    public function getNextReportId(): int
-    {
-        /** @var Report|null $latest */
-        $latest = $this->finder('USIPS\\NCMEC:Report')
-            ->order('report_id', 'DESC')
-            ->fetchOne();
-
-        if (!$latest)
-        {
-            return 1;
-        }
-
-        return (int) $latest->report_id + 1;
-    }
-
-    /**
      * @return array<int,string>
      */
     public function getOpenReportPairs(): array

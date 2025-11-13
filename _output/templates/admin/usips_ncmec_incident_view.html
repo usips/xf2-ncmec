@@ -12,9 +12,9 @@
 
             <xf:formrow label="{{ phrase('usips_ncmec_incident_status') }}">
                 <xf:if is="$incident.is_finalized">
-                    {{ phrase('usips_ncmec_incident_finalized') }}
+                    {{ phrase('usips_ncmec_finalized') }}
                     <xf:else />
-                    {{ phrase('usips_ncmec_incident_draft') }}
+                    {{ phrase('usips_ncmec_draft') }}
                 </xf:if>
             </xf:formrow>
 
@@ -33,4 +33,5 @@
     </div>
 </xf:form>
 
-<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$incident.IncidentUsers}" arg-incident="{$incident}" />
+<xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$incident.IncidentUsers}"
+    arg-incident="{$incident}" />

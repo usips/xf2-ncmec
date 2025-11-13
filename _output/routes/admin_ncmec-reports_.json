@@ -2,7 +2,7 @@
     "route_type": "admin",
     "route_prefix": "ncmec-reports",
     "sub_name": "",
-    "format": ":int<incident_id,title>/",
+    "format": ":int<report_id>/",
     "build_class": "",
     "build_method": "",
     "controller": "USIPS\\NCMEC:Report",

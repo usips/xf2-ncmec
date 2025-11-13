@@ -6,5 +6,5 @@
   <route route_type="admin" route_prefix="ncmec-incidents" format=":int&lt;incident_id,title&gt;/" controller="USIPS\NCMEC:Incident" context="usips_ncmec_incident"/>
   <route route_type="admin" route_prefix="ncmec-incidents" sub_name="user" format=":int&lt;incident_id,title&gt;/user/:int&lt;user_id,username&gt;/" controller="USIPS\NCMEC:IncidentUser" context="usips_ncmec_incident"/>
   <route route_type="admin" route_prefix="ncmec-people" format=":int&lt;person_id&gt;/" controller="USIPS\NCMEC:Person" context="usips_ncmec_people"/>
-  <route route_type="admin" route_prefix="ncmec-reports" format=":int&lt;incident_id,title&gt;/" controller="USIPS\NCMEC:Report" context="usips_ncmec_report"/>
+  <route route_type="admin" route_prefix="ncmec-reports" format=":int&lt;report_id&gt;/" controller="USIPS\NCMEC:Report" context="usips_ncmec_report"/>
 </routes>

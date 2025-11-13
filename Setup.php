@@ -78,8 +78,8 @@ class Setup extends AbstractSetup
 
         $this->schemaManager()->createTable('xf_usips_ncmec_report', function(Create $table) use ($incidentTypeValues, $defaultIncidentType)
         {
-            $table->addColumn('report_id', 'int');
-            $table->addColumn('activity_summary', 'mediumtext')->nullable();
+            $table->addColumn('report_id', 'int')->autoIncrement();
+            $table->addColumn('ncmec_report_id', 'int')->nullable();
             $table->addColumn('created_date', 'int');
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
@@ -87,8 +87,12 @@ class Setup extends AbstractSetup
             $table->addColumn('incident_type', 'enum')
                 ->enumValues($incidentTypeValues)
                 ->setDefault($defaultIncidentType);
+            $table->addColumn('activity_summary', 'mediumtext')->nullable();
+            $table->addColumn('report_annotations', 'mediumtext')->nullable();
+            $table->addColumn('incident_date_time_desc', 'varchar', 3000)->setDefault('');
             $table->addColumn('is_finished', 'tinyint', 1)->setDefault(0);
             $table->addPrimaryKey('report_id');
+            $table->addUniqueKey(['ncmec_report_id']);
             $table->addKey(['user_id']);
         });
 

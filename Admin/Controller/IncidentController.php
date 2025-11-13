@@ -24,6 +24,7 @@ class IncidentController extends AbstractController
         $perPage = 100;
 
         $finder = $this->finder('USIPS\NCMEC:Incident')
+            ->with('User')
             ->order('created_date', 'DESC')
             ->limitByPage($page, $perPage);
 
