@@ -38,10 +38,14 @@ class IncidentContentController extends AbstractController
             return $this->noPermission();
         }
 
+        // Load attachments if content has them
+        $attachments = $this->getContentAttachments($content, $contentType, $contentId);
+
         $viewParams = [
             'content' => $content,
             'contentText' => $contentText,
             'contentType' => $contentType,
+            'attachments' => $attachments,
         ];
 
         return $this->view('USIPS\NCMEC:IncidentContent\Preview', 'usips_ncmec_content_preview', $viewParams);
@@ -93,5 +97,41 @@ class IncidentContentController extends AbstractController
 
         // Fallback to empty string
         return '';
+    }
+
+    /**
+     * Get attachments for the content if they exist
+     *
+     * @param \XF\Mvc\Entity\Entity $content
+     * @param string $contentType
+     * @param int $contentId
+     * @return array
+     */
+    protected function getContentAttachments($content, $contentType, $contentId)
+    {
+        // Check if content has attachments via relation
+        if (method_exists($content, 'hasRelation') && $content->hasRelation('Attachments'))
+        {
+            $attachments = $content->Attachments;
+            if ($attachments && $attachments->count())
+            {
+                return $attachments->toArray();
+            }
+        }
+
+        // Check if content has attach_count field
+        if ($content->isValidColumn('attach_count') && $content->attach_count > 0)
+        {
+            /** @var \XF\Repository\AttachmentRepository $attachmentRepo */
+            $attachmentRepo = $this->repository('XF:Attachment');
+            $attachments = $attachmentRepo->findAttachmentsByContentId($contentType, $contentId)->fetch();
+            
+            if ($attachments && $attachments->count())
+            {
+                return $attachments->toArray();
+            }
+        }
+
+        return [];
     }
 }

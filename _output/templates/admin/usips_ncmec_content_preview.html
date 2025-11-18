@@ -1,8 +1,30 @@
-<xf:head option="metaNoindex"><meta name="robots" content="noindex" /></xf:head>
+<xf:head option="metaNoindex">
+	<meta name="robots" content="noindex" />
+</xf:head>
 
 <div class="tooltip-content-inner">
-	{{ bb_code($contentText, 'post:thread_preview', $content, {
-		'lightbox': false
-	}) }}
+	{{ bb_code($contentText, 'post:thread_preview', $content, { 'lightbox': false }) }}
+
+	<xf:if is="$attachments">
+		<hr />
+		<div class="usips-ncmec-attachments">
+			<ul class="listInline">
+				<xf:foreach loop="$attachments" value="$attachment">
+					<li>
+						<xf:if is="$attachment.thumbnail_url">
+							<a href="{{ link('attachments', $attachment) }}" target="_blank"
+								class="attachment-thumbnail">
+								<img src="{{ $attachment.thumbnail_url }}" alt="{{ $attachment.filename }}"
+									style="max-width: 150px; max-height: 150px; vertical-align: middle;" />
+							</a>
+							<xf:else />
+							NOT AN IMAGE
+						</xf:if>
+					</li>
+				</xf:foreach>
+			</ul>
+		</div>
+	</xf:if>
+
 	<span class="tooltip-content-cover"></span>
 </div>
