@@ -23,6 +23,13 @@ The United States Internet Preservation Society provides this code under the MIT
 - **Direct NCMEC flagging**: Moderators can flag content directly from the approval queue, automatically creating incidents and preparing for NCMEC reporting
 - **Attachment preview**: View attachments associated with flagged content directly in the approval interface
 
+### Report Center Integration
+- **Report state flagging**: Moderators can resolve reports with the "Flag as CSAM" option directly from the report interface
+- **Automatic incident creation**: Flagging a report creates or updates an incident, associating the reported content and user
+- **Time-based content collection**: Automatically collects and associates all content posted by the reported user within a configurable time window (based on the default timespan option)
+- **Cascading report closure**: All other open reports for the same content are automatically closed with the same CSAM flag message and incident reference
+- **Unified workflow**: Provides the same functionality as approval queue flagging but integrated into the normal report handling workflow
+
 ### Incident Management System
 - **Incident tracking**: Create and manage investigation incidents for suspected CSEM cases
 - **User association**: Track users involved in incidents with automatic flagging system
@@ -87,8 +94,12 @@ Create user group promotions using the `usips_ncmec_in_incident` user field crit
 Users can report suspected CSEM using the standard report function with emergency handling enabled, which will immediately hide the content and notify staff.
 
 ### For Moderators
-1. Review flagged content in the approval queue
-2. Use the "Flag as CSAM" action to create an incident
+1. **Via Approval Queue**: Review flagged content in the approval queue and use the "Flag as CSAM" action to create an incident
+2. **Via Report Center**: 
+   - View any report for potentially harmful content
+   - Select "Flag as CSAM" from the report state dropdown
+   - Add a comment (optional) explaining the action
+   - Submit to automatically flag content, create/update incident, and close related reports
 3. Content is automatically added to the incident for investigation
 
 ### For Administrators
