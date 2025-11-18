@@ -1,7 +1,7 @@
 {
-    "parent_navigation_id": "usips_ncmec_incident",
-    "display_order": 100,
-    "link": "ncmec-incidents/",
+    "parent_navigation_id": "usips_ncmec_management",
+    "display_order": 200,
+    "link": "ncmec-cases",
     "icon": "",
     "admin_permission_id": "usips_ncmec",
     "debug_only": false,

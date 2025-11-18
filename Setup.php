@@ -11,6 +11,21 @@ class Setup extends AbstractSetup
 {
     public function install(array $stepParams = [])
     {
+        $this->schemaManager()->createTable('xf_usips_ncmec_case', function(Create $table)
+        {
+            $table->addColumn('case_id', 'int')->autoIncrement();
+            $table->addColumn('title', 'varchar', 255);
+            $table->addColumn('additional_info', 'text');
+            $table->addColumn('created_date', 'int');
+            $table->addColumn('last_update_date', 'int');
+            $table->addColumn('user_id', 'int');
+            $table->addColumn('username', 'varchar', 50);
+            $table->addColumn('status', 'varchar', 25)->setDefault('open');
+            $table->addColumn('is_finalized', 'tinyint', 1)->setDefault(0);
+            $table->addPrimaryKey('case_id');
+            $table->addKey(['status']);
+        });
+
         $this->schemaManager()->createTable('xf_usips_ncmec_person', function(Create $table)
         {
             $table->addColumn('person_id', 'int')->autoIncrement();
@@ -32,16 +47,16 @@ class Setup extends AbstractSetup
         $this->schemaManager()->createTable('xf_usips_ncmec_incident', function(Create $table)
         {
             $table->addColumn('incident_id', 'int')->autoIncrement();
+            $table->addColumn('case_id', 'int');
             $table->addColumn('title', 'varchar', 255);
             $table->addColumn('additional_info', 'text');
             $table->addColumn('created_date', 'int');
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
             $table->addColumn('username', 'varchar', 50);
-            $table->addColumn('report_id', 'int')->nullable();
             $table->addColumn('is_finalized', 'tinyint', 1)->setDefault(0);
             $table->addPrimaryKey('incident_id');
-            $table->addKey(['report_id']);
+            $table->addKey(['case_id']);
         });
 
         $this->schemaManager()->createTable('xf_usips_ncmec_incident_attachment_data', function(Create $table)
@@ -80,10 +95,13 @@ class Setup extends AbstractSetup
         {
             $table->addColumn('report_id', 'int')->autoIncrement();
             $table->addColumn('ncmec_report_id', 'int')->nullable();
+            $table->addColumn('case_id', 'int');
             $table->addColumn('created_date', 'int');
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
             $table->addColumn('username', 'varchar', 50);
+            $table->addColumn('subject_user_id', 'int');
+            $table->addColumn('subject_username', 'varchar', 50);
             $table->addColumn('incident_type', 'enum')
                 ->enumValues($incidentTypeValues)
                 ->setDefault($defaultIncidentType);
@@ -93,7 +111,9 @@ class Setup extends AbstractSetup
             $table->addColumn('is_finished', 'tinyint', 1)->setDefault(0);
             $table->addPrimaryKey('report_id');
             $table->addUniqueKey(['ncmec_report_id']);
+            $table->addKey(['case_id']);
             $table->addKey(['user_id']);
+            $table->addKey(['subject_user_id']);
         });
 
         $this->schemaManager()->createTable('xf_usips_ncmec_api_log', function(Create $table)
@@ -214,13 +234,14 @@ class Setup extends AbstractSetup
             });
         }
         
-        $sm->dropTable('xf_usips_ncmec_person');
         $sm->dropTable('xf_usips_ncmec_incident_attachment_data');
         $sm->dropTable('xf_usips_ncmec_incident_content');
         $sm->dropTable('xf_usips_ncmec_incident_user');
-        $sm->dropTable('xf_usips_ncmec_api_log');
         $sm->dropTable('xf_usips_ncmec_report');
         $sm->dropTable('xf_usips_ncmec_incident');
+        $sm->dropTable('xf_usips_ncmec_case');
+        $sm->dropTable('xf_usips_ncmec_api_log');
+        $sm->dropTable('xf_usips_ncmec_person');
 
         $this->deleteUserField();
     }

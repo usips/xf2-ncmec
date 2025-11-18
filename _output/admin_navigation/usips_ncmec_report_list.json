@@ -1,6 +1,6 @@
 {
-    "parent_navigation_id": "usips_ncmec_report",
-    "display_order": 100,
+    "parent_navigation_id": "usips_ncmec_management",
+    "display_order": 300,
     "link": "ncmec-reports",
     "icon": "",
     "admin_permission_id": "usips_ncmec",

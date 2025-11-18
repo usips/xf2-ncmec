@@ -1,8 +1,8 @@
 {
-    "parent_navigation_id": "usips_ncmec_report",
-    "display_order": 110,
-    "link": "ncmec-reports/archive",
-    "icon": "",
+    "parent_navigation_id": "usips_ncmec",
+    "display_order": 200,
+    "link": "",
+    "icon": "fa-suitcase",
     "admin_permission_id": "usips_ncmec",
     "debug_only": false,
     "development_only": false,
