@@ -3,6 +3,10 @@
 <xf:breadcrumb href="{{ link('ncmec-incidents/view', $incident) }}">{$incident.title}</xf:breadcrumb>
 
 <xf:pageaction if="true">
+	<xf:button href="{{ link('users/edit', $user) }}" class="link">{{ phrase('edit_user') }}
+	</xf:button>
+	<xf:button href="{{ link_type('public', 'members', $user) }}" class="link">{{ phrase('view_public_profile') }}
+	</xf:button>
 	<xf:button href="{{ link('ncmec-incidents/user/delete', $incidentUser) }}" icon="delete" overlay="true" />
 </xf:pageaction>
 

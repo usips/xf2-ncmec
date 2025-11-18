@@ -276,12 +276,34 @@
         <xf:submitrow icon="save" submit="{{ phrase('usips_ncmec_save_configuration') }}" />
     </div>
 </xf:form>]]></template>
-  <template type="admin" title="usips_ncmec_content_preview" version_id="0" version_string="1.0.0"><![CDATA[<xf:head option="metaNoindex"><meta name="robots" content="noindex" /></xf:head>
+  <template type="admin" title="usips_ncmec_content_preview" version_id="0" version_string="1.0.0"><![CDATA[<xf:head option="metaNoindex">
+	<meta name="robots" content="noindex" />
+</xf:head>
 
 <div class="tooltip-content-inner">
-	{{ bb_code($contentText, 'post:thread_preview', $content, {
-		'lightbox': false
-	}) }}
+	{{ bb_code($contentText, 'post:thread_preview', $content, { 'lightbox': false }) }}
+
+	<xf:if is="$attachments">
+		<hr />
+		<div class="usips-ncmec-attachments">
+			<ul class="listInline">
+				<xf:foreach loop="$attachments" value="$attachment">
+					<li>
+						<xf:if is="$attachment.thumbnail_url">
+							<a href="{{ link('attachments', $attachment) }}" target="_blank"
+								class="attachment-thumbnail">
+								<img src="{{ $attachment.thumbnail_url }}" alt="{{ $attachment.filename }}"
+									style="max-width: 150px; max-height: 150px; vertical-align: middle;" />
+							</a>
+							<xf:else />
+							NOT AN IMAGE
+						</xf:if>
+					</li>
+				</xf:foreach>
+			</ul>
+		</div>
+	</xf:if>
+
 	<span class="tooltip-content-cover"></span>
 </div>]]></template>
   <template type="admin" title="usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_dashboard') }}</xf:title>
@@ -463,6 +485,10 @@
 <xf:breadcrumb href="{{ link('ncmec-incidents/view', $incident) }}">{$incident.title}</xf:breadcrumb>
 
 <xf:pageaction if="true">
+	<xf:button href="{{ link('users/edit', $user) }}" class="link">{{ phrase('edit_user') }}
+	</xf:button>
+	<xf:button href="{{ link_type('public', 'members', $user) }}" class="link">{{ phrase('view_public_profile') }}
+	</xf:button>
 	<xf:button href="{{ link('ncmec-incidents/user/delete', $incidentUser) }}" icon="delete" overlay="true" />
 </xf:pageaction>
 
@@ -590,6 +616,7 @@
                         <xf:cell>{{ phrase('title') }}</xf:cell>
                         <xf:cell>{{ phrase('user') }}</xf:cell>
                         <xf:cell></xf:cell>
+                        <xf:cell></xf:cell>
                     </xf:datarow>
                     <xf:foreach loop="$contentData" value="$data">
                         <xf:datarow>
@@ -605,6 +632,8 @@
                                 <xf:avatar user="$data.incident_content.User" size="xxs" />
                                 <xf:username user="{$data.incident_content.User}" />
                             </xf:cell>
+                            <xf:action href="{{ $data.content.getContentUrl(true) }}">{{ phrase('view_content') }}
+                            </xf:action>
                             <xf:delete href="{{ link('ncmec-incidents/delete', $incident) }}"
                                 tooltip="{{ phrase('usips_ncmec_disassociate') }}" />
                         </xf:datarow>
@@ -1192,7 +1221,24 @@
 	'name': username_link($user, false, {'defaultname': $alert.username}),
 	'title': '<a href="' . link('reports', $content) . '#report-comment-' . $alert.extra_data.comment.report_comment_id . '" class="fauxBlockLink-blockLink">' . $content.title . '</a>'
 }) }}]]></template>
-  <template type="public" title="usips_ncmec_approval_queue_macro_item_message_type" version_id="0" version_string="1.0.0"><![CDATA[<xf:macro id="message_macros::attachments" arg-attachments="{{ $content.Attachments }}" arg-message="{{ $content }}" arg-canView="{{ true }}" />]]></template>
+  <template type="public" title="usips_ncmec_approval_queue_macro_item_message_type" version_id="0" version_string="1.0.0"><![CDATA[<xf:set var="$attachmentMessage" value="{{ $content }}" />
+<xf:set var="$attachments" value="null" />
+
+<xf:if is="method_exists($content, 'hasRelation') && $content.hasRelation('Attachments') && $content.Attachments">
+    <xf:set var="$attachments" value="{{ $content.Attachments }}" />
+    <xf:elseif is="method_exists($content, 'hasRelation') && $content.hasRelation('FirstPost')" />
+    <xf:set var="$firstPost" value="{{ $content.FirstPost }}" />
+    <xf:if
+        is="$firstPost && method_exists($firstPost, 'hasRelation') && $firstPost.hasRelation('Attachments') && $firstPost.Attachments">
+        <xf:set var="$attachments" value="{{ $firstPost.Attachments }}" />
+        <xf:set var="$attachmentMessage" value="{{ $firstPost }}" />
+    </xf:if>
+</xf:if>
+
+<xf:if is="$attachments">
+    <xf:macro id="message_macros::attachments" arg-attachments="{{ $attachments }}"
+        arg-message="{{ $attachmentMessage }}" arg-canView="{{ true }}" />
+</xf:if>]]></template>
   <template type="public" title="usips_ncmec_person_edit" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ $person.isInsert() ? 'Add Person' : 'Edit Person' }}</xf:title>
 
 <xf:form action="{{ $person.isInsert() ? link('ncmec-persons/create') : link('ncmec-persons/update', $person) }}"

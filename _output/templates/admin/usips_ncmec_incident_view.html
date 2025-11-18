@@ -61,6 +61,7 @@
                         <xf:cell>{{ phrase('title') }}</xf:cell>
                         <xf:cell>{{ phrase('user') }}</xf:cell>
                         <xf:cell></xf:cell>
+                        <xf:cell></xf:cell>
                     </xf:datarow>
                     <xf:foreach loop="$contentData" value="$data">
                         <xf:datarow>
@@ -76,6 +77,8 @@
                                 <xf:avatar user="$data.incident_content.User" size="xxs" />
                                 <xf:username user="{$data.incident_content.User}" />
                             </xf:cell>
+                            <xf:action href="{{ $data.content.getContentUrl(true) }}">{{ phrase('view_content') }}
+                            </xf:action>
                             <xf:delete href="{{ link('ncmec-incidents/delete', $incident) }}"
                                 tooltip="{{ phrase('usips_ncmec_disassociate') }}" />
                         </xf:datarow>

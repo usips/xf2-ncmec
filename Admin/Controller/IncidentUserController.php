@@ -34,12 +34,42 @@ class IncidentUserController extends AbstractController
         /** @var UserContentSelector $selector */
         $selector = $this->service(UserContentSelector::class, $incident, $user);
 
+        // Always get all associated content
         $associatedContent = $selector->getAssociatedContent();
         $associatedAttachments = $selector->getAssociatedAttachments();
 
+        // Get available content within time limit (will include associated content)
         $availableContent = $selector->getAvailableContent($timeLimit, $associatedContent);
-        $availableAttachments = $selector->getAvailableAttachments($timeLimit, $associatedAttachments);
+        
+        // Get attachments from multiple sources and merge them
+        $attachmentsByDataId = [];
+        
+        // 1. Get attachments within time limit
+        $timeLimitedAttachments = $selector->getAvailableAttachments($timeLimit, $associatedAttachments);
+        foreach ($timeLimitedAttachments as $attachment)
+        {
+            $attachmentsByDataId[$attachment->data_id] = $attachment;
+        }
+        
+        // 2. Get last 50 attachments regardless of time
+        $recentAttachments = $this->getRecentUserAttachments($user->user_id, 50);
+        foreach ($recentAttachments as $attachment)
+        {
+            if (!isset($attachmentsByDataId[$attachment->data_id]))
+            {
+                $attachmentsByDataId[$attachment->data_id] = $attachment;
+            }
+        }
+        
+        // Convert to array and sort by upload date (newest first)
+        $availableAttachments = array_values($attachmentsByDataId);
+        usort($availableAttachments, function($a, $b) {
+            $aDate = $a->Data->upload_date ?? 0;
+            $bDate = $b->Data->upload_date ?? 0;
+            return $bDate <=> $aDate;
+        });
 
+        // Build list of associated attachment IDs for UI highlighting
         $associatedDataIds = [];
         foreach ($associatedAttachments as $assoc)
         {
@@ -233,4 +263,27 @@ class IncidentUserController extends AbstractController
             ]
         );
     }
+
+    /**
+     * Get the most recent attachments uploaded by a user
+     *
+     * @param int $userId
+     * @param int $limit
+     * @return \XF\Entity\Attachment[]
+     */
+    protected function getRecentUserAttachments(int $userId, int $limit = 50): array
+    {
+        /** @var \XF\Finder\AttachmentFinder $finder */
+        $finder = $this->finder('XF:Attachment');
+        
+        $attachments = $finder
+            ->with(['Data', 'Data.User'])
+            ->where('Data.user_id', $userId)
+            ->order('Data.upload_date', 'DESC')
+            ->limit($limit)
+            ->fetch();
+        
+        return $attachments->toArray();
+    }
 }
+
