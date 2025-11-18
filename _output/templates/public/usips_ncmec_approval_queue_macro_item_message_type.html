@@ -1,13 +1,14 @@
-<xf:set var="$attachmentMessage" value="$content" />
+<xf:set var="$attachmentMessage" value="{{ $content }}" />
 <xf:set var="$attachments" value="null" />
 
 <xf:if is="method_exists($content, 'hasRelation') && $content.hasRelation('Attachments') && $content.Attachments">
-    <xf:set var="$attachments" value="$content.Attachments" />
-    <xf:elseif is="$content.hasRelation('FirstPost')" />
-    <xf:set var="$firstPost" value="$content.FirstPost" />
-    <xf:if is="$firstPost && $firstPost.hasRelation('Attachments') && $firstPost.Attachments">
-        <xf:set var="$attachments" value="$firstPost.Attachments" />
-        <xf:set var="$attachmentMessage" value="$firstPost" />
+    <xf:set var="$attachments" value="{{ $content.Attachments }}" />
+    <xf:elseif is="method_exists($content, 'hasRelation') && $content.hasRelation('FirstPost')" />
+    <xf:set var="$firstPost" value="{{ $content.FirstPost }}" />
+    <xf:if
+        is="$firstPost && method_exists($firstPost, 'hasRelation') && $firstPost.hasRelation('Attachments') && $firstPost.Attachments">
+        <xf:set var="$attachments" value="{{ $firstPost.Attachments }}" />
+        <xf:set var="$attachmentMessage" value="{{ $firstPost }}" />
     </xf:if>
 </xf:if>
 
