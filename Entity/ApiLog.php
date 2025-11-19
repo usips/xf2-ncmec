@@ -9,6 +9,7 @@ use XF\Mvc\Entity\Structure;
  * COLUMNS
  * @property int $log_id
  * @property int|null $report_id
+ * @property int|null $file_id
  * @property int $user_id
  * @property int $request_date
  * @property string $request_method
@@ -22,6 +23,7 @@ use XF\Mvc\Entity\Structure;
  *
  * RELATIONS
  * @property-read \USIPS\NCMEC\Entity\Report|null $Report
+ * @property-read \USIPS\NCMEC\Entity\ReportFile|null $ReportFile
  * @property-read \XF\Entity\User|null $User
  */
 class ApiLog extends Entity
@@ -34,6 +36,7 @@ class ApiLog extends Entity
         $structure->columns = [
             'log_id' => ['type' => self::UINT, 'autoIncrement' => true],
             'report_id' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
+            'file_id' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
             'user_id' => ['type' => self::UINT, 'default' => 0],
             'request_date' => ['type' => self::UINT, 'default' => \XF::$time],
             'request_method' => ['type' => self::STR, 'maxLength' => 10, 'default' => ''],
@@ -50,6 +53,12 @@ class ApiLog extends Entity
                 'entity' => 'USIPS\NCMEC:Report',
                 'type' => self::TO_ONE,
                 'conditions' => 'report_id',
+                'primary' => true,
+            ],
+            'ReportFile' => [
+                'entity' => 'USIPS\NCMEC:ReportFile',
+                'type' => self::TO_ONE,
+                'conditions' => 'file_id',
                 'primary' => true,
             ],
             'User' => [

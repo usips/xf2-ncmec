@@ -114,10 +114,28 @@ class Setup extends AbstractSetup
             $table->addKey(['subject_user_id']);
         });
 
+        $this->schemaManager()->createTable('xf_usips_ncmec_report_file', function(Create $table)
+        {
+            $table->addColumn('file_id', 'int')->autoIncrement();
+            $table->addColumn('report_id', 'int');
+            $table->addColumn('case_id', 'int');
+            $table->addColumn('ncmec_report_id', 'int');
+            $table->addColumn('ncmec_file_id', 'varchar', 100)->nullable();
+            $table->addColumn('original_file_name', 'varchar', 255)->setDefault('');
+            $table->addColumn('location_of_file', 'varchar', 2048)->setDefault('');
+            $table->addColumn('publicly_available', 'tinyint', 1)->setDefault(0);
+            $table->addColumn('ip_capture_event', 'varbinary', 16)->setDefault('');
+            $table->addPrimaryKey('file_id');
+            $table->addKey(['report_id']);
+            $table->addKey(['case_id']);
+            $table->addKey(['ncmec_report_id']);
+        });
+
         $this->schemaManager()->createTable('xf_usips_ncmec_api_log', function(Create $table)
         {
             $table->addColumn('log_id', 'int')->autoIncrement();
             $table->addColumn('report_id', 'int')->nullable();
+            $table->addColumn('file_id', 'int')->nullable();
             $table->addColumn('user_id', 'int')->setDefault(0);
             $table->addColumn('request_date', 'int')->setDefault(0);
             $table->addColumn('request_method', 'varchar', 10);  // GET, POST
@@ -130,6 +148,7 @@ class Setup extends AbstractSetup
             $table->addColumn('success', 'tinyint', 1)->setDefault(0);  // Whether the API call succeeded
             $table->addPrimaryKey('log_id');
             $table->addKey(['report_id']);
+            $table->addKey(['file_id']);
             $table->addKey(['user_id']);
             $table->addKey(['request_date']);
             $table->addKey(['environment', 'request_date']);
@@ -236,6 +255,7 @@ class Setup extends AbstractSetup
         $sm->dropTable('xf_usips_ncmec_incident_content');
         $sm->dropTable('xf_usips_ncmec_incident_user');
         $sm->dropTable('xf_usips_ncmec_api_log');
+        $sm->dropTable('xf_usips_ncmec_report_file');
         $sm->dropTable('xf_usips_ncmec_report');
         $sm->dropTable('xf_usips_ncmec_incident');
         $sm->dropTable('xf_usips_ncmec_case');

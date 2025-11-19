@@ -55,6 +55,8 @@
   <phrase title="usips_ncmec_confirm_incident_deletion" version_id="0" version_string="1.0.0"><![CDATA[Confirm deletion of draft incident]]></phrase>
   <phrase title="usips_ncmec_connection_error_x" version_id="0" version_string="1.0.0"><![CDATA[Connection error: {error}]]></phrase>
   <phrase title="usips_ncmec_connection_successful" version_id="0" version_string="1.0.0"><![CDATA[Connection successful.]]></phrase>
+  <phrase title="usips_ncmec_content_posted_between_x_and_y" version_id="0" version_string="1.0.0"><![CDATA[Content was created betwee {start} and {end}]]></phrase>
+  <phrase title="usips_ncmec_content_posted_on_x" version_id="0" version_string="1.0.0"><![CDATA[Content was created on {date}]]></phrase>
   <phrase title="usips_ncmec_content_time_limit" version_id="0" version_string="1.0.0"><![CDATA[Content time limit]]></phrase>
   <phrase title="usips_ncmec_content_time_limit_explain" version_id="0" version_string="1.0.0"><![CDATA[User generated content authored within this timespan will be associated with this incident.]]></phrase>
   <phrase title="usips_ncmec_content_time_limit_explain_batch" version_id="0" version_string="1.0.0"><![CDATA[All matched users will be added to this incident. Their content will also be added to the incident if it is within this timeframe. You may not want to associate entire post histories when dealing with compromised accounts.]]></phrase>
