@@ -1,0 +1,26 @@
+<xf:title>{{ phrase('usips_ncmec_cases_archived') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-cases') }}" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:if contentcheck="true">
+                <div class="block-filterBar">
+                    <div class="filterBar">
+                        <xf:macro template="filter_macros" name="quick_filter" arg-key="cases"
+                            arg-class="block-filterBar-input" />
+                    </div>
+                </div>
+
+                <div class="structItemContainer">
+                    <xf:macro template="usips_ncmec_macros" name="case_list" arg-cases="{$cases}" />
+                </div>
+
+                <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-cases/archive" />
+                <xf:else />
+                <div class="blockMessage">{{ phrase('usips_ncmec_no_cases_archived') }}</div>
+            </xf:if>
+        </div>
+
+        <xf:button href="{{ link('ncmec-cases') }}" icon="list">{{ phrase('usips_ncmec_view_open_cases') }}</xf:button>
+    </div>
+</xf:form>

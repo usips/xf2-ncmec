@@ -1,0 +1,11 @@
+{
+    "route_type": "admin",
+    "route_prefix": "ncmec-cases",
+    "sub_name": "",
+    "format": ":int<case_id,title>/",
+    "build_class": "",
+    "build_method": "",
+    "controller": "USIPS\\NCMEC:Case",
+    "context": "usips_ncmec_case",
+    "action_prefix": ""
+}

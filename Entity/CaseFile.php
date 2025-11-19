@@ -5,8 +5,40 @@ namespace USIPS\NCMEC\Entity;
 use XF\Mvc\Entity\Entity;
 use XF\Mvc\Entity\Structure;
 
+/**
+ * COLUMNS
+ * @property int $case_id
+ * @property string $title
+ * @property string $additional_info
+ * @property int $created_date
+ * @property int $last_update_date
+ * @property int $user_id
+ * @property string $username
+ * @property string $incident_type
+ * @property string $activity_summary
+ * @property array $report_annotations
+ * @property string $incident_date_time_desc
+ * @property bool $is_finalized - Case is closed and in the process of being submitted (no further modifications allowed)
+ * @property bool $is_finished - Case has been fully submitted to NCMEC (final state)
+ * 
+ * RELATIONS
+ * @property-read \XF\Entity\User $User
+ * @property-read \XF\Mvc\Entity\AbstractCollection<\USIPS\NCMEC\Entity\Incident> $Incidents
+ * @property-read \XF\Mvc\Entity\AbstractCollection<\USIPS\NCMEC\Entity\Report> $Reports
+ */
 class CaseFile extends Entity
 {
+    /**
+     * Check if a value exists in the report annotations array
+     *
+     * @param string $value The annotation value to check
+     * @return bool
+     */
+    public function isInReportAnnotations(string $value): bool
+    {
+        return is_array($this->report_annotations) && in_array($value, $this->report_annotations);
+    }
+
     public static function getStructure(Structure $structure)
     {
         $structure->table = 'xf_usips_ncmec_case';
@@ -20,8 +52,12 @@ class CaseFile extends Entity
             'last_update_date' => ['type' => self::UINT, 'default' => \XF::$time],
             'user_id' => ['type' => self::UINT, 'required' => true],
             'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
-            'status' => ['type' => self::STR, 'maxLength' => 25, 'default' => 'open'],
+            'incident_type' => ['type' => self::STR, 'default' => '', 'maxLength' => 100],
+            'activity_summary' => ['type' => self::STR, 'default' => '', 'maxLength' => 65535],
+            'report_annotations' => ['type' => self::JSON_ARRAY, 'default' => []],
+            'incident_date_time_desc' => ['type' => self::STR, 'default' => '', 'maxLength' => 3000],
             'is_finalized' => ['type' => self::BOOL, 'default' => false],
+            'is_finished' => ['type' => self::BOOL, 'default' => false],
         ];
         $structure->relations = [
             'User' => [

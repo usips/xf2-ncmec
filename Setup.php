@@ -20,10 +20,15 @@ class Setup extends AbstractSetup
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
             $table->addColumn('username', 'varchar', 50);
-            $table->addColumn('status', 'varchar', 25)->setDefault('open');
+            $table->addColumn('incident_type', 'varchar', 100)->setDefault('');
+            $table->addColumn('activity_summary', 'mediumtext')->nullable();
+            $table->addColumn('report_annotations', 'mediumtext')->nullable();
+            $table->addColumn('incident_date_time_desc', 'varchar', 3000)->setDefault('');
             $table->addColumn('is_finalized', 'tinyint', 1)->setDefault(0);
+            $table->addColumn('is_finished', 'tinyint', 1)->setDefault(0);
             $table->addPrimaryKey('case_id');
-            $table->addKey(['status']);
+            $table->addKey(['is_finalized']);
+            $table->addKey(['is_finished']);
         });
 
         $this->schemaManager()->createTable('xf_usips_ncmec_person', function(Create $table)
@@ -88,10 +93,7 @@ class Setup extends AbstractSetup
             $table->addPrimaryKey(['incident_id', 'user_id']);
         });
 
-        $incidentTypeValues = $this->getIncidentTypeEnumValues();
-        $defaultIncidentType = $incidentTypeValues[0] ?? 'child_pornography';
-
-        $this->schemaManager()->createTable('xf_usips_ncmec_report', function(Create $table) use ($incidentTypeValues, $defaultIncidentType)
+        $this->schemaManager()->createTable('xf_usips_ncmec_report', function(Create $table)
         {
             $table->addColumn('report_id', 'int')->autoIncrement();
             $table->addColumn('ncmec_report_id', 'int')->nullable();
@@ -102,17 +104,12 @@ class Setup extends AbstractSetup
             $table->addColumn('username', 'varchar', 50);
             $table->addColumn('subject_user_id', 'int');
             $table->addColumn('subject_username', 'varchar', 50);
-            $table->addColumn('incident_type', 'enum')
-                ->enumValues($incidentTypeValues)
-                ->setDefault($defaultIncidentType);
-            $table->addColumn('activity_summary', 'mediumtext')->nullable();
-            $table->addColumn('report_annotations', 'mediumtext')->nullable();
-            $table->addColumn('incident_date_time_desc', 'varchar', 3000)->setDefault('');
-            $table->addColumn('is_finished', 'tinyint', 1)->setDefault(0);
+            $table->addColumn('is_finished', 'bool')->setDefault(false);
             $table->addPrimaryKey('report_id');
             $table->addUniqueKey(['ncmec_report_id']);
             $table->addKey(['case_id']);
             $table->addKey(['user_id']);
+            $table->addKey(['is_finished']);
             $table->addKey(['subject_user_id']);
         });
 
@@ -237,10 +234,10 @@ class Setup extends AbstractSetup
         $sm->dropTable('xf_usips_ncmec_incident_attachment_data');
         $sm->dropTable('xf_usips_ncmec_incident_content');
         $sm->dropTable('xf_usips_ncmec_incident_user');
+        $sm->dropTable('xf_usips_ncmec_api_log');
         $sm->dropTable('xf_usips_ncmec_report');
         $sm->dropTable('xf_usips_ncmec_incident');
         $sm->dropTable('xf_usips_ncmec_case');
-        $sm->dropTable('xf_usips_ncmec_api_log');
         $sm->dropTable('xf_usips_ncmec_person');
 
         $this->deleteUserField();
@@ -254,10 +251,5 @@ class Setup extends AbstractSetup
             $userField->delete();
             \XF::repository('XF:UserField')->rebuildFieldCache();
         }
-    }
-
-    protected function getIncidentTypeEnumValues(): array
-    {
-        return array_keys(Client::INCIDENT_TYPE_LABELS);
     }
 }

@@ -6,7 +6,7 @@
 	</xf:button>
 </xf:pageaction>
 
-<xf:form action="{{ link('ncmec-reports/create') }}" class="" ajax="true" data-xf-init="select-plus"
+<xf:form action="{{ link('ncmec-cases/create') }}" class="" ajax="true" data-xf-init="select-plus"
 	data-sp-checkbox="input[name='incident_ids[]']" data-sp-container=".dataList-row">
 	<xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" arg-total="{$total}" />
 </xf:form>

@@ -14,7 +14,7 @@ class Incident extends Entity
         $structure->primaryKey = 'incident_id';
         $structure->columns = [
             'incident_id' => ['type' => self::UINT, 'autoIncrement' => true],
-            'case_id' => ['type' => self::UINT, 'required' => true],
+            'case_id' => ['type' => self::UINT, 'default' => 0],
             'title' => ['type' => self::STR, 'maxLength' => 255],
             'additional_info' => ['type' => self::STR, 'default' => ''],
             'created_date' => ['type' => self::UINT, 'default' => \XF::$time],

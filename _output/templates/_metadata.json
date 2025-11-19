@@ -24,6 +24,16 @@
         "version_string": "1.0.0",
         "hash": "9c297a4e18f0afb4302105dedaf21324"
     },
+    "admin/usips_ncmec_case_list.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "ccf0ea06f6f17b4326fa7a628cbffe95"
+    },
+    "admin/usips_ncmec_case_view.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "47c17fd23bd3aac61c3f63a93c5f6a51"
+    },
     "admin/usips_ncmec_config.html": {
         "version_id": 0,
         "version_string": "1.0.0",
@@ -57,7 +67,7 @@
     "admin/usips_ncmec_incident_list.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "8fcaa601a1922ec9c860dc9bec07d334"
+        "hash": "98551277c4847b7c8de0a31fb31b6008"
     },
     "admin/usips_ncmec_incident_remove_content.html": {
         "version_id": 0,
@@ -82,7 +92,7 @@
     "admin/usips_ncmec_macros.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "c6cb859df2c7dba38d9a200a4fa13c55"
+        "hash": "79c5e564fa60340df982cd9d03ab1e2f"
     },
     "admin/usips_ncmec_person_list.html": {
         "version_id": 0,

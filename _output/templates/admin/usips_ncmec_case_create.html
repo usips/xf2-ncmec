@@ -1,0 +1,57 @@
+<xf:title>{{ phrase('usips_ncmec_create_case') }}</xf:title>
+
+<xf:breadcrumb href="{{ link('ncmec-cases') }}">{{ phrase('usips_ncmec_cases') }}</xf:breadcrumb>
+
+<xf:form action="{{ link('ncmec-cases/create') }}" ajax="true" class="block">
+    <div class="block-container">
+        <h3 class="block-header">{{ phrase('usips_ncmec_select_incidents_for_case') }}</h3>
+
+        <xf:if is="$incidents is not empty">
+            <div class="block-body">
+                <xf:datalist class="dataList">
+                    <xf:datarow rowtype="header">
+                        <xf:cell></xf:cell>
+                        <xf:cell>{{ phrase('title') }}</xf:cell>
+                        <xf:cell>{{ phrase('user') }}</xf:cell>
+                        <xf:cell>{{ phrase('date') }}</xf:cell>
+                    </xf:datarow>
+                    <xf:foreach loop="$incidents" value="$incident">
+                        <xf:datarow>
+                            <xf:toggle name="incident_ids[]" value="{$incident.incident_id}"
+                                checked="{{ in_array($incident.incident_id, $preSelectedIds) }}" />
+
+                            <xf:cell class="dataList-cell--link">
+                                <a href="{{ link('ncmec-incidents/view', $incident) }}">
+                                    {{ $incident.title ?: phrase('usips_ncmec_untitled_incident') }}
+                                </a>
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:avatar user="$incident.User" size="xxs" />
+                                <xf:username user="$incident.User" />
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:date time="$incident.created_date" />
+                            </xf:cell>
+                        </xf:datarow>
+                    </xf:foreach>
+                </xf:datalist>
+            </div>
+
+            <div class="block-footer block-footer--split">
+                <span class="block-footer-select">
+                    <xf:checkbox standalone="true">
+                        <xf:option check-all="< .block-container" label="{{ phrase('select_all') }}" />
+                    </xf:checkbox>
+                </span>
+            </div>
+
+            <xf:submitrow sticky="true" icon="save">
+                {{ phrase('usips_ncmec_create_case') }}
+            </xf:submitrow>
+            <xf:else />
+            <div class="block-body">
+                <div class="blockMessage">{{ phrase('usips_ncmec_no_unassigned_incidents') }}</div>
+            </div>
+        </xf:if>
+    </div>
+</xf:form>

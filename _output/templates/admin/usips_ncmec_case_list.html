@@ -1,0 +1,32 @@
+<xf:title>{{ phrase('usips_ncmec_cases') }}</xf:title>
+
+<xf:pageaction>
+    <xf:button href="{{ link('ncmec-cases/create') }}" icon="add">
+        {{ phrase('usips_ncmec_create_case') }}
+    </xf:button>
+</xf:pageaction>
+
+<xf:form action="{{ link('ncmec-cases/create') }}" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:if contentcheck="true">
+                <div class="block-filterBar">
+                    <div class="filterBar">
+                        <xf:contentcheck>
+                            <xf:macro template="filter_macros" name="quick_filter" arg-key="cases"
+                                arg-class="block-filterBar-input" />
+                        </xf:contentcheck>
+                    </div>
+                </div>
+
+                <div class="structItemContainer">
+                    <xf:macro template="usips_ncmec_macros" name="case_list" arg-cases="{$cases}" />
+                </div>
+
+                <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-cases" />
+                <xf:else />
+                <div class="blockMessage">{{ phrase('usips_ncmec_no_cases_open') }}</div>
+            </xf:if>
+        </div>
+    </div>
+</xf:form>

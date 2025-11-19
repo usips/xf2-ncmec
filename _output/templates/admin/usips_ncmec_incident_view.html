@@ -1,6 +1,11 @@
 <xf:title>{{ phrase('usips_ncmec_incident') }}</xf:title>
 
 <xf:pageaction if="true">
+    <xf:if is="$incident.case_id">
+        <xf:button href="{{ link('ncmec-cases/view', {'case_id': $incident.case_id}) }}" icon="list">
+            {{ phrase('usips_ncmec_view_case') }}
+        </xf:button>
+    </xf:if>
     <xf:button href="{{ link('ncmec-incidents/delete', $incident) }}" icon="delete" overlay="true" />
 </xf:pageaction>
 
