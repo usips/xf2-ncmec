@@ -21,7 +21,6 @@ class Setup extends AbstractSetup
             $table->addColumn('user_id', 'int');
             $table->addColumn('username', 'varchar', 50);
             $table->addColumn('incident_type', 'varchar', 100)->setDefault('');
-            $table->addColumn('activity_summary', 'mediumtext')->nullable();
             $table->addColumn('report_annotations', 'mediumtext')->nullable();
             $table->addColumn('incident_date_time_desc', 'varchar', 3000)->setDefault('');
             $table->addColumn('is_finalized', 'tinyint', 1)->setDefault(0);
@@ -36,8 +35,10 @@ class Setup extends AbstractSetup
             $table->addColumn('person_id', 'int')->autoIncrement();
             $table->addColumn('created_date', 'int');
             $table->addColumn('last_update_date', 'int');
-            $table->addColumn('user_id', 'int');
-            $table->addColumn('username', 'varchar', 50);
+            $table->addColumn('user_id', 'int')->setDefault(0);
+            $table->addColumn('username', 'varchar', 50)->setDefault('');
+            $table->addColumn('created_by_user_id', 'int')->setDefault(0);
+            $table->addColumn('created_by_username', 'varchar', 50)->setDefault('');
             $table->addColumn('first_name', 'varchar', 100)->nullable();
             $table->addColumn('last_name', 'varchar', 100)->nullable();
             $table->addColumn('phones', 'mediumtext')->nullable();

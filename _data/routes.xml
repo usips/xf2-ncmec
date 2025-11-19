@@ -3,6 +3,7 @@
   <route route_type="admin" route_prefix="ncmec" controller="USIPS\NCMEC:Dashboard" context="usips_ncmec_dashboard"/>
   <route route_type="admin" route_prefix="ncmec-attachment-data" format=":int&lt;data_id,filename&gt;/" controller="USIPS\NCMEC:AttachmentData" context="usips_ncmec_attachments"/>
   <route route_type="admin" route_prefix="ncmec-attachments" format=":int&lt;attachment_id,filename&gt;/" controller="USIPS\NCMEC:Attachment" context="usips_ncmec_attachments"/>
+  <route route_type="admin" route_prefix="ncmec-cases" format=":int&lt;case_id,title&gt;/" controller="USIPS\NCMEC:Case" context="usips_ncmec_case"/>
   <route route_type="admin" route_prefix="ncmec-incidents" format=":int&lt;incident_id,title&gt;/" controller="USIPS\NCMEC:Incident" context="usips_ncmec_incident"/>
   <route route_type="admin" route_prefix="ncmec-incidents" sub_name="content" format=":int&lt;incident_id,title&gt;/content/:str&lt;content_type&gt;/:int&lt;content_id&gt;/" controller="USIPS\NCMEC:IncidentContent" context="usips_ncmec_incident"/>
   <route route_type="admin" route_prefix="ncmec-incidents" sub_name="user" format=":int&lt;incident_id,title&gt;/user/:int&lt;user_id,username&gt;/" controller="USIPS\NCMEC:IncidentUser" context="usips_ncmec_incident"/>

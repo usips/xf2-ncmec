@@ -46,13 +46,13 @@ class PersonController extends AbstractController
         {
             $this->personSaveProcess($person)->run();
 
-            return $this->redirect($this->buildLink('ncmec-people/view', $person));
+            return $this->redirect($this->buildLink('ncmec-people/edit', $person), \XF::phrase('your_changes_have_been_saved'));
         }
 
         return $this->personAddEdit($person);
     }
 
-    public function actionView(ParameterBag $params)
+    public function actionEdit(ParameterBag $params)
     {
         $person = $this->assertPersonExists($params->person_id, 'User');
 
@@ -61,7 +61,7 @@ class PersonController extends AbstractController
             'ageSelectorValue' => $person->date_of_birth ? 'date_of_birth' : ($person->age !== null ? 'age' : ''),
         ];
 
-        return $this->view('USIPS\NCMEC:Person\View', 'usips_ncmec_person_view', $viewParams);
+        return $this->view('USIPS\NCMEC:Person\Edit', 'usips_ncmec_person_edit', $viewParams);
     }
 
     public function actionUpdate(ParameterBag $params)
@@ -72,7 +72,7 @@ class PersonController extends AbstractController
 
         $this->personSaveProcess($person)->run();
 
-        return $this->redirect($this->buildLink('ncmec-people/view', $person));
+        return $this->redirect($this->buildLink('ncmec-people/edit', $person), \XF::phrase('your_changes_have_been_saved'));
     }
 
     protected function personAddEdit(Person $person)
@@ -87,6 +87,7 @@ class PersonController extends AbstractController
     protected function personSaveProcess(Person $person): FormAction
     {
         $input = $this->filter([
+            'username' => 'str',
             'first_name' => 'str',
             'last_name' => 'str',
             'age_selector' => 'str',
@@ -137,7 +138,19 @@ class PersonController extends AbstractController
         $form = $this->formAction();
         $form->basicEntitySave($person, $input);
 
-        $form->apply(function() use ($person)
+        $form->validate(function(FormAction $form) use ($input)
+        {
+            if ($input['username'])
+            {
+                $user = $this->em()->findOne('XF:User', ['username' => $input['username']]);
+                if (!$user)
+                {
+                    $form->logError(\XF::phrase('requested_user_not_found'), 'username');
+                }
+            }
+        });
+
+        $form->apply(function() use ($person, $input)
         {
             $time = \XF::$time;
             if ($person->isInsert() && !$person->created_date)
@@ -147,11 +160,19 @@ class PersonController extends AbstractController
 
             $person->last_update_date = $time;
 
-            if ($person->isInsert())
+            if ($input['username'])
             {
-                $visitor = \XF::visitor();
-                $person->user_id = $visitor->user_id;
-                $person->username = $visitor->username;
+                $user = $this->em()->findOne('XF:User', ['username' => $input['username']]);
+                if ($user)
+                {
+                    $person->user_id = $user->user_id;
+                    $person->username = $user->username;
+                }
+            }
+            else
+            {
+                $person->user_id = 0;
+                $person->username = '';
             }
         });
 

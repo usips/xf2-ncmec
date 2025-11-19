@@ -6,6 +6,8 @@ use \XF;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\ParameterBag;
 
+use USIPS\NCMEC\Service\Api\Client;
+
 class CaseController extends AbstractController
 {
     protected function preDispatchController($action, ParameterBag $params)
@@ -16,6 +18,121 @@ class CaseController extends AbstractController
     protected function assertCaseExists($id, $with = null)
     {
         return $this->assertRecordExists('USIPS\NCMEC:CaseFile', $id, $with);
+    }
+
+    public function actionEdit(ParameterBag $params)
+    {
+        $case = $this->assertCaseExists($params->case_id);
+
+        if ($case->is_finalized)
+        {
+            return $this->error(\XF::phrase('usips_ncmec_case_finalized_cannot_edit'));
+        }
+
+        if ($this->isPost())
+        {
+            $input = $this->filter([
+                'title' => 'str',
+                'incident_type' => 'str',
+                'report_annotations' => 'array-str',
+                'incident_date_time_desc' => 'str',
+                'reporter_person_id' => 'uint',
+                'reported_person_id' => 'uint',
+                'reported_additional_info' => 'str',
+                'additional_info' => 'str',
+            ]);
+
+            $case->bulkSet($input);
+            $case->save();
+
+            return $this->redirect($this->buildLink('ncmec-cases/view', $case));
+        }
+
+        // Calculate incident date time range from incidents
+        $earliest = null;
+        $latest = null;
+
+        $incidents = $this->finder('USIPS\NCMEC:Incident')
+            ->where('case_id', $case->case_id)
+            ->fetch();
+
+        foreach ($incidents as $incident)
+        {
+            // We need to look at the content associated with the incident to find the dates
+            // But for now, let's use the incident creation date as a proxy if content dates aren't easily available
+            // Or better, let's try to get content dates if possible.
+            // The user said "incidentDateTime (mandatory, form should show a static field which represents the EARLIEST of associated Incident.Content)"
+            
+            $contents = $this->finder('USIPS\NCMEC:IncidentContent')
+                ->where('incident_id', $incident->incident_id)
+                ->fetch();
+
+            foreach ($contents as $content)
+            {
+                $entity = $content->getContent();
+                if ($entity && isset($entity->post_date))
+                {
+                    $date = $entity->post_date;
+                    if ($earliest === null || $date < $earliest) $earliest = $date;
+                    if ($latest === null || $date > $latest) $latest = $date;
+                }
+                elseif ($entity && isset($entity->message_date)) // Profile posts
+                {
+                    $date = $entity->message_date;
+                    if ($earliest === null || $date < $earliest) $earliest = $date;
+                    if ($latest === null || $date > $latest) $latest = $date;
+                }
+                // Fallback to incident creation date if no content date found?
+            }
+        }
+
+        // If no content dates found, maybe use case creation date?
+        if ($earliest === null)
+        {
+            $earliest = $case->created_date;
+        }
+        if ($latest === null)
+        {
+            $latest = $case->created_date;
+        }
+
+        $incidentDateTime = $earliest;
+        
+        // Auto-fill description if empty
+        if (empty($case->incident_date_time_desc) && $earliest && $latest)
+        {
+            $lang = \XF::language();
+            $earliestStr = $lang->date($earliest, 'absolute') . ' ' . $lang->time($earliest);
+            $latestStr = $lang->date($latest, 'absolute') . ' ' . $lang->time($latest);
+            
+            if ($earliest == $latest)
+            {
+                $case->incident_date_time_desc = \XF::phrase('usips_ncmec_content_posted_on_x', ['date' => $earliestStr])->render();
+            }
+            else
+            {
+                $case->incident_date_time_desc = \XF::phrase('usips_ncmec_content_posted_between_x_and_y', [
+                    'start' => $earliestStr,
+                    'end' => $latestStr
+                ])->render();
+            }
+        }
+
+        // Fetch persons for select box
+        $persons = $this->finder('USIPS\NCMEC:Person')
+            ->order('last_update_date', 'DESC')
+            ->fetch();
+
+        $viewParams = [
+            'case' => $case,
+            'incidentTypes' => Client::INCIDENT_TYPE_VALUES,
+            'reportAnnotations' => Client::REPORT_ANNOTATION_VALUES,
+            'reportAnnotationLabels' => Client::REPORT_ANNOTATION_LABELS,
+            'incidentDateTime' => $incidentDateTime,
+            'persons' => $persons,
+        ];
+
+        return $this->view('USIPS\NCMEC:Case\Edit', 'usips_ncmec_case_edit', $viewParams);
     }
 
     public function actionIndex(ParameterBag $params)
@@ -144,6 +261,11 @@ class CaseController extends AbstractController
     public function actionView(ParameterBag $params)
     {
         $case = $this->assertCaseExists($params->case_id, ['User']);
+
+        if (!$case->is_finalized)
+        {
+            return $this->redirect($this->buildLink('ncmec-cases/edit', $case));
+        }
 
         // Load incidents for this case
         $incidents = $this->finder('USIPS\NCMEC:Incident')

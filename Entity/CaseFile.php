@@ -15,14 +15,18 @@ use XF\Mvc\Entity\Structure;
  * @property int $user_id
  * @property string $username
  * @property string $incident_type
- * @property string $activity_summary
  * @property array $report_annotations
  * @property string $incident_date_time_desc
+ * @property int $reporter_person_id
+ * @property int $reported_person_id
+ * @property string $reported_additional_info
  * @property bool $is_finalized - Case is closed and in the process of being submitted (no further modifications allowed)
  * @property bool $is_finished - Case has been fully submitted to NCMEC (final state)
  * 
  * RELATIONS
  * @property-read \XF\Entity\User $User
+ * @property-read \USIPS\NCMEC\Entity\Person $Reporter
+ * @property-read \USIPS\NCMEC\Entity\Person $ReportedPerson
  * @property-read \XF\Mvc\Entity\AbstractCollection<\USIPS\NCMEC\Entity\Incident> $Incidents
  * @property-read \XF\Mvc\Entity\AbstractCollection<\USIPS\NCMEC\Entity\Report> $Reports
  */
@@ -53,9 +57,11 @@ class CaseFile extends Entity
             'user_id' => ['type' => self::UINT, 'required' => true],
             'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
             'incident_type' => ['type' => self::STR, 'default' => '', 'maxLength' => 100],
-            'activity_summary' => ['type' => self::STR, 'default' => '', 'maxLength' => 65535],
             'report_annotations' => ['type' => self::JSON_ARRAY, 'default' => []],
             'incident_date_time_desc' => ['type' => self::STR, 'default' => '', 'maxLength' => 3000],
+            'reporter_person_id' => ['type' => self::UINT, 'default' => 0],
+            'reported_person_id' => ['type' => self::UINT, 'default' => 0],
+            'reported_additional_info' => ['type' => self::STR, 'default' => '', 'maxLength' => 16777215], // MEDIUMTEXT
             'is_finalized' => ['type' => self::BOOL, 'default' => false],
             'is_finished' => ['type' => self::BOOL, 'default' => false],
         ];
@@ -65,6 +71,16 @@ class CaseFile extends Entity
                 'type' => self::TO_ONE,
                 'conditions' => 'user_id',
                 'primary' => true,
+            ],
+            'Reporter' => [
+                'entity' => 'USIPS\\NCMEC:Person',
+                'type' => self::TO_ONE,
+                'conditions' => [['person_id', '=', '$reporter_person_id']],
+            ],
+            'ReportedPerson' => [
+                'entity' => 'USIPS\\NCMEC:Person',
+                'type' => self::TO_ONE,
+                'conditions' => [['person_id', '=', '$reported_person_id']],
             ],
             'Incidents' => [
                 'entity' => 'USIPS\\NCMEC:Incident',

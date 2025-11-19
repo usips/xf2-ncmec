@@ -37,8 +37,10 @@ class Person extends Entity
             'person_id' => ['type' => self::UINT, 'autoIncrement' => true],
             'created_date' => ['type' => self::UINT, 'default' => \XF::$time],
             'last_update_date' => ['type' => self::UINT, 'default' => \XF::$time],
-            'user_id' => ['type' => self::UINT, 'required' => true],
-            'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
+            'user_id' => ['type' => self::UINT, 'default' => 0],
+            'username' => ['type' => self::STR, 'maxLength' => 50, 'default' => ''],
+            'created_by_user_id' => ['type' => self::UINT, 'default' => 0],
+            'created_by_username' => ['type' => self::STR, 'maxLength' => 50, 'default' => ''],
             'first_name' => ['type' => self::STR, 'maxLength' => 100, 'nullable' => true, 'default' => null],
             'last_name' => ['type' => self::STR, 'maxLength' => 100, 'nullable' => true, 'default' => null],
             'phones' => ['type' => self::STR, 'nullable' => true, 'default' => null],
@@ -57,6 +59,12 @@ class Person extends Entity
                 'conditions' => 'user_id',
                 'primary' => true
             ],
+            'CreatedByUser' => [
+                'entity' => 'XF:User',
+                'type' => self::TO_ONE,
+                'conditions' => [['user_id', '=', '$created_by_user_id']],
+                'primary' => true
+            ],
         ];
 
         return $structure;
@@ -69,6 +77,10 @@ class Person extends Entity
         if ($this->isInsert() && !$this->created_date)
         {
             $this->created_date = \XF::$time;
+
+            $visitor = \XF::visitor();
+            $this->created_by_user_id = $visitor->user_id;
+            $this->created_by_username = $visitor->username;
         }
     }
 

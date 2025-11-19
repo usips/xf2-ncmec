@@ -10,17 +10,18 @@
             <div class="block-body">
                 <xf:datalist>
                     <xf:datarow rowtype="header">
-                        <xf:cell>Name</xf:cell>
-                        <xf:cell>Age</xf:cell>
-                        <xf:cell>Created by</xf:cell>
-                        <xf:cell>Created on</xf:cell>
-                        <xf:cell>Last updated on</xf:cell>
+                        <xf:cell>{{ phrase('name') }}</xf:cell>
+                        <xf:cell>{{ phrase('age') }}</xf:cell>
+                        <xf:cell>{{ phrase('user') }}</xf:cell>
+                        <xf:cell>{{ phrase('created_by') }}</xf:cell>
+                        <xf:cell>{{ phrase('created_on') }}</xf:cell>
+                        <xf:cell>{{ phrase('last_updated_on') }}</xf:cell>
                         <xf:cell></xf:cell>
                     </xf:datarow>
                     <xf:foreach loop="$persons" value="$person">
                         <xf:datarow>
                             <xf:cell>
-                                <a href="{{ link('ncmec-people/view', $person) }}">{{$person.display_name}}</a>
+                                <a href="{{ link('ncmec-people/edit', $person) }}">{{$person.display_name}}</a>
                             </xf:cell>
                             <xf:cell>
                                 <xf:if is="$person.date_of_birth">
@@ -31,8 +32,16 @@
                                 </xf:if>
                             </xf:cell>
                             <xf:cell>
-                                <xf:avatar user="{$person.User}" size="xxs" />
-                                <xf:username user="{$person.User}" defaultname="{$person.username}" />
+                                <xf:if is="$person.User">
+                                    <xf:avatar user="{$person.User}" size="xxs" />
+                                    <xf:username user="{$person.User}" defaultname="{$person.username}" />
+                                    <xf:else />-
+                                </xf:if>
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:avatar user="{$person.CreatedByUser}" size="xxs" />
+                                <xf:username user="{$person.CreatedByUser}"
+                                    defaultname="{$person.created_by_username}" />
                             </xf:cell>
                             <xf:cell>
                                 <xf:date time="{$person.created_date}" />

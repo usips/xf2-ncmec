@@ -1,0 +1,131 @@
+<xf:title>{{ phrase('usips_ncmec_edit_case') }}</xf:title>
+
+<xf:breadcrumb href="{{ link('ncmec-cases/view', $case) }}">{{ $case.title }}</xf:breadcrumb>
+
+<xf:form action="{{ link('ncmec-cases/edit', $case) }}" ajax="true" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:textboxrow name="title" value="{$case.title}" label="{{ phrase('title') }}" />
+
+            <xf:textarearow name="additional_info" value="{$case.additional_info}"
+                label="{{ phrase('usips_ncmec_additional_info') }}" rows="2" />
+
+            <h3 class="block-formSectionHeader">
+                <span class="collapseTrigger collapseTrigger--block" data-xf-click="toggle" data-target="< :up :next">
+                    {{ phrase('usips_ncmec_incident_summary') }}
+                </span>
+            </h3>
+            <div class="block-body block-body--collapsible">
+                <xf:selectrow name="incident_type" value="{$case.incident_type}"
+                    label="{{ phrase('usips_ncmec_incident_type') }}" required="true">
+                    <xf:option value="">{{ phrase('usips_ncmec_select_incident_type') }}</xf:option>
+                    <xf:foreach loop="$incidentTypes" key="$type" value="$label">
+                        <xf:option value="{$type}">{$label}</xf:option>
+                    </xf:foreach>
+                </xf:selectrow>
+
+                <xf:checkboxrow name="report_annotations" label="{{ phrase('usips_ncmec_report_annotations') }}">
+                    <xf:foreach loop="$reportAnnotations" key="$key" value="$value">
+                        <xf:option value="{$value}" selected="{{ $case.isInReportAnnotations($value) }}">
+                            {$reportAnnotationLabels.{$key}}
+                        </xf:option>
+                    </xf:foreach>
+                </xf:checkboxrow>
+
+                <xf:formrow label="{{ phrase('usips_ncmec_incident_date_time') }}">
+                    <xf:if is="$incidentDateTime">
+                        <xf:date time="$incidentDateTime" />
+                        <xf:else />
+                        {{ phrase('n_a') }}
+                    </xf:if>
+                    <div class="formRow-explain">{{ phrase('usips_ncmec_incident_date_time_explain') }}</div>
+                </xf:formrow>
+
+                <xf:textarearow name="incident_date_time_desc" value="{$case.incident_date_time_desc}"
+                    label="{{ phrase('usips_ncmec_incident_date_time_desc') }}" rows="2" />
+            </div>
+
+            <h3 class="block-formSectionHeader">
+                <span class="collapseTrigger collapseTrigger--block" data-xf-click="toggle" data-target="< :up :next">
+                    {{ phrase('usips_ncmec_internet_details') }}
+                </span>
+            </h3>
+            <div class="block-body block-body--collapsible">
+                <xf:formrow>
+                    {{ phrase('usips_ncmec_inferred_from_incident_content') }}
+                </xf:formrow>
+            </div>
+
+            <h3 class="block-formSectionHeader">
+                <span class="collapseTrigger collapseTrigger--block" data-xf-click="toggle" data-target="< :up :next">
+                    {{ phrase('usips_ncmec_law_enforcement') }}
+                </span>
+            </h3>
+            <div class="block-body block-body--collapsible">
+                <xf:formrow>
+                    {{ phrase('usips_ncmec_not_yet_supported') }}
+                </xf:formrow>
+            </div>
+
+            <h3 class="block-formSectionHeader">
+                <span class="collapseTrigger collapseTrigger--block" data-xf-click="toggle" data-target="< :up :next">
+                    {{ phrase('usips_ncmec_reporter') }}
+                </span>
+            </h3>
+            <div class="block-body block-body--collapsible">
+                <xf:macro template="usips_ncmec_macros" name="person_select" arg-name="reporter_person_id"
+                    arg-value="{$case.reporter_person_id}" arg-persons="{$persons}"
+                    arg-label="{{ phrase('usips_ncmec_reporter') }}" />
+            </div>
+
+            <h3 class="block-formSectionHeader">
+                <span class="collapseTrigger collapseTrigger--block" data-xf-click="toggle" data-target="< :up :next">
+                    {{ phrase('usips_ncmec_person_or_user_reported') }}
+                </span>
+            </h3>
+            <div class="block-body block-body--collapsible">
+                <xf:macro template="usips_ncmec_macros" name="person_select" arg-name="reported_person_id"
+                    arg-value="{$case.reported_person_id}" arg-persons="{$persons}"
+                    arg-label="{{ phrase('usips_ncmec_reported_person') }}" />
+
+                <xf:textarearow name="reported_additional_info" value="{$case.reported_additional_info}"
+                    label="{{ phrase('usips_ncmec_additional_info') }}" rows="3" />
+            </div>
+
+            <h3 class="block-formSectionHeader">
+                <span class="collapseTrigger collapseTrigger--block" data-xf-click="toggle" data-target="< :up :next">
+                    {{ phrase('usips_ncmec_intended_recipient') }}
+                </span>
+            </h3>
+            <div class="block-body block-body--collapsible">
+                <xf:formrow>
+                    {{ phrase('usips_ncmec_not_yet_supported') }}
+                </xf:formrow>
+            </div>
+
+            <h3 class="block-formSectionHeader">
+                <span class="collapseTrigger collapseTrigger--block" data-xf-click="toggle" data-target="< :up :next">
+                    {{ phrase('usips_ncmec_child_victim') }}
+                </span>
+            </h3>
+            <div class="block-body block-body--collapsible">
+                <xf:formrow>
+                    {{ phrase('usips_ncmec_not_yet_supported') }}
+                </xf:formrow>
+            </div>
+
+            <h3 class="block-formSectionHeader">
+                <span class="collapseTrigger collapseTrigger--block" data-xf-click="toggle" data-target="< :up :next">
+                    {{ phrase('usips_ncmec_associated_accounts') }}
+                </span>
+            </h3>
+            <div class="block-body block-body--collapsible">
+                <xf:formrow>
+                    {{ phrase('usips_ncmec_inferred_from_incident_users') }}
+                </xf:formrow>
+            </div>
+
+            <xf:submitrow sticky="true" icon="save" />
+        </div>
+    </div>
+</xf:form>

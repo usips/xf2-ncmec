@@ -13,9 +13,9 @@ class IncidentController extends AbstractController
         $this->assertAdminPermission('usips_ncmec');
     }
 
-    protected function assertIncidentExists($id, $with = null)
+    protected function assertIncidentExists($id, array $with = null)
     {
-        return $this->assertRecordExists('USIPS\NCMEC:Incident', $id, $with);
+        return $this->assertRecordExists('USIPS\NCMEC:Incident', $id, ['User', 'Case'] + (array)$with);
     }
 
     public function actionIndex(ParameterBag $params)
@@ -223,7 +223,7 @@ class IncidentController extends AbstractController
 
     public function actionView(ParameterBag $params)
     {
-        $incident = $this->assertIncidentExists($params->incident_id, ['User', 'Report']);
+        $incident = $this->assertIncidentExists($params->incident_id);
 
         // Get counts efficiently without hydrating relationships
         $counts = $this->repository('USIPS\NCMEC:Incident')->getIncidentCounts($incident->incident_id);
