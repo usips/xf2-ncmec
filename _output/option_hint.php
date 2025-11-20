@@ -13,6 +13,8 @@ namespace XF;
 /**
  * @property array{username: string, password: string, environment: string}|null $usipsNcmecApi NCMEC API
  * @property non-negative-int|null $usipsNcmecDefaultTimespan Default timespan
+ * @property string|null $usipsNcmecReporterCompanyTemplate Company template
+ * @property non-negative-int|null $usipsNcmecReporterContactPerson Contact person
  */
 class Options
 {

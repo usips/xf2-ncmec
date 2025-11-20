@@ -5,6 +5,10 @@
         <xf:button href="{{ link('ncmec-cases/view', {'case_id': $incident.case_id}) }}" icon="list">
             {{ phrase('usips_ncmec_view_case') }}
         </xf:button>
+        <xf:else />
+        <xf:button href="{{ link('ncmec-incidents/create-case', $incident) }}" icon="merge" overlay="true">
+            {{ phrase('usips_ncmec_create_case') }}
+        </xf:button>
     </xf:if>
     <xf:button href="{{ link('ncmec-incidents/delete', $incident) }}" icon="delete" overlay="true" />
 </xf:pageaction>
@@ -22,6 +26,14 @@
                     {{ phrase('usips_ncmec_draft') }}
                 </xf:if>
             </xf:formrow>
+
+            <xf:selectrow name="case_id" value="{$incident.case_id}" label="{{ phrase('usips_ncmec_case') }}">
+                <xf:option value="0">{{ phrase('none') }}</xf:option>
+                <xf:foreach loop="$availableCases" value="$case">
+                    <xf:option value="{$case.case_id}">{{ $case.title ?: phrase('usips_ncmec_untitled_case') }}
+                    </xf:option>
+                </xf:foreach>
+            </xf:selectrow>
 
             <xf:formrow label="{{ phrase('usips_ncmec_associated_users') }}">
                 {{ $counts.users|number }}
@@ -84,7 +96,7 @@
                             </xf:cell>
                             <xf:action href="{{ $data.content.getContentUrl(true) }}">{{ phrase('view_content') }}
                             </xf:action>
-                            <xf:delete href="{{ link('ncmec-incidents/delete', $incident) }}"
+                            <xf:delete href="{{ link('ncmec-incidents/content/delete', $data.incident_content) }}"
                                 tooltip="{{ phrase('usips_ncmec_disassociate') }}" />
                         </xf:datarow>
                     </xf:foreach>

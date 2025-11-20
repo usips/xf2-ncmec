@@ -194,8 +194,8 @@
 						</xf:checkbox>
 					</span>
 					<span class="block-footer-controls">
-						<xf:button type="submit" name="create_report" icon="merge" overlay="true">{{
-							phrase('usips_ncmec_create_case') }}</xf:button>
+						<xf:button type="submit" name="assign_case" icon="merge" overlay="true">{{
+							phrase('usips_ncmec_assign_case') }}</xf:button>
 					</span>
 				</div>
 
@@ -209,7 +209,7 @@
 
 <xf:macro id="person_select" arg-name="!" arg-value="!" arg-persons="!" arg-label="" arg-hint="">
 	<xf:selectrow name="{$name}" value="{$value}" label="{$label}" hint="{$hint}">
-		<xf:option value="0">{{ phrase('usips_ncmec_none') }}</xf:option>
+		<xf:option value="0"></xf:option>
 		<xf:foreach loop="$persons" value="$person">
 			<xf:option value="{$person.person_id}">{$person.display_name}</xf:option>
 		</xf:foreach>

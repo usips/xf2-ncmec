@@ -1,0 +1,13 @@
+{
+    "edit_format": "callback",
+    "edit_format_params": "USIPS\\NCMEC\\Option\\ReporterContactPerson::renderSelect",
+    "data_type": "unsigned_integer",
+    "sub_options": [],
+    "validation_class": "",
+    "validation_method": "",
+    "advanced": false,
+    "default_value": "0",
+    "relations": {
+        "usips_ncmec": 300
+    }
+}

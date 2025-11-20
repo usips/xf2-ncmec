@@ -220,10 +220,10 @@
                     {{ phrase('usips_ncmec_incident_summary') }}
                 </span>
             </h3>
-            <div class="block-body block-body--collapsible">
+            <div class="block-body block-body--collapsible is-active">
                 <xf:selectrow name="incident_type" value="{$case.incident_type}"
                     label="{{ phrase('usips_ncmec_incident_type') }}" required="true">
-                    <xf:option value="">{{ phrase('usips_ncmec_select_incident_type') }}</xf:option>
+                    <xf:option value=""></xf:option>
                     <xf:foreach loop="$incidentTypes" key="$type" value="$label">
                         <xf:option value="{$type}">{$label}</xf:option>
                     </xf:foreach>
@@ -277,7 +277,16 @@
                     {{ phrase('usips_ncmec_reporter') }}
                 </span>
             </h3>
-            <div class="block-body block-body--collapsible">
+            <div class="block-body block-body--collapsible is-active">
+                <xf:textboxrow value="{{ $defaultContactPerson ? $defaultContactPerson.display_name : phrase('n_a') }}"
+                    label="{{ phrase('usips_ncmec_default_contact_person') }}" readonly="true" />
+
+                <xf:textboxrow value="{$termsOfServiceLink}" label="{{ phrase('usips_ncmec_terms_of_service_link') }}"
+                    readonly="true" dir="ltr" />
+
+                <xf:textboxrow value="{$reporterCompanyTemplate}"
+                    label="{{ phrase('usips_ncmec_reporter_company_template') }}" readonly="true" dir="ltr" />
+
                 <xf:macro template="usips_ncmec_macros" name="person_select" arg-name="reporter_person_id"
                     arg-value="{$case.reporter_person_id}" arg-persons="{$persons}"
                     arg-label="{{ phrase('usips_ncmec_reporter') }}" />
@@ -288,7 +297,7 @@
                     {{ phrase('usips_ncmec_person_or_user_reported') }}
                 </span>
             </h3>
-            <div class="block-body block-body--collapsible">
+            <div class="block-body block-body--collapsible is-active">
                 <xf:macro template="usips_ncmec_macros" name="person_select" arg-name="reported_person_id"
                     arg-value="{$case.reported_person_id}" arg-persons="{$persons}"
                     arg-label="{{ phrase('usips_ncmec_reported_person') }}" />
@@ -330,8 +339,47 @@
                 </xf:formrow>
             </div>
 
-            <xf:submitrow sticky="true" icon="save" />
+            <xf:submitrow sticky="true" icon="save">
+                <xf:html>
+                    <xf:button href="{{ link('ncmec-cases/finalize', $case) }}" overlay="true" icon="import">
+                        {{ phrase('usips_ncmec_finalize') }}
+                    </xf:button>
+                </xf:html>
+            </xf:submitrow>
         </div>
+    </div>
+</xf:form>]]></template>
+  <template type="admin" title="usips_ncmec_case_finalize" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_finalize_case') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-cases/finalize', $case) }}" ajax="true" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:inforow rowtype="confirm">
+                {{ phrase('usips_ncmec_finalize_case_confirm_text', {'title': $case.title}) }}
+            </xf:inforow>
+
+            <xf:if is="$apiEnvironment == 'prod' OR $apiEnvironment == 'production' OR $apiEnvironment == 'live'">
+                <div class="block-rowMessage block-rowMessage--error block-rowMessage--iconFormat">
+                    <strong>{{ phrase('usips_ncmec_environment_warning') }}:</strong> {{
+                    phrase('usips_ncmec_environment_live') }}
+                </div>
+                <xf:else />
+                <div class="block-rowMessage block-rowMessage--warning block-rowMessage--iconFormat">
+                    <strong>{{ phrase('usips_ncmec_environment_warning') }}:</strong> {{
+                    phrase('usips_ncmec_environment_test') }}
+                </div>
+            </xf:if>
+
+            <div class="block-rowMessage block-rowMessage--important block-rowMessage--iconFormat">
+                <strong>{{ phrase('warning') }}:</strong> {{ phrase('usips_ncmec_finalize_deletion_warning') }}
+            </div>
+
+            <xf:checkboxrow>
+                <xf:option name="confirm" value="1" label="{{ phrase('usips_ncmec_confirm_finalize_permanent') }}"
+                    required="true" />
+            </xf:checkboxrow>
+        </div>
+        <xf:submitrow submit="{{ phrase('usips_ncmec_finalize_case') }}" rowtype="simple" icon="save" />
     </div>
 </xf:form>]]></template>
   <template type="admin" title="usips_ncmec_case_list" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_cases') }}</xf:title>
@@ -703,6 +751,34 @@
 <xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" arg-nav="{{ false }}" arg-header="{{ true }}" />
 
 <xf:macro id="usips_ncmec_macros::report_list_block" arg-incidents="{$reports}" arg-nav="{{ false }}" arg-header="{{ true }}" />]]></template>
+  <template type="admin" title="usips_ncmec_incident_assign_case" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_assign_case') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-incidents/assign-case') }}" ajax="true" class="block">
+    <xf:foreach loop="$incidentIds" value="$incidentId">
+        <xf:hiddenval name="incident_ids[]" value="{$incidentId}" />
+    </xf:foreach>
+
+    <div class="block-container">
+        <div class="block-body">
+            <xf:formrow rowtype="confirm">
+                {{ phrase('usips_ncmec_assign_case_description', {'count': $incidentCount}) }}
+            </xf:formrow>
+
+            <xf:selectrow name="case_id" value="0" label="{{ phrase('usips_ncmec_case') }}">
+                <xf:option value="0">{{ phrase('usips_ncmec_create_new_case_option') }}</xf:option>
+                <xf:foreach loop="$availableCases" value="$case">
+                    <xf:option value="{$case.case_id}">{{ $case.title ?: phrase('usips_ncmec_untitled_case') }}
+                    </xf:option>
+                </xf:foreach>
+            </xf:selectrow>
+
+            <xf:textboxrow name="new_case_title" value="{$defaultTitle}" label="{{ phrase('title') }}"
+                hint="{{ phrase('usips_ncmec_new_case_title_hint') }}" />
+        </div>
+
+        <xf:submitrow icon="merge" submit="{{ phrase('usips_ncmec_assign_case') }}" />
+    </div>
+</xf:form>]]></template>
   <template type="admin" title="usips_ncmec_incident_create" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_create_incident') }}</xf:title>
 
 <xf:form action="{{ link('ncmec-incidents/create') }}" class="block">
@@ -763,6 +839,21 @@
         </xf:foreach>
     </xf:datalist>
 </xf:macro>]]></template>
+  <template type="admin" title="usips_ncmec_incident_create_case" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_create_case') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-incidents/create-case', $incident) }}" ajax="true" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:formrow rowtype="confirm">
+                {{ phrase('usips_ncmec_incident_case_create_description') }}
+            </xf:formrow>
+
+            <xf:textboxrow name="title" value="{$defaultTitle}" label="{{ phrase('title') }}" />
+        </div>
+
+        <xf:submitrow icon="save" submit="{{ phrase('usips_ncmec_create_case') }}" />
+    </div>
+</xf:form>]]></template>
   <template type="admin" title="usips_ncmec_incident_delete" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_confirm_incident_deletion') }}</xf:title>
 
 <xf:form action="{{ link('ncmec-incidents/delete', $incident) }}" class="block">
@@ -796,7 +887,7 @@
 	</xf:button>
 </xf:pageaction>
 
-<xf:form action="{{ link('ncmec-cases/create') }}" class="" ajax="true" data-xf-init="select-plus"
+<xf:form action="{{ link('ncmec-incidents/assign-case') }}" class="" ajax="true" data-xf-init="select-plus"
 	data-sp-checkbox="input[name='incident_ids[]']" data-sp-container=".dataList-row">
 	<xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" arg-total="{$total}" />
 </xf:form>]]></template>
@@ -895,6 +986,10 @@
         <xf:button href="{{ link('ncmec-cases/view', {'case_id': $incident.case_id}) }}" icon="list">
             {{ phrase('usips_ncmec_view_case') }}
         </xf:button>
+        <xf:else />
+        <xf:button href="{{ link('ncmec-incidents/create-case', $incident) }}" icon="merge" overlay="true">
+            {{ phrase('usips_ncmec_create_case') }}
+        </xf:button>
     </xf:if>
     <xf:button href="{{ link('ncmec-incidents/delete', $incident) }}" icon="delete" overlay="true" />
 </xf:pageaction>
@@ -912,6 +1007,14 @@
                     {{ phrase('usips_ncmec_draft') }}
                 </xf:if>
             </xf:formrow>
+
+            <xf:selectrow name="case_id" value="{$incident.case_id}" label="{{ phrase('usips_ncmec_case') }}">
+                <xf:option value="0">{{ phrase('none') }}</xf:option>
+                <xf:foreach loop="$availableCases" value="$case">
+                    <xf:option value="{$case.case_id}">{{ $case.title ?: phrase('usips_ncmec_untitled_case') }}
+                    </xf:option>
+                </xf:foreach>
+            </xf:selectrow>
 
             <xf:formrow label="{{ phrase('usips_ncmec_associated_users') }}">
                 {{ $counts.users|number }}
@@ -974,7 +1077,7 @@
                             </xf:cell>
                             <xf:action href="{{ $data.content.getContentUrl(true) }}">{{ phrase('view_content') }}
                             </xf:action>
-                            <xf:delete href="{{ link('ncmec-incidents/delete', $incident) }}"
+                            <xf:delete href="{{ link('ncmec-incidents/content/delete', $data.incident_content) }}"
                                 tooltip="{{ phrase('usips_ncmec_disassociate') }}" />
                         </xf:datarow>
                     </xf:foreach>
@@ -1185,8 +1288,8 @@
 						</xf:checkbox>
 					</span>
 					<span class="block-footer-controls">
-						<xf:button type="submit" name="create_report" icon="merge" overlay="true">{{
-							phrase('usips_ncmec_create_case') }}</xf:button>
+						<xf:button type="submit" name="assign_case" icon="merge" overlay="true">{{
+							phrase('usips_ncmec_assign_case') }}</xf:button>
 					</span>
 				</div>
 
@@ -1200,7 +1303,7 @@
 
 <xf:macro id="person_select" arg-name="!" arg-value="!" arg-persons="!" arg-label="" arg-hint="">
 	<xf:selectrow name="{$name}" value="{$value}" label="{$label}" hint="{$hint}">
-		<xf:option value="0">{{ phrase('usips_ncmec_none') }}</xf:option>
+		<xf:option value="0"></xf:option>
 		<xf:foreach loop="$persons" value="$person">
 			<xf:option value="{$person.person_id}">{$person.display_name}</xf:option>
 		</xf:foreach>

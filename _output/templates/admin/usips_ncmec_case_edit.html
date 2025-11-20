@@ -15,10 +15,10 @@
                     {{ phrase('usips_ncmec_incident_summary') }}
                 </span>
             </h3>
-            <div class="block-body block-body--collapsible">
+            <div class="block-body block-body--collapsible is-active">
                 <xf:selectrow name="incident_type" value="{$case.incident_type}"
                     label="{{ phrase('usips_ncmec_incident_type') }}" required="true">
-                    <xf:option value="">{{ phrase('usips_ncmec_select_incident_type') }}</xf:option>
+                    <xf:option value=""></xf:option>
                     <xf:foreach loop="$incidentTypes" key="$type" value="$label">
                         <xf:option value="{$type}">{$label}</xf:option>
                     </xf:foreach>
@@ -72,7 +72,16 @@
                     {{ phrase('usips_ncmec_reporter') }}
                 </span>
             </h3>
-            <div class="block-body block-body--collapsible">
+            <div class="block-body block-body--collapsible is-active">
+                <xf:textboxrow value="{{ $defaultContactPerson ? $defaultContactPerson.display_name : phrase('n_a') }}"
+                    label="{{ phrase('usips_ncmec_default_contact_person') }}" readonly="true" />
+
+                <xf:textboxrow value="{$termsOfServiceLink}" label="{{ phrase('usips_ncmec_terms_of_service_link') }}"
+                    readonly="true" dir="ltr" />
+
+                <xf:textboxrow value="{$reporterCompanyTemplate}"
+                    label="{{ phrase('usips_ncmec_reporter_company_template') }}" readonly="true" dir="ltr" />
+
                 <xf:macro template="usips_ncmec_macros" name="person_select" arg-name="reporter_person_id"
                     arg-value="{$case.reporter_person_id}" arg-persons="{$persons}"
                     arg-label="{{ phrase('usips_ncmec_reporter') }}" />
@@ -83,7 +92,7 @@
                     {{ phrase('usips_ncmec_person_or_user_reported') }}
                 </span>
             </h3>
-            <div class="block-body block-body--collapsible">
+            <div class="block-body block-body--collapsible is-active">
                 <xf:macro template="usips_ncmec_macros" name="person_select" arg-name="reported_person_id"
                     arg-value="{$case.reported_person_id}" arg-persons="{$persons}"
                     arg-label="{{ phrase('usips_ncmec_reported_person') }}" />
@@ -125,7 +134,13 @@
                 </xf:formrow>
             </div>
 
-            <xf:submitrow sticky="true" icon="save" />
+            <xf:submitrow sticky="true" icon="save">
+                <xf:html>
+                    <xf:button href="{{ link('ncmec-cases/finalize', $case) }}" overlay="true" icon="import">
+                        {{ phrase('usips_ncmec_finalize') }}
+                    </xf:button>
+                </xf:html>
+            </xf:submitrow>
         </div>
     </div>
 </xf:form>

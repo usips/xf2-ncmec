@@ -34,7 +34,7 @@ class Deleter extends AbstractService
         try
         {
             // Prevent deletion when the incident is tied to a report
-            if ($this->incident->report_id)
+            if ($this->incident->case_id)
             {
                 throw new PrintableException('Cannot delete incident because associated reports and logs must be retained.');
             }

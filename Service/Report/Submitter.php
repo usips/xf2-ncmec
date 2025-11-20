@@ -28,10 +28,11 @@ class Submitter extends AbstractService
         parent::__construct($app);
         $this->case = $case;
         $this->subject = $subject;
+        $options = $this->app->options()->usipsNcmecApi;
         $this->apiClient = $this->service('USIPS\NCMEC:Api\Client', 
-            $this->app->options()->usipsNcmecApiUsername, 
-            $this->app->options()->usipsNcmecApiPassword,
-            $this->app->options()->usipsNcmecApiEnvironment
+            $options['username'] ?? '', 
+            $options['password'] ?? '',
+            $options['environment'] ?? 'test'
         );
     }
 

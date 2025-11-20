@@ -1,0 +1,1 @@
+Select an existing case for the selected incidents (currently {count}) or choose to create a new one.

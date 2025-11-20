@@ -4,5 +4,11 @@
     },
     "usipsNcmecDefaultTimespan.json": {
         "hash": "b645e29c342180de5ddac1a29029e9ee"
+    },
+    "usipsNcmecReporterCompanyTemplate.json": {
+        "hash": "1c7a0342cf2f6da0cddae3aaecd3b7ff"
+    },
+    "usipsNcmecReporterContactPerson.json": {
+        "hash": "d7b89870a8a50e1f39f99c83a92b2394"
     }
 }

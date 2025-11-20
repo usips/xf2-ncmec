@@ -15,10 +15,14 @@
   <phrase title="invite_only_enabled" version_id="0" version_string="1.0.0"><![CDATA[Invitations now required]]></phrase>
   <phrase title="option.usipsNcmecApi" version_id="0" version_string="1.0.0"><![CDATA[NCMEC API]]></phrase>
   <phrase title="option.usipsNcmecDefaultTimespan" version_id="0" version_string="1.0.0"><![CDATA[Default timespan]]></phrase>
+  <phrase title="option.usipsNcmecReporterCompanyTemplate" version_id="0" version_string="1.0.0"><![CDATA[Company template]]></phrase>
+  <phrase title="option.usipsNcmecReporterContactPerson" version_id="0" version_string="1.0.0"><![CDATA[Contact person]]></phrase>
   <phrase title="option_explain.usipsNcmecApi" version_id="0" version_string="1.0.0"><![CDATA[]]></phrase>
   <phrase title="option_explain.usipsNcmecDefaultTimespan" version_id="0" version_string="1.0.0"><![CDATA[Certain moderation actions automatically grab recently created content by the user. This is to help reduce false positives when dealing with an older compromised account. You may change the search range for these actions.
 
 0 is <strong>all</strong> content.]]></phrase>
+  <phrase title="option_explain.usipsNcmecReporterCompanyTemplate" version_id="0" version_string="1.0.0"><![CDATA[Supplied on all reports as <a href="https://exttest.cybertip.org/ispws/documentation/index.html#reporter">/report/reporter/companyTemplate</a>]]></phrase>
+  <phrase title="option_explain.usipsNcmecReporterContactPerson" version_id="0" version_string="1.0.0"><![CDATA[Supplied on all reports as <a href="https://exttest.cybertip.org/ispws/documentation/index.html#reporter">/report/reporter/contactPerson</a>]]></phrase>
   <phrase title="option_group.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting]]></phrase>
   <phrase title="option_group_description.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC reporting credentials and environment settings.]]></phrase>
   <phrase title="permission.general_usipsNcmecReportEmergency" version_id="0" version_string="1.0.0"><![CDATA[[NCMEC] Report content as emergency]]></phrase>
@@ -37,6 +41,8 @@
   <phrase title="usips_ncmec_api_error_x" version_id="0" version_string="1.0.0"><![CDATA[API error: {error}]]></phrase>
   <phrase title="usips_ncmec_api_not_configured" version_id="0" version_string="1.0.0"><![CDATA[The NCMEC API has not been configured.]]></phrase>
   <phrase title="usips_ncmec_api_status" version_id="0" version_string="1.0.0"><![CDATA[NCMEC API Status]]></phrase>
+  <phrase title="usips_ncmec_assign_case" version_id="0" version_string="1.0.0"><![CDATA[Assign case]]></phrase>
+  <phrase title="usips_ncmec_assign_case_description" version_id="0" version_string="1.0.0"><![CDATA[Select an existing case for the selected incidents (currently {count}) or choose to create a new one.]]></phrase>
   <phrase title="usips_ncmec_associate" version_id="0" version_string="1.0.0"><![CDATA[Associate]]></phrase>
   <phrase title="usips_ncmec_associate_users" version_id="0" version_string="1.0.0"><![CDATA[Associate users]]></phrase>
   <phrase title="usips_ncmec_associate_with_incident" version_id="0" version_string="1.0.0"><![CDATA[Associate with Incident]]></phrase>
@@ -47,24 +53,29 @@
   <phrase title="usips_ncmec_associating_user_with_incident" version_id="0" version_string="1.0.0"><![CDATA[Associating users with incident]]></phrase>
   <phrase title="usips_ncmec_attachments" version_id="0" version_string="1.0.0"><![CDATA[Attachments]]></phrase>
   <phrase title="usips_ncmec_case" version_id="0" version_string="1.0.0"><![CDATA[Case]]></phrase>
+  <phrase title="usips_ncmec_case_created_on_x" version_id="0" version_string="1.0.0"><![CDATA[Case created on {datetime}]]></phrase>
   <phrase title="usips_ncmec_case_details" version_id="0" version_string="1.0.0"><![CDATA[Case details]]></phrase>
   <phrase title="usips_ncmec_cases" version_id="0" version_string="1.0.0"><![CDATA[Cases]]></phrase>
   <phrase title="usips_ncmec_child_victim" version_id="0" version_string="1.0.0"><![CDATA[Child victim]]></phrase>
   <phrase title="usips_ncmec_configure_api" version_id="0" version_string="1.0.0"><![CDATA[Configure API]]></phrase>
   <phrase title="usips_ncmec_confirm_associating_x_users" version_id="0" version_string="1.0.0"><![CDATA[Confirm associating these {total} users with an NCMEC Incident]]></phrase>
+  <phrase title="usips_ncmec_confirm_finalize_permanent" version_id="0" version_string="1.0.0"><![CDATA[This action is permanent.]]></phrase>
   <phrase title="usips_ncmec_confirm_incident_deletion" version_id="0" version_string="1.0.0"><![CDATA[Confirm deletion of draft incident]]></phrase>
   <phrase title="usips_ncmec_connection_error_x" version_id="0" version_string="1.0.0"><![CDATA[Connection error: {error}]]></phrase>
   <phrase title="usips_ncmec_connection_successful" version_id="0" version_string="1.0.0"><![CDATA[Connection successful.]]></phrase>
-  <phrase title="usips_ncmec_content_posted_between_x_and_y" version_id="0" version_string="1.0.0"><![CDATA[Content was created betwee {start} and {end}]]></phrase>
+  <phrase title="usips_ncmec_content_posted_between_x_and_y" version_id="0" version_string="1.0.0"><![CDATA[Content was created between {start} and {end}]]></phrase>
   <phrase title="usips_ncmec_content_posted_on_x" version_id="0" version_string="1.0.0"><![CDATA[Content was created on {date}]]></phrase>
   <phrase title="usips_ncmec_content_time_limit" version_id="0" version_string="1.0.0"><![CDATA[Content time limit]]></phrase>
   <phrase title="usips_ncmec_content_time_limit_explain" version_id="0" version_string="1.0.0"><![CDATA[User generated content authored within this timespan will be associated with this incident.]]></phrase>
   <phrase title="usips_ncmec_content_time_limit_explain_batch" version_id="0" version_string="1.0.0"><![CDATA[All matched users will be added to this incident. Their content will also be added to the incident if it is within this timeframe. You may not want to associate entire post histories when dealing with compromised accounts.]]></phrase>
   <phrase title="usips_ncmec_create_case" version_id="0" version_string="1.0.0"><![CDATA[Create case]]></phrase>
   <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create incident]]></phrase>
+  <phrase title="usips_ncmec_create_new_case_option" version_id="0" version_string="1.0.0"><![CDATA[Create a new case]]></phrase>
   <phrase title="usips_ncmec_create_report" version_id="0" version_string="1.0.0"><![CDATA[Create Report]]></phrase>
   <phrase title="usips_ncmec_created_on" version_id="0" version_string="1.0.0"><![CDATA[Created on]]></phrase>
   <phrase title="usips_ncmec_dashboard" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting Dashboard]]></phrase>
+  <phrase title="usips_ncmec_default_contact_person" version_id="0" version_string="1.0.0"><![CDATA[Default contact person
+]]></phrase>
   <phrase title="usips_ncmec_disassociate" version_id="0" version_string="1.0.0"><![CDATA[Disassociate]]></phrase>
   <phrase title="usips_ncmec_draft" version_id="0" version_string="1.0.0"><![CDATA[Draft]]></phrase>
   <phrase title="usips_ncmec_edit_case" version_id="0" version_string="1.0.0"><![CDATA[Edit case]]></phrase>
@@ -73,13 +84,19 @@
   <phrase title="usips_ncmec_env_live" version_id="0" version_string="1.0.0"><![CDATA[Live Environment]]></phrase>
   <phrase title="usips_ncmec_env_test" version_id="0" version_string="1.0.0"><![CDATA[Test Environment]]></phrase>
   <phrase title="usips_ncmec_environment" version_id="0" version_string="1.0.0"><![CDATA[Environment]]></phrase>
+  <phrase title="usips_ncmec_environment_test" version_id="0" version_string="1.0.0"><![CDATA[You are submitting to the <strong>Test Environment</strong>. Actual reports and material should not be sent to this environment.]]></phrase>
+  <phrase title="usips_ncmec_environment_warning" version_id="0" version_string="1.0.0"><![CDATA[Environment warning]]></phrase>
   <phrase title="usips_ncmec_esp_credentials" version_id="0" version_string="1.0.0"><![CDATA[ESP credentials]]></phrase>
   <phrase title="usips_ncmec_esp_credentials_explain" version_id="0" version_string="1.0.0"><![CDATA[Enter your basic access authentication credentials provided by the NCMEC for your ESP. These should arrive by email in a password-protected PDF, the password for which is provided in another email.]]></phrase>
   <phrase title="usips_ncmec_failed_lines" version_id="0" version_string="1.0.0"><![CDATA[Rejected Input]]></phrase>
-  <phrase title="usips_ncmec_finalize_report" version_id="0" version_string="1.0.0"><![CDATA[Finalize Report]]></phrase>
+  <phrase title="usips_ncmec_finalize" version_id="0" version_string="1.0.0"><![CDATA[Finalize to NCMEC]]></phrase>
+  <phrase title="usips_ncmec_finalize_case" version_id="0" version_string="1.0.0"><![CDATA[Finalize case]]></phrase>
+  <phrase title="usips_ncmec_finalize_case_confirm_text" version_id="0" version_string="1.0.0"><![CDATA[Please confirm that you wish to finalize this case.]]></phrase>
+  <phrase title="usips_ncmec_finalize_deletion_warning" version_id="0" version_string="1.0.0"><![CDATA[All associated content will be permanently deleted.]]></phrase>
   <phrase title="usips_ncmec_finalized" version_id="0" version_string="1.0.0"><![CDATA[Finalized]]></phrase>
   <phrase title="usips_ncmec_first_name" version_id="0" version_string="1.0.0"><![CDATA[First name]]></phrase>
   <phrase title="usips_ncmec_incident" version_id="0" version_string="1.0.0"><![CDATA[Incident]]></phrase>
+  <phrase title="usips_ncmec_incident_case_create_description" version_id="0" version_string="1.0.0"><![CDATA[A new case will be created and this incident will be assigned to it automatically.]]></phrase>
   <phrase title="usips_ncmec_incident_date_time" version_id="0" version_string="1.0.0"><![CDATA[Incident time]]></phrase>
   <phrase title="usips_ncmec_incident_date_time_desc" version_id="0" version_string="1.0.0"><![CDATA[Incident time description]]></phrase>
   <phrase title="usips_ncmec_incident_date_time_desc_explain" version_id="0" version_string="1.0.0"><![CDATA[Additional information related to when the incident occured.]]></phrase>
@@ -97,6 +114,7 @@ See: <a href="https://exttest.cybertip.org/ispws/documentation/index.html#incide
   <phrase title="usips_ncmec_inferred_from_incident_users" version_id="0" version_string="1.0.0"><![CDATA[Inferred from users associated with incident]]></phrase>
   <phrase title="usips_ncmec_intended_recipient" version_id="0" version_string="1.0.0"><![CDATA[Intended recipient]]></phrase>
   <phrase title="usips_ncmec_internet_details" version_id="0" version_string="1.0.0"><![CDATA[Internet details]]></phrase>
+  <phrase title="usips_ncmec_invalid_case_selection" version_id="0" version_string="1.0.0"><![CDATA[Please select a valid case.]]></phrase>
   <phrase title="usips_ncmec_invalid_response_from_server" version_id="0" version_string="1.0.0"><![CDATA[Invalid response from NCMEC server.]]></phrase>
   <phrase title="usips_ncmec_last_name" version_id="0" version_string="1.0.0"><![CDATA[Last name]]></phrase>
   <phrase title="usips_ncmec_law_enforcement" version_id="0" version_string="1.0.0"><![CDATA[Law enforcement]]></phrase>
@@ -113,6 +131,7 @@ internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
   <phrase title="usips_ncmec_lookup_reattempt" version_id="0" version_string="1.0.0"><![CDATA[Lookup and Collect]]></phrase>
   <phrase title="usips_ncmec_lookup_restart" version_id="0" version_string="1.0.0"><![CDATA[Lookup and Forget]]></phrase>
   <phrase title="usips_ncmec_lookup_submit" version_id="0" version_string="1.0.0"><![CDATA[Lookup]]></phrase>
+  <phrase title="usips_ncmec_new_case_title_hint" version_id="0" version_string="1.0.0"><![CDATA[Used when creating a new case; leave as-is for the default title.]]></phrase>
   <phrase title="usips_ncmec_new_incident_will_be_created" version_id="0" version_string="1.0.0"><![CDATA[A new incident will be created.]]></phrase>
   <phrase title="usips_ncmec_not_yet_supported" version_id="0" version_string="1.0.0"><![CDATA[Not yet supported]]></phrase>
   <phrase title="usips_ncmec_people" version_id="0" version_string="1.0.0"><![CDATA[People]]></phrase>
@@ -135,14 +154,19 @@ See: <a href="https://exttest.cybertip.org/ispws/documentation/index.html#xml-re
   <phrase title="usips_ncmec_report_type_emergency" version_id="0" version_string="1.0.0"><![CDATA[Emergency report]]></phrase>
   <phrase title="usips_ncmec_report_type_explain" version_id="0" version_string="1.0.0"><![CDATA[Please use emergency reports only for violations of law which require immediate attention.]]></phrase>
   <phrase title="usips_ncmec_report_type_standard" version_id="0" version_string="1.0.0"><![CDATA[Standard report]]></phrase>
+  <phrase title="usips_ncmec_reported_person" version_id="0" version_string="1.0.0"><![CDATA[Reported person]]></phrase>
   <phrase title="usips_ncmec_reporter" version_id="0" version_string="1.0.0"><![CDATA[Reporter]]></phrase>
+  <phrase title="usips_ncmec_reporter_company_template" version_id="0" version_string="1.0.0"><![CDATA[Reporter company template
+]]></phrase>
   <phrase title="usips_ncmec_reports" version_id="0" version_string="1.0.0"><![CDATA[Reports]]></phrase>
   <phrase title="usips_ncmec_reports_archive" version_id="0" version_string="1.0.0"><![CDATA[Finalized Reports]]></phrase>
   <phrase title="usips_ncmec_save_configuration" version_id="0" version_string="1.0.0"><![CDATA[Save configuration]]></phrase>
   <phrase title="usips_ncmec_start_finalizing" version_id="0" version_string="1.0.0"><![CDATA[Start Finalizing]]></phrase>
   <phrase title="usips_ncmec_step_1_incident_summary" version_id="0" version_string="1.0.0"><![CDATA[Incident Summary]]></phrase>
+  <phrase title="usips_ncmec_terms_of_service_link" version_id="0" version_string="1.0.0"><![CDATA[Terms of service link]]></phrase>
   <phrase title="usips_ncmec_test_connection" version_id="0" version_string="1.0.0"><![CDATA[Test connection]]></phrase>
   <phrase title="usips_ncmec_unable_to_flag_content" version_id="0" version_string="1.0.0"><![CDATA[Error attempting to flag content. Report this issue.]]></phrase>
+  <phrase title="usips_ncmec_view_case" version_id="0" version_string="1.0.0"><![CDATA[View case]]></phrase>
   <phrase title="usips_ncmec_x_created_emregency_report_y" version_id="0" version_string="1.0.0"><![CDATA[{name} created an <strong>emergency report</strong> concerning {title}.]]></phrase>
   <phrase title="usips_ncmec_you_must_confirm_to_proceed" version_id="0" version_string="1.0.0"><![CDATA[You must confirm your intention to associate users with an incident to proceed.]]></phrase>
 </phrases>

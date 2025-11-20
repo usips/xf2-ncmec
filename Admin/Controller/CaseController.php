@@ -123,6 +123,17 @@ class CaseController extends AbstractController
             ->order('last_update_date', 'DESC')
             ->fetch();
 
+        $options = $this->app->options();
+        $contactPerson = null;
+        $contactPersonId = (int) ($options->usipsNcmecReporterContactPerson ?? 0);
+        if ($contactPersonId)
+        {
+            $contactPerson = $this->em()->find('USIPS\NCMEC:Person', $contactPersonId);
+        }
+
+        $termsLink = $this->app()->router('public')->buildLink('canonical:help/terms');
+        $reporterCompanyTemplate = (string) ($options->usipsNcmecReporterCompanyTemplate ?? '');
+
         $viewParams = [
             'case' => $case,
             'incidentTypes' => Client::INCIDENT_TYPE_VALUES,
@@ -130,6 +141,9 @@ class CaseController extends AbstractController
             'reportAnnotationLabels' => Client::REPORT_ANNOTATION_LABELS,
             'incidentDateTime' => $incidentDateTime,
             'persons' => $persons,
+            'defaultContactPerson' => $contactPerson,
+            'termsOfServiceLink' => $termsLink,
+            'reporterCompanyTemplate' => $reporterCompanyTemplate,
         ];
 
         return $this->view('USIPS\NCMEC:Case\Edit', 'usips_ncmec_case_edit', $viewParams);
@@ -256,6 +270,39 @@ class CaseController extends AbstractController
         ];
 
         return $this->view('USIPS\NCMEC:Case\Create', 'usips_ncmec_case_create', $viewParams);
+    }
+
+    public function actionFinalize(ParameterBag $params)
+    {
+        $case = $this->assertCaseExists($params->case_id);
+
+        if ($case->is_finalized)
+        {
+            return $this->error(\XF::phrase('usips_ncmec_case_finalized_cannot_edit'));
+        }
+
+        if ($this->isPost())
+        {
+            if (!$this->filter('confirm', 'bool'))
+            {
+                return $this->error(\XF::phrase('usips_ncmec_please_confirm_finalization'));
+            }
+
+            $this->app->jobManager()->enqueueUnique(
+                'usipsNcmecFinalize' . $case->case_id,
+                'USIPS\NCMEC:FinalizeCase',
+                ['case_id' => $case->case_id]
+            );
+
+            return $this->redirect($this->buildLink('ncmec-cases/view', $case));
+        }
+
+        $viewParams = [
+            'case' => $case,
+            'apiEnvironment' => $this->app->options()->usipsNcmecApi['environment'] ?? 'test'
+        ];
+
+        return $this->view('USIPS\NCMEC:Case\Finalize', 'usips_ncmec_case_finalize', $viewParams);
     }
 
     public function actionView(ParameterBag $params)

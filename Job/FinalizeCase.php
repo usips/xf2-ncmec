@@ -98,16 +98,19 @@ class FinalizeCase extends AbstractJob
                 case 'files':
                     // Process one file at a time to avoid timeouts
                     $db = $this->app->db();
-                    $nextAttachmentId = $db->fetchOne("
-                        SELECT iad.data_id
+                    $row = $db->fetchRow("
+                        SELECT iad.data_id, iad.incident_id
                         FROM xf_usips_ncmec_incident_attachment_data AS iad
                         INNER JOIN xf_usips_ncmec_incident AS i ON (iad.incident_id = i.incident_id)
                         WHERE i.case_id = ? AND iad.user_id = ?
                         LIMIT 1
                     ", [$case->case_id, $userId]);
 
-                    if ($nextAttachmentId)
+                    if ($row)
                     {
+                        $nextAttachmentId = $row['data_id'];
+                        $incidentId = $row['incident_id'];
+
                         /** @var \XF\Entity\AttachmentData $attachmentData */
                         $attachmentData = $this->app->em()->find('XF:AttachmentData', $nextAttachmentId);
                         
@@ -115,11 +118,9 @@ class FinalizeCase extends AbstractJob
                         {
                             $submitter->processAttachment($attachmentData);
                         }
-                        else
-                        {
-                            // Data missing, delete the incident attachment record to move forward
-                            $db->delete('xf_usips_ncmec_incident_attachment_data', 'data_id = ?', $nextAttachmentId);
-                        }
+                        
+                        // Delete the incident attachment record to move forward
+                        $db->delete('xf_usips_ncmec_incident_attachment_data', 'incident_id = ? AND data_id = ?', [$incidentId, $nextAttachmentId]);
                         
                         // Stay in 'files' state to process next file
                     }

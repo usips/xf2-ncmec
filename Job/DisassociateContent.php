@@ -32,13 +32,54 @@ class DisassociateContent extends AbstractJob
 
         $creator->setIncident($incident);
 
-        try {
+        try
+        {
             // Normalize content items to array of [type, id] pairs
             $normalizedItems = $this->normalizeContentItems($contentItems);
+            if (!$normalizedItems)
+            {
+                return $this->complete();
+            }
 
-            // Disassociate content
-            $creator->disassociateContentByIds($normalizedItems);
-        } catch (\Exception $e) {
+            $contentPairs = [];
+
+            foreach ($normalizedItems as $item)
+            {
+                [$contentType, $contentId] = $item;
+                $contentPairs[] = [$contentType, $contentId];
+
+                $incidentContent = $app->finder('USIPS\NCMEC:IncidentContent')
+                    ->where('incident_id', $incidentId)
+                    ->where('content_type', $contentType)
+                    ->where('content_id', $contentId)
+                    ->fetchOne();
+
+                if (!$incidentContent)
+                {
+                    continue;
+                }
+
+                $entity = $incidentContent->getContent();
+                if ($entity)
+                {
+                    try
+                    {
+                        $entity->delete();
+                    }
+                    catch (\Throwable $deleteError)
+                    {
+                        \XF::logException($deleteError, false, 'Failed to delete incident content entity: ');
+                    }
+                }
+            }
+
+            if ($contentPairs)
+            {
+                $creator->disassociateContent($contentPairs);
+            }
+        }
+        catch (\Throwable $e)
+        {
             // Log the error but don't fail the job
             \XF::logError('NCMEC DisassociateContent job failed: ' . $e->getMessage());
         }

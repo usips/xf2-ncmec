@@ -5,6 +5,7 @@ namespace USIPS\NCMEC\Admin\Controller;
 use \XF;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\ParameterBag;
+use USIPS\NCMEC\Entity\CaseFile;
 
 class IncidentController extends AbstractController
 {
@@ -213,9 +214,32 @@ class IncidentController extends AbstractController
 
         $input = $this->filter([
             'title' => 'str',
+            'case_id' => 'uint',
         ]);
 
-        $incident->bulkSet($input);
+        $incident->bulkSet(['title' => $input['title']]);
+
+        $caseId = $input['case_id'];
+        $currentCaseId = (int) $incident->case_id;
+
+        if ($caseId && $caseId !== $currentCaseId)
+        {
+            $case = $this->getAssignableCaseFinder()
+                ->where('case_id', $caseId)
+                ->fetchOne();
+
+            if (!$case)
+            {
+                return $this->error(\XF::phrase('usips_ncmec_invalid_case_selection'));
+            }
+
+            $incident->case_id = $caseId;
+        }
+        elseif (!$caseId && $currentCaseId)
+        {
+            $incident->case_id = 0;
+        }
+
         $incident->save();
 
         return $this->message('Incident updated successfully.');
@@ -280,10 +304,18 @@ class IncidentController extends AbstractController
             ->fetch()
         );
 
+        $availableCases = $this->getAssignableCaseFinder()->fetch();
+
+        if ($incident->case_id && !$availableCases->offsetExists($incident->case_id) && $incident->Case)
+        {
+            $availableCases[$incident->case_id] = $incident->Case;
+        }
+
         $viewParams = [
             'incident' => $incident,
             'counts' => $counts,
             'contentData' => $contentData,
+            'availableCases' => $availableCases,
         ];
 
         return $this->view('USIPS\NCMEC:Incident\View', 'usips_ncmec_incident_view', $viewParams);
@@ -345,6 +377,135 @@ class IncidentController extends AbstractController
             ];
             return $this->view('USIPS\NCMEC:Incident\RemoveContent', 'usips_ncmec_incident_remove_content', $viewParams);
         }
+    }
+
+    public function actionCreateCase(ParameterBag $params)
+    {
+        $incident = $this->assertIncidentExists($params->incident_id);
+
+        if ($this->isPost())
+        {
+            $title = $this->filter('title', 'str');
+            $case = $this->createCaseRecord($title);
+
+            $incident->case_id = $case->case_id;
+            $incident->save();
+
+            return $this->redirect($this->buildLink('ncmec-incidents/view', $incident));
+        }
+
+        $viewParams = [
+            'incident' => $incident,
+            'defaultTitle' => $this->generateAutoCaseTitle(),
+        ];
+
+        return $this->view('USIPS\NCMEC:Incident\CreateCase', 'usips_ncmec_incident_create_case', $viewParams);
+    }
+
+    public function actionAssignCase(ParameterBag $params)
+    {
+        $incidentIds = $this->filter('incident_ids', 'array-uint');
+        if (!$incidentIds)
+        {
+            $incidentIds = $this->filter('ids', 'array-uint');
+        }
+
+        $incidentIds = array_values(array_unique(array_filter($incidentIds)));
+
+        if (!$incidentIds)
+        {
+            return $this->error(\XF::phrase('please_select_at_least_one_item'));
+        }
+
+        $incidents = $this->finder('USIPS\NCMEC:Incident')
+            ->where('incident_id', $incidentIds)
+            ->fetch();
+
+        if (!$incidents->count())
+        {
+            return $this->error(\XF::phrase('requested_page_not_found'));
+        }
+
+        if ($this->isPost())
+        {
+            $caseId = $this->filter('case_id', 'uint');
+            $newCaseTitle = $this->filter('new_case_title', 'str');
+
+            if ($caseId)
+            {
+                $case = $this->getAssignableCaseFinder()
+                    ->where('case_id', $caseId)
+                    ->fetchOne();
+
+                if (!$case)
+                {
+                    return $this->error(\XF::phrase('usips_ncmec_invalid_case_selection'));
+                }
+            }
+            else
+            {
+                $case = $this->createCaseRecord($newCaseTitle);
+            }
+
+            foreach ($incidents as $incident)
+            {
+                if ($incident->case_id == $case->case_id)
+                {
+                    continue;
+                }
+
+                $incident->case_id = $case->case_id;
+                $incident->save();
+            }
+
+            return $this->redirect($this->buildLink('ncmec-incidents'));
+        }
+
+        $viewParams = [
+            'incidentIds' => $incidentIds,
+            'incidentCount' => $incidents->count(),
+            'availableCases' => $this->getAssignableCaseFinder()->fetch(),
+            'defaultTitle' => $this->generateAutoCaseTitle(),
+        ];
+
+        return $this->view('USIPS\NCMEC:Incident\AssignCase', 'usips_ncmec_incident_assign_case', $viewParams);
+    }
+
+    protected function getAssignableCaseFinder()
+    {
+        return $this->finder('USIPS\NCMEC:CaseFile')
+            ->where('is_finalized', false)
+            ->where('is_finished', false)
+            ->order('created_date', 'DESC');
+    }
+
+    protected function createCaseRecord(?string $title = null): CaseFile
+    {
+        if ($title === '')
+        {
+            $title = null;
+        }
+
+        $case = $this->em()->create('USIPS\NCMEC:CaseFile');
+        $case->title = $title ?: $this->generateAutoCaseTitle();
+        $case->user_id = \XF::visitor()->user_id;
+        $case->username = \XF::visitor()->username;
+        $case->save();
+
+        return $case;
+    }
+
+    protected function generateAutoCaseTitle(): string
+    {
+        $lang = \XF::language();
+        $datePhrase = \XF::phrase('date_x_at_time_y', [
+            'date' => $lang->date(\XF::$time),
+            'time' => $lang->time(\XF::$time)
+        ]);
+
+        return \XF::phrase('usips_ncmec_case_created_on_x', [
+            'datetime' => $datePhrase
+        ])->render();
     }
 
 }

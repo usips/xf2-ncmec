@@ -51,6 +51,56 @@ class IncidentContentController extends AbstractController
         return $this->view('USIPS\NCMEC:IncidentContent\Preview', 'usips_ncmec_content_preview', $viewParams);
     }
 
+    public function actionDelete(ParameterBag $params)
+    {
+        $incidentContent = $this->assertIncidentContentRecord($params);
+        $incident = $incidentContent->Incident;
+
+        if ($incident && $incident->is_finalized)
+        {
+            return $this->error(
+                \XF::phrase('usips_ncmec_incident_finalized_cannot_delete')
+            );
+        }
+
+        if ($this->isPost())
+        {
+            $jobManager = $this->app()->jobManager();
+
+            $jobManager->enqueue('USIPS\NCMEC:DisassociateContent', [
+                'incident_id' => $incidentContent->incident_id,
+                'content_items' => [[
+                    'content_type' => $incidentContent->content_type,
+                    'content_id' => $incidentContent->content_id,
+                ]],
+                'time_limit_seconds' => 0,
+            ]);
+
+            return $this->redirect($this->buildLink('ncmec-incidents/view', $incident));
+        }
+
+        $content = $incidentContent->getContent();
+        if ($content && method_exists($content, 'getContentTitle'))
+        {
+            $contentTitle = $content->getContentTitle();
+        }
+        else
+        {
+            $contentTitle = \XF::phrase('content_x_y', [
+                'type' => $incidentContent->content_type,
+                'id' => $incidentContent->content_id,
+            ]);
+        }
+
+        $viewParams = [
+            'incident' => $incident,
+            'incidentContent' => $incidentContent,
+            'contentTitle' => $contentTitle,
+        ];
+
+        return $this->view('USIPS\NCMEC:Incident\RemoveContent', 'usips_ncmec_incident_remove_content', $viewParams);
+    }
+
     /**
      * Assert that content exists
      *
@@ -133,5 +183,31 @@ class IncidentContentController extends AbstractController
         }
 
         return [];
+    }
+
+    protected function assertIncidentContentRecord(ParameterBag $params)
+    {
+        $incidentId = $params->incident_id;
+        $contentType = $params->content_type;
+        $contentId = $params->content_id;
+
+        if (!$incidentId || !$contentType || !$contentId)
+        {
+            throw $this->exception($this->notFound());
+        }
+
+        $incidentContent = $this->finder('USIPS\\NCMEC:IncidentContent')
+            ->where('incident_id', $incidentId)
+            ->where('content_type', $contentType)
+            ->where('content_id', $contentId)
+            ->with('Incident')
+            ->fetchOne();
+
+        if (!$incidentContent)
+        {
+            throw $this->exception($this->notFound());
+        }
+
+        return $incidentContent;
     }
 }

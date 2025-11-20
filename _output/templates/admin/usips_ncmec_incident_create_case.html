@@ -1,0 +1,15 @@
+<xf:title>{{ phrase('usips_ncmec_create_case') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-incidents/create-case', $incident) }}" ajax="true" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:formrow rowtype="confirm">
+                {{ phrase('usips_ncmec_incident_case_create_description') }}
+            </xf:formrow>
+
+            <xf:textboxrow name="title" value="{$defaultTitle}" label="{{ phrase('title') }}" />
+        </div>
+
+        <xf:submitrow icon="save" submit="{{ phrase('usips_ncmec_create_case') }}" />
+    </div>
+</xf:form>

@@ -1,0 +1,1 @@
+Used when creating a new case; leave as-is for the default title.

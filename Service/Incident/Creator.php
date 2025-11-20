@@ -560,11 +560,11 @@ class Creator extends AbstractService
     {
         $entities = [
             'post' => 'XF:Post',
-            'thread' => 'XF:Thread',
+            'thread' => null, // Explicitly excluded
             'profile_post' => 'XF:ProfilePost',
         ];
 
-        if (isset($entities[$contentType]))
+        if (array_key_exists($contentType, $entities))
         {
             return $entities[$contentType];
         }
@@ -597,8 +597,14 @@ class Creator extends AbstractService
         {
             if ($item instanceof Entity)
             {
+                $contentType = $item->getEntityContentType();
+                if ($contentType === 'thread')
+                {
+                    continue;
+                }
+
                 $normalized[] = [
-                    'content_type' => $item->getEntityContentType(),
+                    'content_type' => $contentType,
                     'content_id' => $item->getEntityId(),
                     'user_id' => $item->isValidColumn('user_id') ? (int) $item->get('user_id') : 0,
                     'username' => '',
@@ -613,6 +619,11 @@ class Creator extends AbstractService
 
             if (isset($item['content_type'], $item['content_id']))
             {
+                if ($item['content_type'] === 'thread')
+                {
+                    continue;
+                }
+
                 $normalized[] = [
                     'content_type' => $item['content_type'],
                     'content_id' => (int) $item['content_id'],
@@ -624,6 +635,11 @@ class Creator extends AbstractService
 
             if (count($item) >= 2)
             {
+                if ($item[0] === 'thread')
+                {
+                    continue;
+                }
+
                 $normalized[] = [
                     'content_type' => $item[0],
                     'content_id' => (int) $item[1],
@@ -695,7 +711,7 @@ class Creator extends AbstractService
         // Only check content types we know have user_id and date fields
         $contentTypesToCheck = [
             'post',
-            'thread', 
+            // 'thread', // Explicitly excluded to avoid double reporting
             'profile_post',
             'conversation_message',
             'resource_update',
@@ -799,7 +815,7 @@ class Creator extends AbstractService
     {
         $dateFields = [
             'post' => 'post_date',
-            'thread' => 'post_date', // threads use the first post date
+            // 'thread' => 'post_date', // threads use the first post date
             'profile_post' => 'post_date',
             'conversation_message' => 'message_date',
             'resource_update' => 'post_date',

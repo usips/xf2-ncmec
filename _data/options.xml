@@ -15,4 +15,14 @@ environment
 units={{ phrase('units_hours') }}</edit_format_params>
     <relation group_id="usips_ncmec" display_order="200"/>
   </option>
+  <option option_id="usipsNcmecReporterCompanyTemplate" edit_format="textbox" data_type="string" advanced="0">
+    <default_value></default_value>
+    <edit_format_params>rows=6</edit_format_params>
+    <relation group_id="usips_ncmec" display_order="310"/>
+  </option>
+  <option option_id="usipsNcmecReporterContactPerson" edit_format="callback" data_type="unsigned_integer" advanced="0">
+    <default_value>0</default_value>
+    <edit_format_params>USIPS\NCMEC\Option\ReporterContactPerson::renderSelect</edit_format_params>
+    <relation group_id="usips_ncmec" display_order="300"/>
+  </option>
 </options>
