@@ -1,0 +1,10 @@
+{
+    "parent_navigation_id": "logsContent",
+    "display_order": 900,
+    "link": "ncmec-api-logs/",
+    "icon": "",
+    "admin_permission_id": "usips_ncmec",
+    "debug_only": false,
+    "development_only": false,
+    "hide_no_children": false
+}

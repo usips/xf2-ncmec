@@ -70,6 +70,33 @@ class CaseFile extends Entity
         return is_array($this->report_annotations) && in_array($value, $this->report_annotations);
     }
 
+    /**
+     * Determines if this case can be resubmitted (finalized but failed)
+     *
+     * @param null|string $error
+     * @param \XF\Entity\User|null $user
+     *
+     * @return bool
+     */
+    public function canResubmit(&$error = null, \XF\Entity\User $user = null): bool
+    {
+        $user = $user ?: \XF::visitor();
+
+        if (!$user || !$user->hasAdminPermission('usips_ncmec'))
+        {
+            $error = \XF::phrase('no_permission');
+            return false;
+        }
+
+        // Can resubmit if finalized but not finished (failed submission)
+        if ($this->is_finalized && !$this->is_finished)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public static function getStructure(Structure $structure)
     {
         $structure->table = 'xf_usips_ncmec_case';

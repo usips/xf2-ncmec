@@ -20,6 +20,63 @@ class CaseController extends AbstractController
         return $this->assertRecordExists('USIPS\NCMEC:CaseFile', $id, $with);
     }
 
+    /**
+     * Shared logic for saving case data from form input
+     */
+    protected function saveCaseFromInput(\USIPS\NCMEC\Entity\CaseFile $case)
+    {
+        $input = $this->filter([
+            'title' => 'str',
+            'incident_type' => 'str',
+            'report_annotations' => 'array-str',
+            'incident_date_time_desc' => 'str',
+            'reporter_person_id' => 'uint',
+            'reported_person_id' => 'uint',
+            'reported_additional_info' => 'str',
+            'additional_info' => 'str',
+        ]);
+
+        $case->bulkSet($input);
+        $case->save();
+
+        return $case;
+    }
+
+    /**
+     * Validate that case has all required fields for NCMEC submission
+     * 
+     * @param \USIPS\NCMEC\Entity\CaseFile $case
+     * @return array Array of error messages (empty if valid)
+     */
+    protected function validateCaseForFinalization(\USIPS\NCMEC\Entity\CaseFile $case)
+    {
+        $errors = [];
+
+        // Check incident_type (required by NCMEC API)
+        if (empty($case->incident_type))
+        {
+            $errors[] = \XF::phrase('usips_ncmec_error_incident_type_required')->render();
+        }
+
+        // Check reporter_person_id (required for reportingPerson)
+        if (empty($case->reporter_person_id))
+        {
+            $errors[] = \XF::phrase('usips_ncmec_error_reporter_person_required')->render();
+        }
+
+        // Check that case has at least one incident
+        $incidentCount = $this->finder('USIPS\NCMEC:Incident')
+            ->where('case_id', $case->case_id)
+            ->total();
+
+        if ($incidentCount === 0)
+        {
+            $errors[] = \XF::phrase('usips_ncmec_error_no_incidents')->render();
+        }
+
+        return $errors;
+    }
+
     public function actionEdit(ParameterBag $params)
     {
         $case = $this->assertCaseExists($params->case_id);
@@ -31,20 +88,7 @@ class CaseController extends AbstractController
 
         if ($this->isPost())
         {
-            $input = $this->filter([
-                'title' => 'str',
-                'incident_type' => 'str',
-                'report_annotations' => 'array-str',
-                'incident_date_time_desc' => 'str',
-                'reporter_person_id' => 'uint',
-                'reported_person_id' => 'uint',
-                'reported_additional_info' => 'str',
-                'additional_info' => 'str',
-            ]);
-
-            $case->bulkSet($input);
-            $case->save();
-
+            $this->saveCaseFromInput($case);
             return $this->redirect($this->buildLink('ncmec-cases/view', $case));
         }
 
@@ -276,25 +320,74 @@ class CaseController extends AbstractController
     {
         $case = $this->assertCaseExists($params->case_id);
 
-        if (!$case->canEdit($error))
+        // Check permissions - either can edit OR can resubmit
+        if (!$case->canEdit($error) && !$case->canResubmit($resubmitError))
         {
-            return $this->error($error);
+            return $this->error($error ?: $resubmitError);
         }
 
         if ($this->isPost())
         {
-            if (!$this->filter('confirm', 'bool'))
+            // Check if this is the confirmation step
+            if ($this->filter('confirm', 'bool'))
             {
-                return $this->error(\XF::phrase('usips_ncmec_please_confirm_finalization'));
+                // Validate required fields before starting job
+                $errors = $this->validateCaseForFinalization($case);
+                if (!empty($errors))
+                {
+                    return $this->error(implode("\n", $errors));
+                }
+
+                // If this is a resubmission (finalized but not finished), clean up first
+                if ($case->is_finalized && !$case->is_finished)
+                {
+                    // Clean up any existing failed reports before resubmitting
+                    $failedReports = $this->finder('USIPS\NCMEC:Report')
+                        ->where('case_id', $case->case_id)
+                        ->where('ncmec_report_id', 0)
+                        ->fetch();
+                    
+                    foreach ($failedReports as $report)
+                    {
+                        $report->delete();
+                    }
+                    
+                    // Reset finalized flag so job can proceed
+                    $case->is_finalized = false;
+                    $case->save();
+                }
+
+                // Start the finalization job
+                $jobId = $this->app->jobManager()->enqueueUnique(
+                    'usipsNcmecFinalize' . $case->case_id,
+                    'USIPS\NCMEC:FinalizeCase',
+                    ['case_id' => $case->case_id]
+                );
+
+                return $this->redirect($this->buildLink('tools/run-job', null, ['only_id' => $jobId]));
             }
+            else
+            {
+                // First step: save the case data (only if not finalized)
+                if (!$case->is_finalized)
+                {
+                    $this->saveCaseFromInput($case);
+                }
 
-            $jobId = $this->app->jobManager()->enqueueUnique(
-                'usipsNcmecFinalize' . $case->case_id,
-                'USIPS\NCMEC:FinalizeCase',
-                ['case_id' => $case->case_id]
-            );
+                // Validate required fields before showing confirmation
+                $errors = $this->validateCaseForFinalization($case);
+                if (!empty($errors))
+                {
+                    return $this->error(implode("\n", $errors));
+                }
 
-            return $this->redirect($this->buildLink('tools/run-job', null, ['only_id' => $jobId]));
+                $viewParams = [
+                    'case' => $case,
+                    'apiEnvironment' => $this->app->options()->usipsNcmecApi['environment'] ?? 'test'
+                ];
+
+                return $this->view('USIPS\NCMEC:Case\Finalize', 'usips_ncmec_case_finalize', $viewParams);
+            }
         }
 
         $viewParams = [
@@ -309,9 +402,16 @@ class CaseController extends AbstractController
     {
         $case = $this->assertCaseExists($params->case_id, ['User']);
 
+        // Allow editing if case is not finalized
         if ($case->canEdit())
         {
             return $this->redirect($this->buildLink('ncmec-cases/edit', $case));
+        }
+
+        // Allow resubmission if case is finalized but failed (not finished)
+        if ($case->canResubmit())
+        {
+            return $this->redirect($this->buildLink('ncmec-cases/finalize', $case));
         }
 
         // Load incidents for this case

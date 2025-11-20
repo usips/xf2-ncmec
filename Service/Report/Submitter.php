@@ -198,6 +198,7 @@ class Submitter extends AbstractService
     public function deleteContent()
     {
         // Delete Incident Content (Posts, Threads, etc)
+        // Entity deletion methods handle all cleanup including attachments
         $incidentContents = $this->finder('USIPS\NCMEC:IncidentContent')
             ->where('user_id', $this->subject->user_id)
             ->with('Incident', true)
@@ -209,8 +210,20 @@ class Submitter extends AbstractService
             $entity = $content->getContent();
             if ($entity)
             {
-                // Hard delete the content
-                $entity->delete();
+                try
+                {
+                    // Direct entity deletion:
+                    // - Posts: _postDelete() removes attachments, updates thread
+                    // - Threads: _postDelete() removes all posts and their attachments
+                    // - ProfilePosts: _postDelete() removes attachments
+                    // First posts automatically trigger thread deletion via isFirstPost() check
+                    $entity->delete();
+                }
+                catch (\Exception $e)
+                {
+                    // Log error but continue processing other content
+                    \XF::logException($e, false, "Failed to delete content entity {$entity->getEntityContentType()}:{$entity->getEntityId()}: ");
+                }
             }
             // Delete the incident content record
             $content->delete();
@@ -374,11 +387,7 @@ class Submitter extends AbstractService
                     $webPage = $internetDetails->addChild('webPageIncident');
                     $webPage->addChild('url', htmlspecialchars($entity->getContentUrl(true)));
                     
-                    // Add upload date if available
-                    if (isset($entity->post_date))
-                    {
-                        $webPage->addChild('uploadDateTime', gmdate('c', $entity->post_date));
-                    }
+                    // Note: uploadDateTime is not allowed in webPageIncident per XSD
                 }
             }
             
@@ -534,25 +543,16 @@ class Submitter extends AbstractService
             $ban = $this->em()->find('XF:UserBan', $this->subject->user_id);
             if ($ban)
             {
+                // Per XSD, these are boolean values, not containers
                 if ($ban->end_date == 0)
                 {
-                    // Permanent ban
-                    $accountDisabled = $personReported->addChild('accountPermanentlyDisabled');
-                    $accountDisabled->addChild('dateTime', gmdate('c', $ban->ban_date));
-                    if (!empty($ban->user_reason))
-                    {
-                        $accountDisabled->addChild('reason', htmlspecialchars($ban->user_reason));
-                    }
+                    // Permanent ban - set to true
+                    $personReported->addChild('accountPermanentlyDisabled', 'true');
                 }
                 else
                 {
-                    // Temporary ban
-                    $accountDisabled = $personReported->addChild('accountTemporarilyDisabled');
-                    $accountDisabled->addChild('dateTime', gmdate('c', $ban->ban_date));
-                    if (!empty($ban->user_reason))
-                    {
-                        $accountDisabled->addChild('reason', htmlspecialchars($ban->user_reason));
-                    }
+                    // Temporary ban - set to true
+                    $personReported->addChild('accountTemporarilyDisabled', 'true');
                 }
             }
         }
@@ -699,33 +699,34 @@ class Submitter extends AbstractService
     
     /**
      * Get human-readable event name for IP log
+     * Must return one of: 'Login', 'Registration', 'Purchase', 'Upload', 'Other', 'Unknown'
      * 
      * @param string $action XenForo action
      * @param string|null $contentType Content type if applicable
-     * @return string Event name
+     * @return string Event name from allowed enumeration
      */
     protected function getIpEventName(string $action, ?string $contentType): string
     {
         $map = [
             'register' => 'Registration',
             'login' => 'Login',
-            'post' => 'Content Post',
-            'thread' => 'Thread Creation',
-            'profile_post' => 'Profile Post',
-            'conversation_message' => 'Private Message',
+            'cookie_login' => 'Login',
+            'post' => 'Upload',
+            'thread' => 'Upload',
+            'profile_post' => 'Upload',
+            'conversation_message' => 'Upload',
+            'insert' => 'Upload',
         ];
         
-        if (isset($map[$action]))
+        // Check action directly
+        $lowerAction = strtolower($action);
+        if (isset($map[$lowerAction]))
         {
-            return $map[$action];
+            return $map[$lowerAction];
         }
         
-        if ($contentType)
-        {
-            return ucfirst(str_replace('_', ' ', $contentType)) . ' - ' . ucfirst($action);
-        }
-        
-        return ucfirst(str_replace('_', ' ', $action));
+        // Default to 'Other' for unmapped actions
+        return 'Other';
     }
     
     /**
@@ -742,6 +743,7 @@ class Submitter extends AbstractService
         if (!$xsdContent)
         {
             // XSD not available, skip validation (will rely on API validation)
+            \XF::logError("NCMEC: XSD not available for validation, skipping local validation for Case #{$this->case->case_id}");
             return;
         }
         
@@ -775,6 +777,15 @@ class Submitter extends AbstractService
                 
                 libxml_clear_errors();
                 
+                // Log the XML that failed validation
+                \XF::logError(sprintf(
+                    "NCMEC XML Validation Failed for Case #%d, User #%d:\n\nErrors:\n%s\n\nXML:\n%s",
+                    $this->case->case_id,
+                    $this->subject->user_id,
+                    implode("\n", $errorMessages),
+                    $xmlString
+                ));
+                
                 throw new \Exception(
                     "XML validation failed:\n" . implode("\n", $errorMessages)
                 );
@@ -790,25 +801,47 @@ class Submitter extends AbstractService
     
     /**
      * Get cached XSD or download if needed
-     * Cache expires after 24 hours
+     * Uses both temp file storage (persistent) and cache (if available)
      * 
      * @return string|null XSD content or null if unavailable
      */
     protected function getCachedXsd(): ?string
     {
-        $cacheKey = 'usipsNcmecXsd_' . $this->apiClient->getEnvironment();
-        $cache = $this->app->cache();
+        $environment = $this->apiClient->getEnvironment();
+        $cacheKey = 'usipsNcmecXsd_' . $environment;
         
-        $xsdContent = $cache->fetch($cacheKey);
+        // Try temp file first (persistent across requests)
+        $tempDir = \XF\Util\File::getTempDir();
+        $xsdTempFile = $tempDir . '/ncmec_xsd_' . $environment . '.xsd';
         
-        if ($xsdContent === false)
+        // Check if temp file exists and is fresh (less than 24 hours old)
+        if (file_exists($xsdTempFile) && (time() - filemtime($xsdTempFile)) < 86400)
         {
-            // Download XSD
-            $xsdContent = $this->apiClient->downloadXsd();
-            
-            if ($xsdContent)
+            return file_get_contents($xsdTempFile);
+        }
+        
+        // Try cache next
+        $cache = $this->app->cache();
+        if ($cache)
+        {
+            $xsdContent = $cache->fetch($cacheKey);
+            if ($xsdContent !== false)
             {
-                // Cache for 24 hours
+                // Store in temp file for persistence
+                file_put_contents($xsdTempFile, $xsdContent);
+                return $xsdContent;
+            }
+        }
+        
+        // Download XSD as last resort
+        $xsdContent = $this->apiClient->downloadXsd();
+        
+        if ($xsdContent)
+        {
+            // Store in both temp file and cache
+            file_put_contents($xsdTempFile, $xsdContent);
+            if ($cache)
+            {
                 $cache->save($cacheKey, $xsdContent, 86400);
             }
         }

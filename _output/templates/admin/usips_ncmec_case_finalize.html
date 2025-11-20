@@ -7,7 +7,7 @@
                 {{ phrase('usips_ncmec_finalize_case_confirm_text', {'title': $case.title}) }}
             </xf:inforow>
 
-            <xf:if is="$apiEnvironment == 'prod' OR $apiEnvironment == 'production' OR $apiEnvironment == 'live'">
+            <xf:if is="$apiEnvironment == 'production'">
                 <div class="block-rowMessage block-rowMessage--error block-rowMessage--iconFormat">
                     <strong>{{ phrase('usips_ncmec_environment_warning') }}:</strong> {{
                     phrase('usips_ncmec_environment_live') }}

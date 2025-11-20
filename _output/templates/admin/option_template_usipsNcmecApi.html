@@ -4,7 +4,8 @@
 		<dl class="pairs pairs--columns pairs--fixedSmall">
 			<dt>{{ phrase('usips_ncmec_environment') }}</dt>
 			<dd>
-				{{ $option.option_value.environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
+				{{ $option.option_value.environment === 'production' ? phrase('usips_ncmec_env_live') :
+				phrase('usips_ncmec_env_test') }}
 			</dd>
 		</dl>
 

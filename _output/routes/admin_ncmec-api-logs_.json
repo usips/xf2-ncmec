@@ -6,6 +6,6 @@
     "build_class": "",
     "build_method": "",
     "controller": "USIPS\\NCMEC:ApiLog",
-    "context": "",
+    "context": "usips_ncmec_api_log",
     "action_prefix": ""
 }

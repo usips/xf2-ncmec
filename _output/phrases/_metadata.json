@@ -1,4 +1,10 @@
 {
+    "admin_navigation.usips_ncmec_api_log.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "cc42c080053457f67c5a71ac4222eece"
+    },
     "admin_navigation.usips_ncmec_attachment_lookup.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -35,6 +41,12 @@
         "version_string": "1.0.0",
         "hash": "515b059a6c6f39dd039d745554feba95"
     },
+    "admin_navigation.usips_ncmec_logs_api_log.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "a70abc6feee95b7dbd6d79303515d600"
+    },
     "admin_navigation.usips_ncmec_management.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -47,7 +59,7 @@
         "version_string": "1.0.0",
         "hash": "78386ec8f2845742c324a3d7d3e800ff"
     },
-    "admin_navigation.usips_ncmec_report_list.txt": {
+    "admin_navigation.usips_ncmec_report.txt": {
         "global_cache": false,
         "version_id": 0,
         "version_string": "1.0.0",
@@ -215,6 +227,12 @@
         "version_string": "1.0.0",
         "hash": "bd84f89dc520b540433af3aa9fa60543"
     },
+    "usips_ncmec_api_logs.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "cc42c080053457f67c5a71ac4222eece"
+    },
     "usips_ncmec_api_not_configured.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -311,6 +329,18 @@
         "version_string": "1.0.0",
         "hash": "3ee2fb72893048345ae298fa5a4304ed"
     },
+    "usips_ncmec_case_resubmit.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "e4d3167e5c47d87ad41a6da49e344e87"
+    },
+    "usips_ncmec_case_resubmit_message.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "289af205976d7f4453063019bb83b79d"
+    },
     "usips_ncmec_cases.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -394,12 +424,6 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "e8ab8b7424cc1a750f5fd7f401a947c3"
-    },
-    "usips_ncmec_default_contact_person.txt": {
-        "global_cache": false,
-        "version_id": 0,
-        "version_string": "1.0.0",
-        "hash": "bcd742bda7ec016fc22db274b942234f"
     },
     "usips_ncmec_create_case.txt": {
         "global_cache": false,
@@ -502,6 +526,24 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "a81ac66dc54a239f85069d5189562b83"
+    },
+    "usips_ncmec_error_incident_type_required.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "da9aa0d5f31eba41591ccee8dbc857b0"
+    },
+    "usips_ncmec_error_no_incidents.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "084472e7b41eb2498775a6790b94c760"
+    },
+    "usips_ncmec_error_reporter_person_required.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "3b7c77d55b8755a19d9be1f0cc7e6dbd"
     },
     "usips_ncmec_esp_credentials.txt": {
         "global_cache": false,
@@ -887,6 +929,12 @@
         "version_string": "1.0.0",
         "hash": "25116eb69a402cb5c776446f7aecf412"
     },
+    "usips_ncmec_response_code.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "ca0dbad92a874b2f69b549293387925e"
+    },
     "usips_ncmec_save_configuration.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -910,6 +958,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "800debcb75a0be94ce04665ea75baf04"
+    },
+    "usips_ncmec_test.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "0cbc6611f5540bd0809a388dc95a615b"
     },
     "usips_ncmec_test_connection.txt": {
         "global_cache": false,

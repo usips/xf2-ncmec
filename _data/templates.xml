@@ -132,6 +132,135 @@
 .dataList-cell--usips-attachmentList {
     padding: 0;
 }]]></template>
+  <template type="admin" title="usips_ncmec_api_log_list" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_api_logs') }}</xf:title>
+
+<div class="block">
+    <div class="block-container">
+        <h3 class="block-header">
+            {{ phrase('usips_ncmec_api_logs') }}
+            <span class="block-counter">({$total})</span>
+        </h3>
+
+        <xf:if is="$logs.count()">
+            <div class="block-body">
+                <div class="structItemContainer">
+                    <xf:macro template="usips_ncmec_macros" name="api_log_list" arg-logs="{$logs}" />
+                </div>
+            </div>
+
+            <xf:if is="$total > $perPage">
+                <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-api-logs" />
+            </xf:if>
+
+            <xf:else />
+            <div class="block-body">
+                <div class="blockMessage">{{ phrase('no_items_to_display') }}</div>
+            </div>
+        </xf:if>
+    </div>
+</div>]]></template>
+  <template type="admin" title="usips_ncmec_api_log_view" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_report_logs') }}</xf:title>
+
+<div class="block">
+    <div class="block-container">
+        <h2 class="block-header">{{ phrase('details') }}</h2>
+        <div class="block-body">
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>{{ phrase('date') }}</dt>
+                <dd>
+                    <xf:date time="{$log.request_date}" />
+                </dd>
+            </dl>
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>{{ phrase('usips_ncmec_environment') }}</dt>
+                <dd>
+                    {{ $log.environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
+                </dd>
+            </dl>
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>{{ phrase('status') }}</dt>
+                <dd>
+                    <xf:if is="$log.success">
+                        <span class="label label--success">{{ phrase('success') }}</span>
+                        <xf:else />
+                        <span class="label label--accent">Failed</span>
+                    </xf:if>
+                    <xf:if is="$log.response_code">
+                        <div class="u-muted">HTTP {$log.response_code}</div>
+                    </xf:if>
+                </dd>
+            </dl>
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>Method</dt>
+                <dd>{$log.request_method|upper}</dd>
+            </dl>
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>Endpoint / URL</dt>
+                <dd>
+                    <div>{{ $log.request_endpoint ?: $log.request_url }}</div>
+                    <xf:if is="$log.request_endpoint && $log.request_url">
+                        <div class="u-muted">{$log.request_url}</div>
+                    </xf:if>
+                </dd>
+            </dl>
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>{{ phrase('usips_ncmec_reporter') }}</dt>
+                <dd>
+                    <xf:if is="$log.User">
+                        <xf:avatar user="{$log.User}" size="xxs" />
+                        <xf:username user="{$log.User}" />
+                        <xf:else />
+                        {{ phrase('n_a') }}
+                    </xf:if>
+                </dd>
+            </dl>
+            <xf:if is="$log.Report">
+                <dl class="pairs pairs--rows pairs--rows--fluid">
+                    <dt>{{ phrase('usips_ncmec_report') }}</dt>
+                    <dd>
+                        <a href="{{ link('ncmec-reports/view', $log.Report) }}" target="_blank" rel="noopener">
+                            {{ phrase('usips_ncmec_report_id') }}: {{ $log.Report.ncmec_report_id ?: phrase('n_a') }}
+                        </a>
+                    </dd>
+                </dl>
+                <xf:if is="$log.Report.Case">
+                    <dl class="pairs pairs--rows pairs--rows--fluid">
+                        <dt>{{ phrase('usips_ncmec_case') }}</dt>
+                        <dd>
+                            <a href="{{ link('ncmec-cases/view', $log.Report.Case) }}" target="_blank" rel="noopener">
+                                {{ $log.Report.Case.title ?: phrase('usips_ncmec_untitled_case') }}
+                            </a>
+                        </dd>
+                    </dl>
+                </xf:if>
+            </xf:if>
+        </div>
+    </div>
+</div>
+
+<div class="block">
+    <div class="block-container">
+        <h2 class="block-header">Response</h2>
+        <div class="block-body">
+            <div class="codeBlock codeBlock--smaller">
+                <pre
+                    class="codeBlock-code"><code>{{ $responseBody !== '' ? $responseBody : ('// ' . phrase('n_a')) }}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="block">
+    <div class="block-container">
+        <h2 class="block-header">Request</h2>
+        <div class="block-body">
+            <div class="codeBlock codeBlock--smaller">
+                <pre
+                    class="codeBlock-code"><code>{{ $requestBody !== '' ? $requestBody : ('// ' . phrase('n_a')) }}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>]]></template>
   <template type="admin" title="usips_ncmec_attachment_list" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('attachment_browser') }}</xf:title>
 
 <xf:form action="{{ link('ncmec-incidents/create') }}" class="block">
@@ -1002,6 +1131,8 @@
     <xf:button href="{{ link('ncmec-incidents/delete', $incident) }}" icon="delete" overlay="true" />
 </xf:pageaction>
 
+<xf:set var="$caseEditable" value="{{ !$incident.case_id || ($incident.Case && $incident.Case.canEdit()) }}" />
+
 <xf:form action="{{ link('ncmec-incidents/update', $incident) }}" ajax="true" class="block">
 
     <div class="block-container">
@@ -1016,13 +1147,28 @@
                 </xf:if>
             </xf:formrow>
 
-            <xf:selectrow name="case_id" value="{$incident.case_id}" label="{{ phrase('usips_ncmec_case') }}">
-                <xf:option value="0">{{ phrase('none') }}</xf:option>
-                <xf:foreach loop="$availableCases" value="$case">
-                    <xf:option value="{$case.case_id}">{{ $case.title ?: phrase('usips_ncmec_untitled_case') }}
-                    </xf:option>
-                </xf:foreach>
-            </xf:selectrow>
+            <xf:if is="$caseEditable">
+                <xf:selectrow name="case_id" value="{$incident.case_id}" label="{{ phrase('usips_ncmec_case') }}">
+                    <xf:option value="0">{{ phrase('none') }}</xf:option>
+                    <xf:foreach loop="$availableCases" value="$case">
+                        <xf:option value="{$case.case_id}">{{ $case.title ?: phrase('usips_ncmec_untitled_case') }}
+                        </xf:option>
+                    </xf:foreach>
+                </xf:selectrow>
+                <xf:else />
+                <xf:formrow label="{{ phrase('usips_ncmec_case') }}">
+                    <xf:if is="$incident.case_id">
+                        <a href="{{ link('ncmec-cases/view', {'case_id': $incident.case_id}) }}">
+                            {{ $incident.Case ? $incident.Case.title : phrase('usips_ncmec_untitled_case') }}
+                        </a>
+                        <xf:else />
+                        {{ phrase('none') }}
+                    </xf:if>
+                    <div class="formRow-explain">
+                        {{ phrase('usips_ncmec_case_finalized_cannot_edit') }}
+                    </div>
+                </xf:formrow>
+            </xf:if>
 
             <xf:formrow label="{{ phrase('usips_ncmec_associated_users') }}">
                 {{ $counts.users|number }}
@@ -1034,7 +1180,9 @@
                 {{ $counts.attachments|number }}
             </xf:formrow>
 
-            <xf:submitrow sticky="true" icon="save" />
+            <xf:if is="$caseEditable">
+                <xf:submitrow sticky="true" icon="save" />
+            </xf:if>
         </div>
     </div>
 </xf:form>
@@ -1398,6 +1546,78 @@
 	</div>
 </xf:macro>
 
+<xf:macro id="api_log_list" arg-logs="{{ [] }}">
+	<xf:datalist class="dataList">
+		<xf:datarow rowtype="header">
+			<xf:cell>{{ phrase('date') }}</xf:cell>
+			<xf:cell>{{ phrase('usips_ncmec_environment') }}</xf:cell>
+			<xf:cell>{{ phrase('usips_ncmec_endpoint') }}</xf:cell>
+			<xf:cell>{{ phrase('status') }}</xf:cell>
+			<xf:cell>{{ phrase('usips_ncmec_response_code') }}</xf:cell>
+			<xf:cell>{{ phrase('usips_ncmec_report') }}</xf:cell>
+			<xf:cell>{{ phrase('user') }}</xf:cell>
+			<xf:cell></xf:cell>
+		</xf:datarow>
+		<xf:foreach loop="$logs" value="$log">
+			<xf:datarow>
+				<xf:cell>
+					<xf:date time="{$log.request_date}" />
+				</xf:cell>
+				<xf:cell>
+					<xf:if is="$log.environment == 'test'">
+						<span class="label label--orange">{{ phrase('usips_ncmec_test') }}</span>
+						<xf:elseif is="$log.environment == 'live'" />
+						<span class="label label--red">{{ phrase('usips_ncmec_live') }}</span>
+						<xf:else />
+						{$log.environment}
+					</xf:if>
+				</xf:cell>
+				<xf:cell>
+					<code>{$log.request_method}</code> {$log.request_endpoint}
+				</xf:cell>
+				<xf:cell>
+					<xf:if is="$log.success">
+						<span class="label label--green">{{ phrase('success') }}</span>
+						<xf:else />
+						<span class="label label--red">{{ phrase('error') }}</span>
+					</xf:if>
+				</xf:cell>
+				<xf:cell>
+					<xf:if is="$log.response_code">
+						{$log.response_code}
+						<xf:else />
+						<span class="u-muted">{{ phrase('n_a') }}</span>
+					</xf:if>
+				</xf:cell>
+				<xf:cell>
+					<xf:if is="$log.Report">
+						<a href="{{ link('ncmec-reports/view', $log.Report) }}">
+							<xf:if is="$log.Report.Case">
+								{$log.Report.Case.title}
+								<xf:else />
+								{{ phrase('usips_ncmec_report') }} #{$log.report_id}
+							</xf:if>
+						</a>
+						<xf:else />
+						<span class="u-muted">{{ phrase('n_a') }}</span>
+					</xf:if>
+				</xf:cell>
+				<xf:cell>
+					<xf:if is="$log.User">
+						<xf:avatar user="$log.User" size="xxs" />
+						<xf:username user="$log.User" />
+						<xf:else />
+						<span class="u-muted">{{ phrase('n_a') }}</span>
+					</xf:if>
+				</xf:cell>
+				<xf:cell class="dataList-cell--action">
+					<a href="{{ link('ncmec-api-logs/view', $log) }}" data-xf-click="overlay">{{ phrase('view') }}</a>
+				</xf:cell>
+			</xf:datarow>
+		</xf:foreach>
+	</xf:datalist>
+</xf:macro>
+
 <xf:macro id="user_avatar_list" arg-users="{{ [] }}" arg-incident="{{ false }}">
 	<div class="user-avatars">
 		<xf:foreach loop="$users" value="$user">
@@ -1668,8 +1888,6 @@
 <xf:if is="$report.is_finished">
     <xf:breadcrumb href="{{ link('ncmec-reports/archive') }}">{{ phrase('usips_ncmec_reports_finalized') }}
     </xf:breadcrumb>
-    <xf:else />
-    <xf:breadcrumb href="{{ link('ncmec-reports') }}">{{ phrase('usips_ncmec_reports') }}</xf:breadcrumb>
 </xf:if>
 
 <div class="block">
@@ -1792,6 +2010,7 @@
                         <xf:cell>Method</xf:cell>
                         <xf:cell>Endpoint</xf:cell>
                         <xf:cell>{{ phrase('status') }}</xf:cell>
+                        <xf:cell></xf:cell>
                     </xf:datarow>
                     <xf:foreach loop="$apiLogs" value="$log">
                         <xf:datarow>
@@ -1811,11 +2030,16 @@
                                 <xf:if is="$log.success">
                                     <span class="label label--success">{{ phrase('success') }}</span>
                                     <xf:else />
-                                    <span class="label label--accent">{{ phrase('failed') }}</span>
+                                    <span class="label label--accent">Failed</span>
                                 </xf:if>
                                 <xf:if is="$log.response_code">
                                     <div class="u-muted">HTTP {$log.response_code}</div>
                                 </xf:if>
+                            </xf:cell>
+                            <xf:cell class="dataList-cell--action">
+                                <a href="{{ link('ncmec-api-logs/view', $log) }}" data-xf-click="overlay">
+                                    {{ phrase('view') }}
+                                </a>
                             </xf:cell>
                         </xf:datarow>
                     </xf:foreach>

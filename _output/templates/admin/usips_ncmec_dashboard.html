@@ -9,7 +9,7 @@
 	<div class="blockMessage blockMessage--important blockMessage--iconic">
 		{{ phrase('usips_ncmec_api_not_configured') }}
 	</div>
-<xf:elseif is="$connectionError" />
+	<xf:elseif is="$connectionError" />
 	<div class="blockMessage blockMessage--error blockMessage--iconic">
 		{$connectionError}
 	</div>
@@ -25,7 +25,8 @@
 
 			<xf:if is="$apiConfigured">
 				<xf:formrow label="{{ phrase('usips_ncmec_environment') }}">
-					{{ $environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
+					{{ $environment === 'production' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test')
+					}}
 				</xf:formrow>
 			</xf:if>
 		</div>
@@ -57,6 +58,8 @@
 	</div>
 </div>
 
-<xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" arg-nav="{{ false }}" arg-header="{{ true }}" />
+<xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" arg-nav="{{ false }}"
+	arg-header="{{ true }}" />
 
-<xf:macro id="usips_ncmec_macros::report_list_block" arg-incidents="{$reports}" arg-nav="{{ false }}" arg-header="{{ true }}" />
+<xf:macro id="usips_ncmec_macros::report_list_block" arg-incidents="{$reports}" arg-nav="{{ false }}"
+	arg-header="{{ true }}" />

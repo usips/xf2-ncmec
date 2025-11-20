@@ -13,7 +13,8 @@
             <dl class="pairs pairs--rows pairs--rows--fluid">
                 <dt>{{ phrase('usips_ncmec_environment') }}</dt>
                 <dd>
-                    {{ $log.environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
+                    {{ $log.environment === 'production' ? phrase('usips_ncmec_env_live') :
+                    phrase('usips_ncmec_env_test') }}
                 </dd>
             </dl>
             <dl class="pairs pairs--rows pairs--rows--fluid">

@@ -21,12 +21,12 @@ class Client extends AbstractService
 {
     // Environment constants
     public const ENVIRONMENT_TEST = 'test';
-    public const ENVIRONMENT_LIVE = 'live';
+    public const ENVIRONMENT_PRODUCTION = 'production';
     
     // Base URLs for different environments
     public const BASE_URL_TEST = 'https://exttest.cybertip.org/ispws';
-    public const BASE_URL_LIVE = 'https://NOT_A_REAL_ADDRESS_FOR_TESTING_PURPOSES/ispws';
-    //public const BASE_URL_LIVE = 'https://report.cybertip.org/ispws';
+    public const BASE_URL_PRODUCTION = 'https://NOT_A_REAL_ADDRESS_FOR_TESTING_PURPOSES/ispws';
+    //public const BASE_URL_PRODUCTION = 'https://report.cybertip.org/ispws';
     
     // API Endpoints
     public const ENDPOINT_STATUS = '/status';
@@ -128,9 +128,9 @@ class Client extends AbstractService
      */
     protected function determineBaseUrl(string $environment): string
     {
-        if ($environment === self::ENVIRONMENT_LIVE || $environment === 'production')
+        if ($environment === self::ENVIRONMENT_PRODUCTION)
         {
-            return self::BASE_URL_LIVE;
+            return self::BASE_URL_PRODUCTION;
         }
         
         return self::BASE_URL_TEST;

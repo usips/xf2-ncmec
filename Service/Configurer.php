@@ -14,7 +14,7 @@ use USIPS\NCMEC\Service\Api\Client as ApiClient;
 class Configurer extends AbstractService
 {
     public const ENVIRONMENT_TEST = 'test';
-    public const ENVIRONMENT_LIVE = 'live';
+    public const ENVIRONMENT_PRODUCTION = 'production';
 
     protected $config;
 

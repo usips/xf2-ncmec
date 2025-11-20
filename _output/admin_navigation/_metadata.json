@@ -2,6 +2,9 @@
     "usips_ncmec.json": {
         "hash": "dbf68c642671698e5015f9cf83f6d2fd"
     },
+    "usips_ncmec_api_log.json": {
+        "hash": "d8e1fac0bd62a70ee2f48958ee4ab7ec"
+    },
     "usips_ncmec_attachment_lookup.json": {
         "hash": "1fc36859ae91bdcc0e53bf18938800cc"
     },
@@ -20,13 +23,16 @@
     "usips_ncmec_incident.json": {
         "hash": "fa05f0b9038851b9447d51357442e6ea"
     },
+    "usips_ncmec_logs_api_log.json": {
+        "hash": "899e8d437d05cfb869848285e4046269"
+    },
     "usips_ncmec_management.json": {
         "hash": "11c75c13bbdd10969c8bbe5ac721c84e"
     },
     "usips_ncmec_people.json": {
         "hash": "2e361e8f2bb367f93452318416c6fd41"
     },
-    "usips_ncmec_report_list.json": {
-        "hash": "5827af33683552d079394f65e110d118"
+    "usips_ncmec_report.json": {
+        "hash": "c09870157ecae45396a612613dbd1281"
     }
 }

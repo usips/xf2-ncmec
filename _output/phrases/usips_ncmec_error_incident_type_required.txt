@@ -1,0 +1,1 @@
+Incident type is required before finalizing the case. Please select an incident type.

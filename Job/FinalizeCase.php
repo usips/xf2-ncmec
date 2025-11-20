@@ -51,15 +51,36 @@ class FinalizeCase extends AbstractJob
 
         if ($this->data['current_user_index'] >= $count)
         {
-            // All users processed
-            $case->is_finished = true;
-            $case->save();
-
-            // Finalize all incidents
-            foreach ($case->Incidents as $incident)
+            // All users processed - clean up and finalize
+            $this->cleanupFailedReports($case);
+            
+            // Check if we have any successful reports
+            $successfulReports = $this->app->finder('USIPS\NCMEC:Report')
+                ->where('case_id', $case->case_id)
+                ->where('ncmec_report_id', '>', 0)
+                ->total();
+            
+            if ($successfulReports > 0)
             {
-                $incident->is_finalized = true;
-                $incident->save();
+                // At least one report succeeded, mark case as finished
+                $case->is_finished = true;
+                $case->save();
+
+                // Finalize all incidents
+                foreach ($case->Incidents as $incident)
+                {
+                    $incident->is_finalized = true;
+                    $incident->save();
+                }
+            }
+            else
+            {
+                // All reports failed, reset case to allow resubmission
+                $case->is_finalized = false;
+                $case->is_finished = false;
+                $case->save();
+                
+                \XF::logError("NCMEC Case #{$case->case_id}: All reports failed. Case has been unlocked for resubmission.");
             }
 
             return $this->complete();
@@ -147,9 +168,27 @@ class FinalizeCase extends AbstractJob
         }
         catch (\Exception $e)
         {
-            \XF::logException($e, false, "NCMEC Finalization Error (User $userId, State {$this->data['state']}): ");
-            // Move to next user on error to avoid infinite loop? 
-            // Or maybe retry? For now, let's skip user to prevent blocking queue
+            $errorMsg = $e->getMessage();
+            
+            // Log the full error
+            \XF::logException($e, false, "NCMEC Finalization Error (Case {$case->case_id}, User $userId, State {$this->data['state']}): ");
+            
+            // If this is an XML validation error, create an admin notice so it's visible
+            if (strpos($errorMsg, 'XML validation failed') !== false || strpos($errorMsg, 'validation failed') !== false)
+            {
+                // Create a prominent error notice
+                $notice = sprintf(
+                    "NCMEC Case #%d XML Validation Failed for User #%d:\n\n%s",
+                    $case->case_id,
+                    $userId,
+                    $errorMsg
+                );
+                
+                // Log as error so it appears in logs
+                \XF::logError($notice);
+            }
+            
+            // Move to next user on error to avoid infinite loop
             $this->data['current_user_index']++;
             $this->data['state'] = 'init';
         }
@@ -161,6 +200,25 @@ class FinalizeCase extends AbstractJob
 
         // If we are here, we finished a step quickly, loop again immediately
         return $this->resume();
+    }
+
+    /**
+     * Clean up failed reports (those without ncmec_report_id)
+     * 
+     * @param \USIPS\NCMEC\Entity\CaseFile $case
+     */
+    protected function cleanupFailedReports(\USIPS\NCMEC\Entity\CaseFile $case)
+    {
+        $failedReports = $this->app->finder('USIPS\NCMEC:Report')
+            ->where('case_id', $case->case_id)
+            ->where('ncmec_report_id', 0)
+            ->fetch();
+        
+        foreach ($failedReports as $report)
+        {
+            \XF::logError("NCMEC: Deleting failed report #{$report->report_id} for Case #{$case->case_id}, User #{$report->subject_user_id}");
+            $report->delete();
+        }
     }
 
     public function getStatusMessage()

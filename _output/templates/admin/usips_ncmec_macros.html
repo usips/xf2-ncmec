@@ -296,6 +296,78 @@
 	</div>
 </xf:macro>
 
+<xf:macro id="api_log_list" arg-logs="{{ [] }}">
+	<xf:datalist class="dataList">
+		<xf:datarow rowtype="header">
+			<xf:cell>{{ phrase('date') }}</xf:cell>
+			<xf:cell>{{ phrase('usips_ncmec_environment') }}</xf:cell>
+			<xf:cell>{{ phrase('usips_ncmec_endpoint') }}</xf:cell>
+			<xf:cell>{{ phrase('status') }}</xf:cell>
+			<xf:cell>{{ phrase('usips_ncmec_response_code') }}</xf:cell>
+			<xf:cell>{{ phrase('usips_ncmec_report') }}</xf:cell>
+			<xf:cell>{{ phrase('user') }}</xf:cell>
+			<xf:cell></xf:cell>
+		</xf:datarow>
+		<xf:foreach loop="$logs" value="$log">
+			<xf:datarow>
+				<xf:cell>
+					<xf:date time="{$log.request_date}" />
+				</xf:cell>
+				<xf:cell>
+					<xf:if is="$log.environment == 'test'">
+						<span class="label label--orange">{{ phrase('usips_ncmec_test') }}</span>
+						<xf:elseif is="$log.environment == 'production'" />
+						<span class="label label--red">{{ phrase('usips_ncmec_live') }}</span>
+						<xf:else />
+						{$log.environment}
+					</xf:if>
+				</xf:cell>
+				<xf:cell>
+					<code>{$log.request_method}</code> {$log.request_endpoint}
+				</xf:cell>
+				<xf:cell>
+					<xf:if is="$log.success">
+						<span class="label label--green">{{ phrase('success') }}</span>
+						<xf:else />
+						<span class="label label--red">{{ phrase('error') }}</span>
+					</xf:if>
+				</xf:cell>
+				<xf:cell>
+					<xf:if is="$log.response_code">
+						{$log.response_code}
+						<xf:else />
+						<span class="u-muted">{{ phrase('n_a') }}</span>
+					</xf:if>
+				</xf:cell>
+				<xf:cell>
+					<xf:if is="$log.Report">
+						<a href="{{ link('ncmec-reports/view', $log.Report) }}">
+							<xf:if is="$log.Report.Case">
+								{$log.Report.Case.title}
+								<xf:else />
+								{{ phrase('usips_ncmec_report') }} #{$log.report_id}
+							</xf:if>
+						</a>
+						<xf:else />
+						<span class="u-muted">{{ phrase('n_a') }}</span>
+					</xf:if>
+				</xf:cell>
+				<xf:cell>
+					<xf:if is="$log.User">
+						<xf:avatar user="$log.User" size="xxs" />
+						<xf:username user="$log.User" />
+						<xf:else />
+						<span class="u-muted">{{ phrase('n_a') }}</span>
+					</xf:if>
+				</xf:cell>
+				<xf:cell class="dataList-cell--action">
+					<a href="{{ link('ncmec-api-logs/view', $log) }}" data-xf-click="overlay">{{ phrase('view') }}</a>
+				</xf:cell>
+			</xf:datarow>
+		</xf:foreach>
+	</xf:datalist>
+</xf:macro>
+
 <xf:macro id="user_avatar_list" arg-users="{{ [] }}" arg-incident="{{ false }}">
 	<div class="user-avatars">
 		<xf:foreach loop="$users" value="$user">

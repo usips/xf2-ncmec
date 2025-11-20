@@ -17,9 +17,27 @@ class ApiLogController extends AbstractController
         return $this->assertRecordExists('USIPS\\NCMEC:ApiLog', $id, $with);
     }
 
-    public function actionIndex(ParameterBag $params)
+    public function actionIndex()
     {
-        return $this->actionView($params);
+        $page = $this->filterPage();
+        $perPage = 100;
+        
+        $logFinder = $this->finder('USIPS\\NCMEC:ApiLog')
+            ->with(['Report', 'Report.Case', 'User'])
+            ->order('request_date', 'DESC')
+            ->limitByPage($page, $perPage);
+        
+        $logs = $logFinder->fetch();
+        $total = $logFinder->total();
+        
+        $viewParams = [
+            'logs' => $logs,
+            'total' => $total,
+            'page' => $page,
+            'perPage' => $perPage,
+        ];
+        
+        return $this->view('USIPS\\NCMEC:ApiLog\\Index', 'usips_ncmec_api_log_list', $viewParams);
     }
 
     public function actionView(ParameterBag $params)

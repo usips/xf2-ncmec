@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <admin_navigation>
   <admin_navigation_entry navigation_id="usips_ncmec" display_order="350" link="ncmec" icon="fa-siren" admin_permission_id="usips_ncmec" debug_only="0" development_only="0" hide_no_children="1"/>
+  <admin_navigation_entry navigation_id="usips_ncmec_api_log" parent_navigation_id="usips_ncmec_management" display_order="400" link="ncmec-api-logs/" admin_permission_id="usips_ncmec" debug_only="0" development_only="0" hide_no_children="0"/>
   <admin_navigation_entry navigation_id="usips_ncmec_attachment_lookup" parent_navigation_id="usips_ncmec_attachments" display_order="250" link="ncmec-attachments/lookup" admin_permission_id="attachment" debug_only="0" development_only="0" hide_no_children="0"/>
   <admin_navigation_entry navigation_id="usips_ncmec_attachments" parent_navigation_id="usips_ncmec" display_order="400" icon="fa-file-image" admin_permission_id="attachment" debug_only="0" development_only="0" hide_no_children="0"/>
   <admin_navigation_entry navigation_id="usips_ncmec_attachments_latest" parent_navigation_id="usips_ncmec_attachments" display_order="100" link="ncmec-attachments" admin_permission_id="attachment" debug_only="0" development_only="0" hide_no_children="0"/>
   <admin_navigation_entry navigation_id="usips_ncmec_case" parent_navigation_id="usips_ncmec_management" display_order="200" link="ncmec-cases/" admin_permission_id="usips_ncmec" debug_only="0" development_only="0" hide_no_children="0"/>
   <admin_navigation_entry navigation_id="usips_ncmec_dashboard" parent_navigation_id="usips_ncmec" display_order="100" link="ncmec/" admin_permission_id="usips_ncmec" debug_only="0" development_only="0" hide_no_children="0"/>
   <admin_navigation_entry navigation_id="usips_ncmec_incident" parent_navigation_id="usips_ncmec_management" display_order="100" link="ncmec-incidents/" admin_permission_id="usips_ncmec" debug_only="0" development_only="0" hide_no_children="0"/>
+  <admin_navigation_entry navigation_id="usips_ncmec_logs_api_log" parent_navigation_id="logsContent" display_order="900" link="ncmec-api-logs/" admin_permission_id="usips_ncmec" debug_only="0" development_only="0" hide_no_children="0"/>
   <admin_navigation_entry navigation_id="usips_ncmec_management" parent_navigation_id="usips_ncmec" display_order="200" icon="fa-suitcase" admin_permission_id="usips_ncmec" debug_only="0" development_only="0" hide_no_children="0"/>
   <admin_navigation_entry navigation_id="usips_ncmec_people" parent_navigation_id="usips_ncmec" display_order="150" link="ncmec-people/" admin_permission_id="usips_ncmec" debug_only="0" development_only="0" hide_no_children="0"/>
-  <admin_navigation_entry navigation_id="usips_ncmec_report_list" parent_navigation_id="usips_ncmec_management" display_order="300" link="ncmec-reports" admin_permission_id="usips_ncmec" debug_only="0" development_only="0" hide_no_children="0"/>
+  <admin_navigation_entry navigation_id="usips_ncmec_report" parent_navigation_id="usips_ncmec_management" display_order="300" link="ncmec-reports/" admin_permission_id="usips_ncmec" debug_only="0" development_only="0" hide_no_children="0"/>
 </admin_navigation>

@@ -2,28 +2,30 @@
 
 <xf:form action="{{ link('ncmec/config') }}" class="block" ajax="true">
     <div class="block-container">
-		<div class="block-body">
-			<xf:if is="!empty($xf.option.option_value.username)">
-				<xf:formrow label="{{ phrase('option.usipsNcmecApi') }}" explain="{{ phrase('option_explain.usipsNcmecApi') }}" rowclass="{$rowClass}">
+        <div class="block-body">
+            <xf:if is="!empty($xf.option.option_value.username)">
+                <xf:formrow label="{{ phrase('option.usipsNcmecApi') }}"
+                    explain="{{ phrase('option_explain.usipsNcmecApi') }}" rowclass="{$rowClass}">
 
-					<dl class="pairs pairs--columns pairs--fixedSmall">
-						<dt>{{ phrase('usips_ncmec_environment') }}</dt>
-						<dd>
-							{{ $option.option_value.environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
-						</dd>
-					</dl>
+                    <dl class="pairs pairs--columns pairs--fixedSmall">
+                        <dt>{{ phrase('usips_ncmec_environment') }}</dt>
+                        <dd>
+                            {{ $option.option_value.environment === 'production' ? phrase('usips_ncmec_env_live') :
+                            phrase('usips_ncmec_env_test') }}
+                        </dd>
+                    </dl>
 
-					<dl class="pairs pairs--columns pairs--fixedSmall">
-						<dt>{{ phrase('user_name') }}</dt>
-						<dd>{$option.option_value.username}</dd>
-					</dl>
+                    <dl class="pairs pairs--columns pairs--fixedSmall">
+                        <dt>{{ phrase('user_name') }}</dt>
+                        <dd>{$option.option_value.username}</dd>
+                    </dl>
 
-					<dl class="pairs pairs--columns pairs--fixedSmall">
-						<dt>{{ phrase('password') }}</dt>
-						<dd>********</dd>
-					</dl>
-				</xf:formrow>
-			</xf:if>
+                    <dl class="pairs pairs--columns pairs--fixedSmall">
+                        <dt>{{ phrase('password') }}</dt>
+                        <dd>********</dd>
+                    </dl>
+                </xf:formrow>
+            </xf:if>
 
             <xf:radiorow label="{{ phrase('usips_ncmec_environment') }}" rowtype="radio">
                 <xf:option name="environment" value="test" checked="true">
