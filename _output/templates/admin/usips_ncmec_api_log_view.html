@@ -1,0 +1,102 @@
+<xf:title>{{ phrase('usips_ncmec_report_logs') }}</xf:title>
+
+<div class="block">
+    <div class="block-container">
+        <h2 class="block-header">{{ phrase('details') }}</h2>
+        <div class="block-body">
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>{{ phrase('date') }}</dt>
+                <dd>
+                    <xf:date time="{$log.request_date}" />
+                </dd>
+            </dl>
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>{{ phrase('usips_ncmec_environment') }}</dt>
+                <dd>
+                    {{ $log.environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
+                </dd>
+            </dl>
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>{{ phrase('status') }}</dt>
+                <dd>
+                    <xf:if is="$log.success">
+                        <span class="label label--success">{{ phrase('success') }}</span>
+                        <xf:else />
+                        <span class="label label--accent">Failed</span>
+                    </xf:if>
+                    <xf:if is="$log.response_code">
+                        <div class="u-muted">HTTP {$log.response_code}</div>
+                    </xf:if>
+                </dd>
+            </dl>
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>Method</dt>
+                <dd>{$log.request_method|upper}</dd>
+            </dl>
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>Endpoint / URL</dt>
+                <dd>
+                    <div>{{ $log.request_endpoint ?: $log.request_url }}</div>
+                    <xf:if is="$log.request_endpoint && $log.request_url">
+                        <div class="u-muted">{$log.request_url}</div>
+                    </xf:if>
+                </dd>
+            </dl>
+            <dl class="pairs pairs--rows pairs--rows--fluid">
+                <dt>{{ phrase('usips_ncmec_reporter') }}</dt>
+                <dd>
+                    <xf:if is="$log.User">
+                        <xf:avatar user="{$log.User}" size="xxs" />
+                        <xf:username user="{$log.User}" />
+                        <xf:else />
+                        {{ phrase('n_a') }}
+                    </xf:if>
+                </dd>
+            </dl>
+            <xf:if is="$log.Report">
+                <dl class="pairs pairs--rows pairs--rows--fluid">
+                    <dt>{{ phrase('usips_ncmec_report') }}</dt>
+                    <dd>
+                        <a href="{{ link('ncmec-reports/view', $log.Report) }}" target="_blank" rel="noopener">
+                            {{ phrase('usips_ncmec_report_id') }}: {{ $log.Report.ncmec_report_id ?: phrase('n_a') }}
+                        </a>
+                    </dd>
+                </dl>
+                <xf:if is="$log.Report.Case">
+                    <dl class="pairs pairs--rows pairs--rows--fluid">
+                        <dt>{{ phrase('usips_ncmec_case') }}</dt>
+                        <dd>
+                            <a href="{{ link('ncmec-cases/view', $log.Report.Case) }}" target="_blank" rel="noopener">
+                                {{ $log.Report.Case.title ?: phrase('usips_ncmec_untitled_case') }}
+                            </a>
+                        </dd>
+                    </dl>
+                </xf:if>
+            </xf:if>
+        </div>
+    </div>
+</div>
+
+<div class="block">
+    <div class="block-container">
+        <h2 class="block-header">Response</h2>
+        <div class="block-body">
+            <div class="codeBlock codeBlock--smaller">
+                <pre
+                    class="codeBlock-code"><code>{{ $responseBody !== '' ? $responseBody : ('// ' . phrase('n_a')) }}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="block">
+    <div class="block-container">
+        <h2 class="block-header">Request</h2>
+        <div class="block-body">
+            <div class="codeBlock codeBlock--smaller">
+                <pre
+                    class="codeBlock-code"><code>{{ $requestBody !== '' ? $requestBody : ('// ' . phrase('n_a')) }}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>

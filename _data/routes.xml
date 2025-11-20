@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <routes>
   <route route_type="admin" route_prefix="ncmec" controller="USIPS\NCMEC:Dashboard" context="usips_ncmec_dashboard"/>
+  <route route_type="admin" route_prefix="ncmec-api-logs" format=":int&lt;log_id&gt;/" controller="USIPS\NCMEC:ApiLog"/>
   <route route_type="admin" route_prefix="ncmec-attachment-data" format=":int&lt;data_id,filename&gt;/" controller="USIPS\NCMEC:AttachmentData" context="usips_ncmec_attachments"/>
   <route route_type="admin" route_prefix="ncmec-attachments" format=":int&lt;attachment_id,filename&gt;/" controller="USIPS\NCMEC:Attachment" context="usips_ncmec_attachments"/>
   <route route_type="admin" route_prefix="ncmec-cases" format=":int&lt;case_id,title&gt;/" controller="USIPS\NCMEC:Case" context="usips_ncmec_case"/>

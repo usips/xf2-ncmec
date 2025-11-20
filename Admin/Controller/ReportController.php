@@ -128,13 +128,6 @@ class ReportController extends AbstractController
                 $report->save();
             }
 
-            foreach ($incidents as $incident)
-            {
-                $incident->report_id = $report->report_id;
-                $incident->last_update_date = \XF::$time;
-                $incident->save();
-            }
-
             return $this->redirect($this->buildLink('ncmec-reports/view', $report), XF::phrase('changes_saved'));
         }
 
@@ -149,19 +142,20 @@ class ReportController extends AbstractController
 
     public function actionView(ParameterBag $params)
     {
-        $report = $this->assertReportExists($params->report_id, 'User');
+        $report = $this->assertReportExists($params->report_id, ['User', 'SubjectUser', 'Case']);
 
-        // Manually load TO_MANY relation
-        $incidents = $this->finder('USIPS\NCMEC:Incident')
+        // Gather incidents associated with this report's case/subject
+        $incidents = $this->getIncidentsForReport($report);
+
+        $apiLogs = $this->finder('USIPS\NCMEC:ApiLog')
             ->where('report_id', $report->report_id)
-            ->with('User')
-            ->order('created_date', 'DESC')
+            ->order('request_date', 'DESC')
             ->fetch();
-
-        $report->hydrateRelation('Incidents', $incidents);
 
         $viewParams = [
             'report' => $report,
+            'incidents' => $incidents,
+            'apiLogs' => $apiLogs,
         ];
 
         return $this->view('USIPS\NCMEC:Report\View', 'usips_ncmec_report_view', $viewParams);
@@ -215,10 +209,8 @@ class ReportController extends AbstractController
         $incidentTypeLabels = $apiClient::INCIDENT_TYPE_VALUES;
         $annotationLabels = $apiClient::REPORT_ANNOTATION_LABELS;
 
-        // Load incidents manually
-        $incidents = $this->finder('USIPS\NCMEC:Incident')
-            ->where('report_id', $report->report_id)
-            ->fetch();
+        // Load incidents via case/subject context
+        $incidents = $this->getIncidentsForReport($report);
 
         // Calculate earliest incident date/time from all associated incident content
         $earliestDateTime = null;
@@ -325,5 +317,45 @@ class ReportController extends AbstractController
         }
 
         return null;
+    }
+
+    /**
+     * Fetch incidents relevant to a report based on its case and subject user.
+     */
+    protected function getIncidentsForReport(\USIPS\NCMEC\Entity\Report $report)
+    {
+        if (!$report->case_id)
+        {
+            return $this->finder('USIPS\NCMEC:Incident')
+                ->where('incident_id', 0)
+                ->fetch();
+        }
+
+        $incidentFinder = $this->finder('USIPS\NCMEC:Incident')
+            ->where('case_id', $report->case_id)
+            ->with('User')
+            ->order('created_date', 'DESC');
+
+        if ($report->subject_user_id)
+        {
+            $incidentUsers = $this->finder('USIPS\NCMEC:IncidentUser')
+                ->where('user_id', $report->subject_user_id)
+                ->where('Incident.case_id', $report->case_id)
+                ->fetch();
+
+            $incidentIds = $incidentUsers->pluckNamed('incident_id');
+            $incidentIds = array_unique($incidentIds);
+
+            if (!$incidentIds)
+            {
+                return $this->finder('USIPS\NCMEC:Incident')
+                    ->where('incident_id', 0)
+                    ->fetch();
+            }
+
+            $incidentFinder->where('incident_id', $incidentIds);
+        }
+
+        return $incidentFinder->fetch();
     }
 }

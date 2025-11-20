@@ -13,6 +13,8 @@
     <xf:button href="{{ link('ncmec-incidents/delete', $incident) }}" icon="delete" overlay="true" />
 </xf:pageaction>
 
+<xf:set var="$caseEditable" value="{{ !$incident.case_id || ($incident.Case && $incident.Case.canEdit()) }}" />
+
 <xf:form action="{{ link('ncmec-incidents/update', $incident) }}" ajax="true" class="block">
 
     <div class="block-container">
@@ -27,13 +29,28 @@
                 </xf:if>
             </xf:formrow>
 
-            <xf:selectrow name="case_id" value="{$incident.case_id}" label="{{ phrase('usips_ncmec_case') }}">
-                <xf:option value="0">{{ phrase('none') }}</xf:option>
-                <xf:foreach loop="$availableCases" value="$case">
-                    <xf:option value="{$case.case_id}">{{ $case.title ?: phrase('usips_ncmec_untitled_case') }}
-                    </xf:option>
-                </xf:foreach>
-            </xf:selectrow>
+            <xf:if is="$caseEditable">
+                <xf:selectrow name="case_id" value="{$incident.case_id}" label="{{ phrase('usips_ncmec_case') }}">
+                    <xf:option value="0">{{ phrase('none') }}</xf:option>
+                    <xf:foreach loop="$availableCases" value="$case">
+                        <xf:option value="{$case.case_id}">{{ $case.title ?: phrase('usips_ncmec_untitled_case') }}
+                        </xf:option>
+                    </xf:foreach>
+                </xf:selectrow>
+                <xf:else />
+                <xf:formrow label="{{ phrase('usips_ncmec_case') }}">
+                    <xf:if is="$incident.case_id">
+                        <a href="{{ link('ncmec-cases/view', {'case_id': $incident.case_id}) }}">
+                            {{ $incident.Case ? $incident.Case.title : phrase('usips_ncmec_untitled_case') }}
+                        </a>
+                        <xf:else />
+                        {{ phrase('none') }}
+                    </xf:if>
+                    <div class="formRow-explain">
+                        {{ phrase('usips_ncmec_case_finalized_cannot_edit') }}
+                    </div>
+                </xf:formrow>
+            </xf:if>
 
             <xf:formrow label="{{ phrase('usips_ncmec_associated_users') }}">
                 {{ $counts.users|number }}
@@ -45,7 +62,9 @@
                 {{ $counts.attachments|number }}
             </xf:formrow>
 
-            <xf:submitrow sticky="true" icon="save" />
+            <xf:if is="$caseEditable">
+                <xf:submitrow sticky="true" icon="save" />
+            </xf:if>
         </div>
     </div>
 </xf:form>

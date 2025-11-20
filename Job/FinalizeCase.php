@@ -22,7 +22,7 @@ class FinalizeCase extends AbstractJob
         $case = $this->app->em()->find('USIPS\NCMEC:CaseFile', $this->data['case_id']);
         if (!$case)
         {
-            return JobResult::complete();
+            return $this->complete();
         }
 
         if (!$case->is_finalized)
@@ -62,7 +62,7 @@ class FinalizeCase extends AbstractJob
                 $incident->save();
             }
 
-            return JobResult::complete();
+            return $this->complete();
         }
 
         $userId = $userIds[$this->data['current_user_index']];
@@ -74,7 +74,7 @@ class FinalizeCase extends AbstractJob
             // User missing, skip
             $this->data['current_user_index']++;
             $this->data['state'] = 'init';
-            return JobResult::resume($this->data, $this->getStatusMessage());
+            return $this->resume();
         }
 
         /** @var \USIPS\NCMEC\Service\Report\Submitter $submitter */
@@ -156,7 +156,7 @@ class FinalizeCase extends AbstractJob
 
         if (microtime(true) - $startTime > $maxRunTime)
         {
-            return JobResult::resume($this->data, $this->getStatusMessage());
+            return $this->resume();
         }
 
         // If we are here, we finished a step quickly, loop again immediately

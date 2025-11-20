@@ -403,14 +403,15 @@ class Client extends AbstractService
         $error = curl_error($ch);
         curl_close($ch);
         
-    $success = empty($error) && $httpCode === 200;
+        $success = empty($error) && $httpCode === 200;
 
-    $requestData = ['xml_length' => strlen($xmlBody)];
-    $responseData = $response !== false ? $response : ($error ?: '');
+        // Store full XML body for debugging, not just length
+        $requestData = ['xml' => $xmlBody];
+        $responseData = $response !== false ? $response : ($error ?: '');
 
-    $this->storeLastRequestLogData('POST', $endpoint, $requestData, $httpCode, $responseData, $success);
+        $this->storeLastRequestLogData('POST', $endpoint, $requestData, $httpCode, $responseData, $success);
 
-    $this->logFromLastRequest($success);
+        $this->logFromLastRequest($success);
         
         if ($error)
         {

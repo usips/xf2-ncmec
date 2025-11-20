@@ -28,6 +28,13 @@ class Submitter extends AbstractService
         parent::__construct($app);
         $this->case = $case;
         $this->subject = $subject;
+        
+        // Ensure required relations are loaded
+        $this->case->hydrateRelation('Reporter', $this->case->Reporter);
+        $this->case->hydrateRelation('ReportedPerson', $this->case->ReportedPerson);
+        $this->subject->hydrateRelation('Profile', $this->subject->Profile);
+        $this->subject->hydrateRelation('ConnectedAccounts', $this->subject->ConnectedAccounts);
+        
         $options = $this->app->options()->usipsNcmecApi;
         $this->apiClient = $this->service('USIPS\NCMEC:Api\Client', 
             $options['username'] ?? '', 
@@ -42,7 +49,8 @@ class Submitter extends AbstractService
         {
             /** @var \XF\Repository\Banning $banRepo */
             $banRepo = $this->app->repository('XF:Banning');
-            $banRepo->banUser($this->subject, 0, 'NCMEC Report', 'permanent');
+            $error = null;
+            $banRepo->banUser($this->subject, 0, 'NCMEC Report', $error);
         }
     }
 
@@ -268,15 +276,59 @@ class Submitter extends AbstractService
     {
         $incidentType = Client::INCIDENT_TYPE_VALUES[$this->case->incident_type] ?? $this->case->incident_type;
         
+        // Validate incident type is not empty
+        if (empty($incidentType))
+        {
+            throw new \Exception("Case incident_type is required but was empty. Case ID: {$this->case->case_id}");
+        }
+        
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><report xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://report.cybertip.org/ispws/xsd"></report>');
         
-        // Incident Summary
+        // ===== INCIDENT SUMMARY (required, first) =====
+        $this->buildIncidentSummary($xml);
+
+        // ===== INTERNET DETAILS (optional, after incidentSummary, before reporter per XSD) =====
+        $this->buildInternetDetails($xml);
+
+        // ===== REPORTER (required) =====
+        $this->buildReporter($xml);
+
+        // ===== PERSON OR USER REPORTED (optional, after reporter) =====
+        $this->buildPersonOrUserReported($xml);
+
+        // ===== ADDITIONAL INFO (optional, last) =====
+        if (!empty($this->case->additional_info))
+        {
+            $xml->addChild('additionalInfo', htmlspecialchars($this->case->additional_info));
+        }
+
+        $xmlString = $xml->asXML();
+        
+        // Validate XML against XSD if available
+        $this->validateXml($xmlString);
+        
+        return $xmlString;
+    }
+    
+    /**
+     * Build incidentSummary section
+     */
+    protected function buildIncidentSummary(\SimpleXMLElement $xml): void
+    {
+        $incidentType = Client::INCIDENT_TYPE_VALUES[$this->case->incident_type] ?? $this->case->incident_type;
+        
         $summary = $xml->addChild('incidentSummary');
         $summary->addChild('incidentType', htmlspecialchars($incidentType));
-        $summary->addChild('incidentDateTime', gmdate('c', $this->case->created_date));
+        
+        // Optional: platform
+        $options = $this->app->options();
+        if (!empty($options->boardTitle))
+        {
+            $summary->addChild('platform', htmlspecialchars($options->boardTitle));
+        }
 
-        // Annotations
-        if ($this->case->report_annotations)
+        // Report annotations (optional)
+        if ($this->case->report_annotations && !empty($this->case->report_annotations))
         {
             $annotations = $summary->addChild('reportAnnotations');
             foreach ($this->case->report_annotations as $annotation)
@@ -286,55 +338,482 @@ class Submitter extends AbstractService
             }
         }
 
-        // Reporter
+        // Incident date/time (required)
+        $summary->addChild('incidentDateTime', gmdate('c', $this->case->created_date));
+        
+        // Optional description
+        if (!empty($this->case->incident_date_time_desc))
+        {
+            $summary->addChild('incidentDateTimeDescription', htmlspecialchars($this->case->incident_date_time_desc));
+        }
+    }
+    
+    /**
+     * Build internetDetails section with all incident-related URLs
+     */
+    protected function buildInternetDetails(\SimpleXMLElement $xml): void
+    {
+        // Collect all web page incidents from case incidents
+        $incidents = $this->finder('USIPS\NCMEC:Incident')
+            ->where('case_id', $this->case->case_id)
+            ->fetch();
+            
+        foreach ($incidents as $incident)
+        {
+            // Get content URLs
+            $contentItems = $this->finder('USIPS\NCMEC:IncidentContent')
+                ->where('incident_id', $incident->incident_id)
+                ->fetch();
+                
+            foreach ($contentItems as $contentItem)
+            {
+                $entity = $contentItem->getContent();
+                if ($entity && method_exists($entity, 'getContentUrl'))
+                {
+                    $internetDetails = $xml->addChild('internetDetails');
+                    $webPage = $internetDetails->addChild('webPageIncident');
+                    $webPage->addChild('url', htmlspecialchars($entity->getContentUrl(true)));
+                    
+                    // Add upload date if available
+                    if (isset($entity->post_date))
+                    {
+                        $webPage->addChild('uploadDateTime', gmdate('c', $entity->post_date));
+                    }
+                }
+            }
+            
+            // Get user profile URLs
+            $userItems = $this->finder('USIPS\NCMEC:IncidentUser')
+                ->where('incident_id', $incident->incident_id)
+                ->with('User', true)
+                ->fetch();
+                
+            foreach ($userItems as $userItem)
+            {
+                if ($userItem->User)
+                {
+                    $internetDetails = $xml->addChild('internetDetails');
+                    $webPage = $internetDetails->addChild('webPageIncident');
+                    
+                    $router = $this->app->router('public');
+                    $profileUrl = $router->buildLink('canonical:members', $userItem->User);
+                    $webPage->addChild('url', htmlspecialchars($profileUrl));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Build reporter section
+     */
+    protected function buildReporter(\SimpleXMLElement $xml): void
+    {
         $reporter = $xml->addChild('reporter');
+        
+        // Reporting person (required)
         $reportingPerson = $reporter->addChild('reportingPerson');
         
-        $reporterPerson = $this->case->Reporter;
+        $options = $this->app->options();
+        $reporterPersonId = $options->usipsNcmecReporterContactPerson ?? 0;
+        $reporterPerson = $reporterPersonId ? $this->em()->find('USIPS\NCMEC:Person', $reporterPersonId) : null;
+        
+        if (!$reporterPerson)
+        {
+            $reporterPerson = $this->case->Reporter;
+        }
+        
         if ($reporterPerson)
         {
-            if ($reporterPerson->first_name) $reportingPerson->addChild('firstName', htmlspecialchars($reporterPerson->first_name));
-            if ($reporterPerson->last_name) $reportingPerson->addChild('lastName', htmlspecialchars($reporterPerson->last_name));
-            if ($reporterPerson->emails) $reportingPerson->addChild('email', htmlspecialchars($reporterPerson->emails));
+            $this->addPersonData($reportingPerson, $reporterPerson, 'person');
         }
         else
         {
-            $reportingPerson->addChild('email', htmlspecialchars($this->app->options()->contactEmailAddress));
+            // Fallback: use contact email
+            $email = $reportingPerson->addChild('email');
+            $email[0] = htmlspecialchars($options->contactEmailAddress ?? 'noreply@example.com');
         }
-
-        // Person Or User Reported
+        
+        // Contact person (optional, different from reporting person)
+        $contactPersonId = $options->usipsNcmecReporterContactPerson ?? 0;
+        if ($contactPersonId && (!$reporterPerson || $reporterPerson->person_id != $contactPersonId))
+        {
+            $contactPersonEntity = $this->em()->find('USIPS\NCMEC:Person', $contactPersonId);
+            if ($contactPersonEntity)
+            {
+                $contactPerson = $reporter->addChild('contactPerson');
+                $this->addPersonData($contactPerson, $contactPersonEntity, 'contactPerson');
+            }
+        }
+        
+        // Company template (optional)
+        if (!empty($options->usipsNcmecReporterCompanyTemplate))
+        {
+            $reporter->addChild('companyTemplate', htmlspecialchars($options->usipsNcmecReporterCompanyTemplate));
+        }
+        
+        // Terms of Service URL (optional)
+        $router = $this->app->router('public');
+        $tosUrl = $router->buildLink('canonical:help/terms');
+        if ($tosUrl)
+        {
+            $reporter->addChild('termsOfService', htmlspecialchars($tosUrl));
+        }
+        
+        // Legal URL (optional) - link to help/privacy or similar
+        $legalUrl = $router->buildLink('canonical:help/privacy-policy');
+        if ($legalUrl)
+        {
+            $reporter->addChild('legalURL', htmlspecialchars($legalUrl));
+        }
+    }
+    
+    /**
+     * Build personOrUserReported section
+     */
+    protected function buildPersonOrUserReported(\SimpleXMLElement $xml): void
+    {
         $personReported = $xml->addChild('personOrUserReported');
-        $personReported->addChild('screenName', htmlspecialchars($this->subject->username));
-        if ($this->subject->email)
+        
+        // Person info if available from case
+        if ($this->case->reported_person_id && $this->case->ReportedPerson)
         {
-            $personReported->addChild('email', htmlspecialchars($this->subject->email));
+            $personElement = $personReported->addChild('personOrUserReportedPerson');
+            $this->addPersonData($personElement, $this->case->ReportedPerson, 'person');
         }
         
-        // IP Capture for User (Registration IP)
-        $regIp = $this->finder('XF:Ip')
-            ->where('user_id', $this->subject->user_id)
-            ->where('action', 'register')
-            ->fetchOne();
+        // ESP Identifier (user ID)
+        $personReported->addChild('espIdentifier', (string)$this->subject->user_id);
+        
+        // ESP Service
+        $options = $this->app->options();
+        if (!empty($options->boardTitle))
+        {
+            $personReported->addChild('espService', htmlspecialchars($options->boardTitle));
+        }
+        
+        // Screen name (username)
+        $screenName = $personReported->addChild('screenName');
+        $screenName[0] = htmlspecialchars($this->subject->username);
+        
+        // Display name (if different from username)
+        if ($this->subject->Profile && !empty($this->subject->Profile->custom_title))
+        {
+            $personReported->addChild('displayName', htmlspecialchars($this->subject->Profile->custom_title));
+        }
+        
+        // Profile URL
+        $router = $this->app->router('public');
+        $profileUrl = $router->buildLink('canonical:members', $this->subject);
+        $personReported->addChild('profileUrl', htmlspecialchars($profileUrl));
+        
+        // Profile Bio (about/signature)
+        if ($this->subject->Profile)
+        {
+            $bio = '';
+            if (!empty($this->subject->Profile->about))
+            {
+                $bio .= "About:\n" . $this->subject->Profile->about;
+            }
+            if (!empty($this->subject->Profile->signature))
+            {
+                if ($bio) $bio .= "\n\n";
+                $bio .= "Signature:\n" . $this->subject->Profile->signature;
+            }
+            if ($bio)
+            {
+                $personReported->addChild('profileBio', htmlspecialchars($bio));
+            }
+        }
+        
+        // IP Capture Events - all IPs associated with this user
+        $this->addIpCaptureEvents($personReported, $this->subject->user_id);
+        
+        // Account disabled status
+        if ($this->subject->is_banned)
+        {
+            $ban = $this->em()->find('XF:UserBan', $this->subject->user_id);
+            if ($ban)
+            {
+                if ($ban->end_date == 0)
+                {
+                    // Permanent ban
+                    $accountDisabled = $personReported->addChild('accountPermanentlyDisabled');
+                    $accountDisabled->addChild('dateTime', gmdate('c', $ban->ban_date));
+                    if (!empty($ban->user_reason))
+                    {
+                        $accountDisabled->addChild('reason', htmlspecialchars($ban->user_reason));
+                    }
+                }
+                else
+                {
+                    // Temporary ban
+                    $accountDisabled = $personReported->addChild('accountTemporarilyDisabled');
+                    $accountDisabled->addChild('dateTime', gmdate('c', $ban->ban_date));
+                    if (!empty($ban->user_reason))
+                    {
+                        $accountDisabled->addChild('reason', htmlspecialchars($ban->user_reason));
+                    }
+                }
+            }
+        }
+        
+        // Associated accounts (connected accounts)
+        if ($this->subject->ConnectedAccounts && $this->subject->ConnectedAccounts->count() > 0)
+        {
+            foreach ($this->subject->ConnectedAccounts as $connectedAccount)
+            {
+                $associatedAccount = $personReported->addChild('associatedAccount');
+                $associatedAccount->addChild('accountType', 'Other');
+                $associatedAccount->addChild('accountDisplayName', htmlspecialchars($connectedAccount->provider));
+                if (!empty($connectedAccount->provider_key))
+                {
+                    $associatedAccount->addChild('accountIdentifier', htmlspecialchars($connectedAccount->provider_key));
+                }
+            }
+        }
+        
+        // Additional info
+        if (!empty($this->case->reported_additional_info))
+        {
+            $personReported->addChild('additionalInfo', htmlspecialchars($this->case->reported_additional_info));
+        }
+    }
+    
+    /**
+     * Add person data to XML element
+     * 
+     * @param \SimpleXMLElement $element Parent XML element
+     * @param \USIPS\NCMEC\Entity\Person $person Person entity
+     * @param string $type 'person' or 'contactPerson' (contactPerson excludes age/DOB)
+     */
+    protected function addPersonData(\SimpleXMLElement $element, $person, string $type = 'person'): void
+    {
+        if (!empty($person->first_name))
+        {
+            $element->addChild('firstName', htmlspecialchars($person->first_name));
+        }
+        
+        if (!empty($person->last_name))
+        {
+            $element->addChild('lastName', htmlspecialchars($person->last_name));
+        }
+        
+        // Phones (can be multiple, comma-separated or JSON)
+        if (!empty($person->phones))
+        {
+            $phones = is_array($person->phones) ? $person->phones : explode(',', $person->phones);
+            foreach ($phones as $phoneStr)
+            {
+                $phoneStr = trim($phoneStr);
+                if ($phoneStr)
+                {
+                    $phone = $element->addChild('phone');
+                    $phone->addChild('number', htmlspecialchars($phoneStr));
+                }
+            }
+        }
+        
+        // Emails (can be multiple, comma-separated or JSON)
+        if (!empty($person->emails))
+        {
+            $emails = is_array($person->emails) ? $person->emails : explode(',', $person->emails);
+            foreach ($emails as $emailStr)
+            {
+                $emailStr = trim($emailStr);
+                if ($emailStr)
+                {
+                    $email = $element->addChild('email');
+                    $email[0] = htmlspecialchars($emailStr);
+                }
+            }
+        }
+        
+        // Addresses (if available)
+        if (!empty($person->addresses))
+        {
+            // Parse address data if it's JSON or structured
+            $addresses = is_array($person->addresses) ? $person->addresses : [$person->addresses];
+            foreach ($addresses as $addressData)
+            {
+                if (is_string($addressData))
+                {
+                    $address = $element->addChild('address');
+                    $address->addChild('address', htmlspecialchars($addressData));
+                }
+            }
+        }
+        
+        // Age and DOB only for 'person' type, not 'contactPerson'
+        if ($type === 'person')
+        {
+            if ($person->age !== null)
+            {
+                $element->addChild('age', (string)$person->age);
+            }
             
-        if ($regIp)
-        {
-            $ipEvent = $personReported->addChild('ipCaptureEvent');
-            $ipEvent->addChild('ipAddress', \XF\Util\Ip::binaryToString($regIp->ip));
-            $ipEvent->addChild('eventName', 'Registration');
-            $ipEvent->addChild('dateTime', gmdate('c', $regIp->log_date));
+            if (!empty($person->date_of_birth))
+            {
+                $element->addChild('dateOfBirth', htmlspecialchars($person->date_of_birth));
+            }
         }
-
-        // Internet Details (URLs)
-        $internetDetails = $xml->addChild('internetDetails');
+    }
+    
+    /**
+     * Add IP capture events for a user
+     * 
+     * @param \SimpleXMLElement $element Parent XML element
+     * @param int $userId User ID
+     */
+    protected function addIpCaptureEvents(\SimpleXMLElement $element, int $userId): void
+    {
+        // Get all IPs for this user, grouped by action/context
+        $ipLogs = $this->finder('XF:Ip')
+            ->where('user_id', $userId)
+            ->order('log_date', 'DESC')
+            ->limit(50) // Limit to most recent 50 to avoid excessive data
+            ->fetch();
+            
+        $addedIps = []; // Track IPs we've already added to avoid duplicates
         
-        $contentUrls = $this->getIncidentContentUrls();
-        foreach ($contentUrls as $url)
+        foreach ($ipLogs as $ipLog)
         {
-            $webPage = $internetDetails->addChild('webPageIncident');
-            $webPage->addChild('url', htmlspecialchars($url));
+            $ipString = \XF\Util\Ip::binaryToString($ipLog->ip);
+            $key = $ipString . '_' . $ipLog->action;
+            
+            // Avoid duplicate IP/action combinations
+            if (isset($addedIps[$key]))
+            {
+                continue;
+            }
+            $addedIps[$key] = true;
+            
+            $ipEvent = $element->addChild('ipCaptureEvent');
+            $ipEvent->addChild('ipAddress', $ipString);
+            
+            // Map XenForo actions to descriptive event names
+            $eventName = $this->getIpEventName($ipLog->action, $ipLog->content_type);
+            $ipEvent->addChild('eventName', htmlspecialchars($eventName));
+            $ipEvent->addChild('dateTime', gmdate('c', $ipLog->log_date));
         }
-
-        return $xml->asXML();
+    }
+    
+    /**
+     * Get human-readable event name for IP log
+     * 
+     * @param string $action XenForo action
+     * @param string|null $contentType Content type if applicable
+     * @return string Event name
+     */
+    protected function getIpEventName(string $action, ?string $contentType): string
+    {
+        $map = [
+            'register' => 'Registration',
+            'login' => 'Login',
+            'post' => 'Content Post',
+            'thread' => 'Thread Creation',
+            'profile_post' => 'Profile Post',
+            'conversation_message' => 'Private Message',
+        ];
+        
+        if (isset($map[$action]))
+        {
+            return $map[$action];
+        }
+        
+        if ($contentType)
+        {
+            return ucfirst(str_replace('_', ' ', $contentType)) . ' - ' . ucfirst($action);
+        }
+        
+        return ucfirst(str_replace('_', ' ', $action));
+    }
+    
+    /**
+     * Validate XML against NCMEC XSD schema
+     * 
+     * @param string $xmlString XML to validate
+     * @throws \Exception if validation fails
+     */
+    protected function validateXml(string $xmlString): void
+    {
+        // Get cached XSD or download if needed
+        $xsdContent = $this->getCachedXsd();
+        
+        if (!$xsdContent)
+        {
+            // XSD not available, skip validation (will rely on API validation)
+            return;
+        }
+        
+        // Create DOMDocument for validation
+        $dom = new \DOMDocument();
+        $dom->loadXML($xmlString);
+        
+        // Create temporary file for XSD
+        $xsdFile = \XF\Util\File::getTempFile();
+        file_put_contents($xsdFile, $xsdContent);
+        
+        try
+        {
+            // Enable user error handling for detailed validation messages
+            libxml_use_internal_errors(true);
+            libxml_clear_errors();
+            
+            if (!$dom->schemaValidate($xsdFile))
+            {
+                $errors = libxml_get_errors();
+                $errorMessages = [];
+                
+                foreach ($errors as $error)
+                {
+                    $errorMessages[] = sprintf(
+                        "Line %d: %s",
+                        $error->line,
+                        trim($error->message)
+                    );
+                }
+                
+                libxml_clear_errors();
+                
+                throw new \Exception(
+                    "XML validation failed:\n" . implode("\n", $errorMessages)
+                );
+            }
+            
+            libxml_clear_errors();
+        }
+        finally
+        {
+            @unlink($xsdFile);
+        }
+    }
+    
+    /**
+     * Get cached XSD or download if needed
+     * Cache expires after 24 hours
+     * 
+     * @return string|null XSD content or null if unavailable
+     */
+    protected function getCachedXsd(): ?string
+    {
+        $cacheKey = 'usipsNcmecXsd_' . $this->apiClient->getEnvironment();
+        $cache = $this->app->cache();
+        
+        $xsdContent = $cache->fetch($cacheKey);
+        
+        if ($xsdContent === false)
+        {
+            // Download XSD
+            $xsdContent = $this->apiClient->downloadXsd();
+            
+            if ($xsdContent)
+            {
+                // Cache for 24 hours
+                $cache->save($cacheKey, $xsdContent, 86400);
+            }
+        }
+        
+        return $xsdContent ?: null;
     }
 
     protected function buildFileDetailsXml(ReportFile $reportFile): string
@@ -356,28 +835,11 @@ class Submitter extends AbstractService
             }
         }
 
-        return $xml->asXML();
-    }
-
-    protected function getIncidentContentUrls(): array
-    {
-        $urls = [];
+        $xmlString = $xml->asXML();
         
-        $incidentContents = $this->finder('USIPS\NCMEC:IncidentContent')
-            ->where('user_id', $this->subject->user_id)
-            ->with('Incident', true)
-            ->where('Incident.case_id', $this->case->case_id)
-            ->fetch();
-            
-        foreach ($incidentContents as $content)
-        {
-            $entity = $content->getContent();
-            if ($entity && method_exists($entity, 'getContentUrl'))
-            {
-                $urls[] = $entity->getContentUrl(true);
-            }
-        }
+        // Validate XML against XSD if available
+        $this->validateXml($xmlString);
         
-        return array_unique($urls);
+        return $xmlString;
     }
 }

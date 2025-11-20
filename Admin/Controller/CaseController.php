@@ -24,9 +24,9 @@ class CaseController extends AbstractController
     {
         $case = $this->assertCaseExists($params->case_id);
 
-        if ($case->is_finalized)
+        if (!$case->canEdit($error))
         {
-            return $this->error(\XF::phrase('usips_ncmec_case_finalized_cannot_edit'));
+            return $this->error($error);
         }
 
         if ($this->isPost())
@@ -276,9 +276,9 @@ class CaseController extends AbstractController
     {
         $case = $this->assertCaseExists($params->case_id);
 
-        if ($case->is_finalized)
+        if (!$case->canEdit($error))
         {
-            return $this->error(\XF::phrase('usips_ncmec_case_finalized_cannot_edit'));
+            return $this->error($error);
         }
 
         if ($this->isPost())
@@ -288,13 +288,13 @@ class CaseController extends AbstractController
                 return $this->error(\XF::phrase('usips_ncmec_please_confirm_finalization'));
             }
 
-            $this->app->jobManager()->enqueueUnique(
+            $jobId = $this->app->jobManager()->enqueueUnique(
                 'usipsNcmecFinalize' . $case->case_id,
                 'USIPS\NCMEC:FinalizeCase',
                 ['case_id' => $case->case_id]
             );
 
-            return $this->redirect($this->buildLink('ncmec-cases/view', $case));
+            return $this->redirect($this->buildLink('tools/run-job', null, ['only_id' => $jobId]));
         }
 
         $viewParams = [
@@ -309,7 +309,7 @@ class CaseController extends AbstractController
     {
         $case = $this->assertCaseExists($params->case_id, ['User']);
 
-        if (!$case->is_finalized)
+        if ($case->canEdit())
         {
             return $this->redirect($this->buildLink('ncmec-cases/edit', $case));
         }
@@ -374,5 +374,79 @@ class CaseController extends AbstractController
         ];
 
         return $this->view('USIPS\NCMEC:Case\View', 'usips_ncmec_case_view', $viewParams);
+    }
+    
+    /**
+     * Test XSD download and XML validation
+     * Debug action to verify XSD functionality
+     */
+    public function actionTestXsd()
+    {
+        $options = $this->app->options()->usipsNcmecApi;
+        
+        /** @var Client $apiClient */
+        $apiClient = $this->service('USIPS\NCMEC:Api\Client',
+            $options['username'] ?? '',
+            $options['password'] ?? '',
+            $options['environment'] ?? 'test'
+        );
+        
+        // Download XSD
+        $xsdContent = $apiClient->downloadXsd();
+        
+        if (!$xsdContent)
+        {
+            return $this->error('Failed to download XSD from NCMEC API');
+        }
+        
+        // Test XML validation with a simple valid XML
+        $testXml = '<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://report.cybertip.org/ispws/xsd">
+    <incidentSummary>
+        <incidentType>Child Pornography (possession, manufacture, and distribution)</incidentType>
+        <incidentDateTime>2025-01-01T12:00:00Z</incidentDateTime>
+    </incidentSummary>
+    <reporter>
+        <reportingPerson>
+            <email>test@example.com</email>
+        </reportingPerson>
+    </reporter>
+</report>';
+        
+        // Validate
+        $dom = new \DOMDocument();
+        $dom->loadXML($testXml);
+        
+        $xsdFile = \XF\Util\File::getTempFile();
+        file_put_contents($xsdFile, $xsdContent);
+        
+        try
+        {
+            libxml_use_internal_errors(true);
+            libxml_clear_errors();
+            
+            $valid = $dom->schemaValidate($xsdFile);
+            
+            $errors = libxml_get_errors();
+            $errorMessages = array_map(function($error) {
+                return "Line {$error->line}: " . trim($error->message);
+            }, $errors);
+            
+            libxml_clear_errors();
+            
+            $message = "XSD Downloaded: " . strlen($xsdContent) . " bytes\n\n";
+            $message .= "Validation Result: " . ($valid ? "VALID" : "INVALID") . "\n\n";
+            
+            if (!empty($errorMessages))
+            {
+                $message .= "Errors:\n" . implode("\n", $errorMessages);
+            }
+            
+            return $this->message($message);
+        }
+        finally
+        {
+            @unlink($xsdFile);
+        }
     }
 }

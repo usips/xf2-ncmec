@@ -9,6 +9,11 @@
         "version_string": "1.0.0",
         "hash": "a23072071134a42fb6d1a41db0743ccc"
     },
+    "admin/usips_ncmec_api_log_view.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "d5f1dbdca5851b1b281e3cf2ad014082"
+    },
     "admin/usips_ncmec_attachment_list.html": {
         "version_id": 0,
         "version_string": "1.0.0",
@@ -42,7 +47,7 @@
     "admin/usips_ncmec_case_view.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "47c17fd23bd3aac61c3f63a93c5f6a51"
+        "hash": "781155963aefe2d48f10b833387d9ca0"
     },
     "admin/usips_ncmec_config.html": {
         "version_id": 0,
@@ -107,7 +112,7 @@
     "admin/usips_ncmec_incident_view.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "152c04d015aa61044561b75a8d9d46cc"
+        "hash": "a9642bda00d1b094955576ae58603654"
     },
     "admin/usips_ncmec_macros.html": {
         "version_id": 0,
@@ -152,7 +157,7 @@
     "admin/usips_ncmec_report_view.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "cd23b96049554fb66d4184623d5a3770"
+        "hash": "a9880228eeb5d71d1193a41cfeebbc5d"
     },
     "admin/usips_ncmec_user_batch_update_confirm.html": {
         "version_id": 0,

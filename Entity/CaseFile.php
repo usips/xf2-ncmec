@@ -33,6 +33,33 @@ use XF\Mvc\Entity\Structure;
 class CaseFile extends Entity
 {
     /**
+     * Determines if this case can still be edited.
+     *
+     * @param null|string $error
+     * @param \XF\Entity\User|null $user
+     *
+     * @return bool
+     */
+    public function canEdit(&$error = null, \XF\Entity\User $user = null): bool
+    {
+        $user = $user ?: \XF::visitor();
+
+        if (!$user || !$user->hasAdminPermission('usips_ncmec'))
+        {
+            $error = \XF::phrase('no_permission');
+            return false;
+        }
+
+        if ($this->is_finalized || $this->is_finished)
+        {
+            $error = \XF::phrase('usips_ncmec_case_finalized_cannot_edit');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Check if a value exists in the report annotations array
      *
      * @param string $value The annotation value to check
