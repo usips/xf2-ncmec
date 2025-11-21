@@ -174,7 +174,8 @@
             <dl class="pairs pairs--rows pairs--rows--fluid">
                 <dt>{{ phrase('usips_ncmec_environment') }}</dt>
                 <dd>
-                    {{ $log.environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
+                    {{ $log.environment === 'production' ? phrase('usips_ncmec_env_live') :
+                    phrase('usips_ncmec_env_test') }}
                 </dd>
             </dl>
             <dl class="pairs pairs--rows pairs--rows--fluid">
@@ -487,7 +488,7 @@
                 {{ phrase('usips_ncmec_finalize_case_confirm_text', {'title': $case.title}) }}
             </xf:inforow>
 
-            <xf:if is="$apiEnvironment == 'prod' OR $apiEnvironment == 'production' OR $apiEnvironment == 'live'">
+            <xf:if is="$apiEnvironment == 'production'">
                 <div class="block-rowMessage block-rowMessage--error block-rowMessage--iconFormat">
                     <strong>{{ phrase('usips_ncmec_environment_warning') }}:</strong> {{
                     phrase('usips_ncmec_environment_live') }}
@@ -837,7 +838,7 @@
 	<div class="blockMessage blockMessage--important blockMessage--iconic">
 		{{ phrase('usips_ncmec_api_not_configured') }}
 	</div>
-<xf:elseif is="$connectionError" />
+	<xf:elseif is="$connectionError" />
 	<div class="blockMessage blockMessage--error blockMessage--iconic">
 		{$connectionError}
 	</div>
@@ -853,7 +854,8 @@
 
 			<xf:if is="$apiConfigured">
 				<xf:formrow label="{{ phrase('usips_ncmec_environment') }}">
-					{{ $environment === 'live' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test') }}
+					{{ $environment === 'production' ? phrase('usips_ncmec_env_live') : phrase('usips_ncmec_env_test')
+					}}
 				</xf:formrow>
 			</xf:if>
 		</div>
@@ -885,9 +887,11 @@
 	</div>
 </div>
 
-<xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" arg-nav="{{ false }}" arg-header="{{ true }}" />
+<xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" arg-nav="{{ false }}"
+	arg-header="{{ true }}" />
 
-<xf:macro id="usips_ncmec_macros::report_list_block" arg-incidents="{$reports}" arg-nav="{{ false }}" arg-header="{{ true }}" />]]></template>
+<xf:macro id="usips_ncmec_macros::report_list_block" arg-incidents="{$reports}" arg-nav="{{ false }}"
+	arg-header="{{ true }}" />]]></template>
   <template type="admin" title="usips_ncmec_incident_assign_case" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_assign_case') }}</xf:title>
 
 <xf:form action="{{ link('ncmec-incidents/assign-case') }}" ajax="true" class="block">
@@ -1566,7 +1570,7 @@
 				<xf:cell>
 					<xf:if is="$log.environment == 'test'">
 						<span class="label label--orange">{{ phrase('usips_ncmec_test') }}</span>
-						<xf:elseif is="$log.environment == 'live'" />
+						<xf:elseif is="$log.environment == 'production'" />
 						<span class="label label--red">{{ phrase('usips_ncmec_live') }}</span>
 						<xf:else />
 						{$log.environment}

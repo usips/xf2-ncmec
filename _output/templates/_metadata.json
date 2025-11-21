@@ -17,7 +17,7 @@
     "admin/usips_ncmec_api_log_view.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "d5f1dbdca5851b1b281e3cf2ad014082"
+        "hash": "a7083fdef88167c95e7e32f3079d38bc"
     },
     "admin/usips_ncmec_attachment_list.html": {
         "version_id": 0,
@@ -42,7 +42,7 @@
     "admin/usips_ncmec_case_finalize.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "655d5dff7364847f267a96110b8816e7"
+        "hash": "e67a5424d94e598dd29fadf109d88ccb"
     },
     "admin/usips_ncmec_case_list.html": {
         "version_id": 0,

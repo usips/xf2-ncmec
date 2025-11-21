@@ -383,7 +383,7 @@ class CaseController extends AbstractController
 
                 $viewParams = [
                     'case' => $case,
-                    'apiEnvironment' => $this->app->options()->usipsNcmecApi['environment'] ?? 'test'
+                    'apiEnvironment' => !empty($this->app->options()->usipsNcmecApi['environment']) ? $this->app->options()->usipsNcmecApi['environment'] : 'test'
                 ];
 
                 return $this->view('USIPS\NCMEC:Case\Finalize', 'usips_ncmec_case_finalize', $viewParams);
@@ -392,7 +392,7 @@ class CaseController extends AbstractController
 
         $viewParams = [
             'case' => $case,
-            'apiEnvironment' => $this->app->options()->usipsNcmecApi['environment'] ?? 'test'
+            'apiEnvironment' => !empty($this->app->options()->usipsNcmecApi['environment']) ? $this->app->options()->usipsNcmecApi['environment'] : 'test'
         ];
 
         return $this->view('USIPS\NCMEC:Case\Finalize', 'usips_ncmec_case_finalize', $viewParams);
@@ -488,7 +488,7 @@ class CaseController extends AbstractController
         $apiClient = $this->service('USIPS\NCMEC:Api\Client',
             $options['username'] ?? '',
             $options['password'] ?? '',
-            $options['environment'] ?? 'test'
+            !empty($options['environment']) ? $options['environment'] : 'test'
         );
         
         // Download XSD

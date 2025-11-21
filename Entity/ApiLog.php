@@ -45,7 +45,7 @@ class ApiLog extends Entity
             'request_data' => ['type' => self::JSON_ARRAY, 'default' => []],
             'response_code' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
             'response_data' => ['type' => self::STR, 'default' => ''],
-            'environment' => ['type' => self::STR, 'maxLength' => 20, 'default' => ''],
+            'environment' => ['type' => self::STR, 'maxLength' => 20, 'default' => 'test', 'allowedValues' => ['test', 'production']],
             'success' => ['type' => self::BOOL, 'default' => false],
         ];
         $structure->relations = [

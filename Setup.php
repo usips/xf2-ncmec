@@ -144,7 +144,7 @@ class Setup extends AbstractSetup
             $table->addColumn('request_data', 'mediumblob');  // JSON serialized request data (NO file data)
             $table->addColumn('response_code', 'int')->nullable();  // HTTP response code
             $table->addColumn('response_data', 'mediumblob');  // XML/text response from NCMEC
-            $table->addColumn('environment', 'varchar', 20);  // test, live
+            $table->addColumn('environment', 'enum', ['test', 'production'])->setDefault('test');
             $table->addColumn('success', 'tinyint', 1)->setDefault(0);  // Whether the API call succeeded
             $table->addPrimaryKey('log_id');
             $table->addKey(['report_id']);

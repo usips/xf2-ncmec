@@ -39,7 +39,7 @@ class Submitter extends AbstractService
         $this->apiClient = $this->service('USIPS\NCMEC:Api\Client', 
             $options['username'] ?? '', 
             $options['password'] ?? '',
-            $options['environment'] ?? 'test'
+            !empty($options['environment']) ? $options['environment'] : 'test'
         );
     }
 

@@ -51,7 +51,8 @@ class Configurer extends AbstractService
      */
     public function getEnvironment(): string
     {
-        return $this->config['environment'] ?? self::ENVIRONMENT_TEST;
+        $env = $this->config['environment'] ?? '';
+        return !empty($env) ? $env : self::ENVIRONMENT_TEST;
     }
 
     /**
