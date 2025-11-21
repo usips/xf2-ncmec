@@ -673,34 +673,46 @@ class Submitter extends AbstractService
      */
     protected function addIpCaptureEvents(\SimpleXMLElement $element, int $userId): void
     {
-        // Get all IPs for this user, grouped by action/context
-        $ipLogs = $this->finder('XF:Ip')
-            ->where('user_id', $userId)
-            ->order('log_date', 'DESC')
-            ->limit(50) // Limit to most recent 50 to avoid excessive data
-            ->fetch();
-            
+        $page = 1;
+        $perPage = 500;
         $addedIps = []; // Track IPs we've already added to avoid duplicates
-        
-        foreach ($ipLogs as $ipLog)
+
+        while (true)
         {
-            $ipString = \XF\Util\Ip::binaryToString($ipLog->ip);
-            $key = $ipString . '_' . $ipLog->action;
-            
-            // Avoid duplicate IP/action combinations
-            if (isset($addedIps[$key]))
+            // Get IPs for this user, grouped by action/context
+            $ipLogs = $this->finder('XF:Ip')
+                ->where('user_id', $userId)
+                ->order('log_date', 'DESC')
+                ->limitByPage($page, $perPage)
+                ->fetch();
+
+            if (!$ipLogs->count())
             {
-                continue;
+                break;
             }
-            $addedIps[$key] = true;
             
-            $ipEvent = $element->addChild('ipCaptureEvent');
-            $ipEvent->addChild('ipAddress', $ipString);
-            
-            // Map XenForo actions to descriptive event names
-            $eventName = $this->getIpEventName($ipLog->action, $ipLog->content_type);
-            $ipEvent->addChild('eventName', htmlspecialchars($eventName));
-            $ipEvent->addChild('dateTime', gmdate('c', $ipLog->log_date));
+            foreach ($ipLogs as $ipLog)
+            {
+                $ipString = \XF\Util\Ip::binaryToString($ipLog->ip);
+                $key = $ipString . '_' . $ipLog->action;
+                
+                // Avoid duplicate IP/action combinations
+                if (isset($addedIps[$key]))
+                {
+                    continue;
+                }
+                $addedIps[$key] = true;
+                
+                $ipEvent = $element->addChild('ipCaptureEvent');
+                $ipEvent->addChild('ipAddress', $ipString);
+                
+                // Map XenForo actions to descriptive event names
+                $eventName = $this->getIpEventName($ipLog->action, $ipLog->content_type);
+                $ipEvent->addChild('eventName', htmlspecialchars($eventName));
+                $ipEvent->addChild('dateTime', gmdate('c', $ipLog->log_date));
+            }
+
+            $page++;
         }
     }
     
