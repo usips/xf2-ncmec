@@ -538,24 +538,7 @@ class Submitter extends AbstractService
         $this->addIpCaptureEvents($personReported, $this->subject->user_id);
         
         // Account disabled status
-        if ($this->subject->is_banned)
-        {
-            $ban = $this->em()->find('XF:UserBan', $this->subject->user_id);
-            if ($ban)
-            {
-                // Per XSD, these are boolean values, not containers
-                if ($ban->end_date == 0)
-                {
-                    // Permanent ban - set to true
-                    $personReported->addChild('accountPermanentlyDisabled', 'true');
-                }
-                else
-                {
-                    // Temporary ban - set to true
-                    $personReported->addChild('accountTemporarilyDisabled', 'true');
-                }
-            }
-        }
+        $this->addBanStatus($personReported);
         
         // Associated accounts (connected accounts)
         if ($this->subject->ConnectedAccounts && $this->subject->ConnectedAccounts->count() > 0)
@@ -577,6 +560,34 @@ class Submitter extends AbstractService
         {
             $personReported->addChild('additionalInfo', htmlspecialchars($this->case->reported_additional_info));
         }
+    }
+    
+    /**
+     * Add ban status to personOrUserReported
+     * 
+     * @param \SimpleXMLElement $element Parent XML element
+     */
+    protected function addBanStatus(\SimpleXMLElement $element): void
+    {
+        if (!$this->subject->is_banned)
+        {
+            return;
+        }
+
+        $ban = $this->em()->find('XF:UserBan', $this->subject->user_id);
+        if (!$ban)
+        {
+            return;
+        }
+
+        $tagName = ($ban->end_date == 0) ? 'accountPermanentlyDisabled' : 'accountTemporarilyDisabled';
+        $banElement = $element->addChild($tagName, 'true');
+        
+        $banDate = gmdate('c', $ban->ban_date);
+        
+        $banElement->addAttribute('disabledDate', $banDate);
+        $banElement->addAttribute('userNotified', 'true');
+        $banElement->addAttribute('userNotifiedDate', $banDate);
     }
     
     /**
