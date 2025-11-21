@@ -441,18 +441,6 @@ class CaseController extends AbstractController
     {
         $case = $this->assertCaseExists($params->case_id, ['User']);
 
-        // Allow editing if case is not finalized
-        if ($case->canEdit())
-        {
-            return $this->redirect($this->buildLink('ncmec-cases/edit', $case));
-        }
-
-        // Allow resubmission if case is finalized but failed (not finished)
-        if ($case->canResubmit())
-        {
-            return $this->redirect($this->buildLink('ncmec-cases/finalize', $case));
-        }
-
         // Load incidents for this case
         $incidents = $this->finder('USIPS\NCMEC:Incident')
             ->where('case_id', $case->case_id)
