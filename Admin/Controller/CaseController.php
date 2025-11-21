@@ -387,6 +387,8 @@ class CaseController extends AbstractController
 
         // Generate XML previews
         $previews = [];
+        $previewWarning = null;
+        $previewLimit = 10;
         
         // Get all users involved in the case
         $db = $this->app->db();
@@ -398,11 +400,20 @@ class CaseController extends AbstractController
         ", [$case->case_id]);
 
         $users = $this->em()->findByIds('XF:User', $userIds);
+        $totalUsers = $users->count();
 
-        foreach ($users as $user)
+        if ($case->reported_person_id)
         {
+            $previewUsers = $users;
+            if ($totalUsers > $previewLimit)
+            {
+                $previewUsers = $users->slice(0, $previewLimit);
+                $previewWarning = "Preview limited to {$previewLimit} users (out of {$totalUsers}). The final report will include all users.";
+            }
+
+            // Single Report Mode: Pass all users (or subset) to one submitter
             /** @var \USIPS\NCMEC\Service\Report\Submitter $submitter */
-            $submitter = $this->service('USIPS\NCMEC:Report\Submitter', $case, $user);
+            $submitter = $this->service('USIPS\NCMEC:Report\Submitter', $case, $previewUsers);
             try
             {
                 $xml = $submitter->getPreviewXml();
@@ -414,24 +425,62 @@ class CaseController extends AbstractController
                 $formattedXml = $dom->saveXML();
                 
                 $previews[] = [
-                    'user' => $user,
+                    'user' => $users->first(),
                     'xml' => $formattedXml
                 ];
             }
             catch (\Exception $e)
             {
                 $previews[] = [
-                    'user' => $user,
+                    'user' => $users->first(),
                     'error' => $e->getMessage()
                 ];
             }
-            break;
+        }
+        else
+        {
+            $count = 0;
+            foreach ($users as $user)
+            {
+                $count++;
+                if ($count > $previewLimit)
+                {
+                    $previewWarning = "Preview showing first {$previewLimit} reports (out of {$totalUsers}).";
+                    break;
+                }
+
+                /** @var \USIPS\NCMEC\Service\Report\Submitter $submitter */
+                $submitter = $this->service('USIPS\NCMEC:Report\Submitter', $case, $user);
+                try
+                {
+                    $xml = $submitter->getPreviewXml();
+                    // Format XML for display
+                    $dom = new \DOMDocument();
+                    $dom->preserveWhiteSpace = false;
+                    $dom->formatOutput = true;
+                    $dom->loadXML($xml);
+                    $formattedXml = $dom->saveXML();
+                    
+                    $previews[] = [
+                        'user' => $user,
+                        'xml' => $formattedXml
+                    ];
+                }
+                catch (\Exception $e)
+                {
+                    $previews[] = [
+                        'user' => $user,
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
         }
 
         $viewParams = [
             'case' => $case,
             'apiEnvironment' => !empty($this->app->options()->usipsNcmecApi['environment']) ? $this->app->options()->usipsNcmecApi['environment'] : 'test',
-            'previews' => $previews
+            'previews' => $previews,
+            'previewWarning' => $previewWarning
         ];
 
         return $this->view('USIPS\NCMEC:Case\Finalize', 'usips_ncmec_case_finalize', $viewParams);

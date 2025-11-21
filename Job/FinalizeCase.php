@@ -49,7 +49,11 @@ class FinalizeCase extends AbstractJob
         $userIds = $this->data['user_ids'];
         $count = count($userIds);
 
-        if ($this->data['current_user_index'] >= $count)
+        // If we are in single-report mode (reported_person_id set), we treat the whole batch as one item
+        // But we still need to iterate through files for all users
+        $isSingleReport = (bool)$case->reported_person_id;
+        
+        if ($this->data['current_user_index'] >= ($isSingleReport ? 1 : $count))
         {
             // All users processed - clean up and finalize
             $this->cleanupFailedReports($case);
@@ -87,19 +91,40 @@ class FinalizeCase extends AbstractJob
         }
 
         $userId = $userIds[$this->data['current_user_index']];
-        /** @var \XF\Entity\User $user */
-        $user = $this->app->em()->find('XF:User', $userId);
-
-        if (!$user)
+        
+        // Prepare subjects for Submitter
+        if ($isSingleReport)
         {
-            // User missing, skip
-            $this->data['current_user_index']++;
-            $this->data['state'] = 'init';
-            return $this->resume();
+            // In single report mode, we pass ALL users to the submitter
+            $users = $this->app->em()->findByIds('XF:User', $userIds);
+            if (!$users->count())
+            {
+                // No users found? Should not happen if userIds is populated
+                $this->data['current_user_index']++;
+                return $this->resume();
+            }
+            $submitterSubjects = $users;
+            $logUserId = 'ALL (' . count($userIds) . ' users)';
+        }
+        else
+        {
+            // In multi report mode, we pass one user at a time
+            /** @var \XF\Entity\User $user */
+            $user = $this->app->em()->find('XF:User', $userId);
+
+            if (!$user)
+            {
+                // User missing, skip
+                $this->data['current_user_index']++;
+                $this->data['state'] = 'init';
+                return $this->resume();
+            }
+            $submitterSubjects = $user;
+            $logUserId = $userId;
         }
 
         /** @var \USIPS\NCMEC\Service\Report\Submitter $submitter */
-        $submitter = $this->app->service('USIPS\NCMEC:Report\Submitter', $case, $user);
+        $submitter = $this->app->service('USIPS\NCMEC:Report\Submitter', $case, $submitterSubjects);
 
         try
         {
@@ -119,13 +144,24 @@ class FinalizeCase extends AbstractJob
                 case 'files':
                     // Process one file at a time to avoid timeouts
                     $db = $this->app->db();
-                    $row = $db->fetchRow("
+                    
+                    $fileQuery = "
                         SELECT iad.data_id, iad.incident_id
                         FROM xf_usips_ncmec_incident_attachment_data AS iad
                         INNER JOIN xf_usips_ncmec_incident AS i ON (iad.incident_id = i.incident_id)
-                        WHERE i.case_id = ? AND iad.user_id = ?
-                        LIMIT 1
-                    ", [$case->case_id, $userId]);
+                        WHERE i.case_id = ? 
+                    ";
+                    $fileParams = [$case->case_id];
+                    
+                    if (!$isSingleReport)
+                    {
+                        $fileQuery .= " AND iad.user_id = ?";
+                        $fileParams[] = $userId;
+                    }
+                    
+                    $fileQuery .= " LIMIT 1";
+                    
+                    $row = $db->fetchRow($fileQuery, $fileParams);
 
                     if ($row)
                     {
@@ -160,7 +196,7 @@ class FinalizeCase extends AbstractJob
                 case 'finish':
                     $submitter->finishReport();
                     
-                    // Move to next user
+                    // Move to next user (or finish if single report)
                     $this->data['current_user_index']++;
                     $this->data['state'] = 'init';
                     break;
@@ -171,16 +207,16 @@ class FinalizeCase extends AbstractJob
             $errorMsg = $e->getMessage();
             
             // Log the full error
-            \XF::logException($e, false, "NCMEC Finalization Error (Case {$case->case_id}, User $userId, State {$this->data['state']}): ");
+            \XF::logException($e, false, "NCMEC Finalization Error (Case {$case->case_id}, User $logUserId, State {$this->data['state']}): ");
             
             // If this is an XML validation error, create an admin notice so it's visible
             if (strpos($errorMsg, 'XML validation failed') !== false || strpos($errorMsg, 'validation failed') !== false)
             {
                 // Create a prominent error notice
                 $notice = sprintf(
-                    "NCMEC Case #%d XML Validation Failed for User #%d:\n\n%s",
+                    "NCMEC Case #%d XML Validation Failed for User %s:\n\n%s",
                     $case->case_id,
-                    $userId,
+                    $logUserId,
                     $errorMsg
                 );
                 

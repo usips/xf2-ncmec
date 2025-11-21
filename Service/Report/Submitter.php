@@ -17,23 +17,46 @@ class Submitter extends AbstractService
     /** @var User */
     protected $subject;
 
+    /** @var \XF\Mvc\Entity\AbstractCollection|array */
+    protected $subjects;
+
     /** @var Client */
     protected $apiClient;
 
     /** @var Report|null */
     protected $report;
 
-    public function __construct(\XF\App $app, CaseFile $case, User $subject)
+    public function __construct(\XF\App $app, CaseFile $case, $subjects)
     {
         parent::__construct($app);
         $this->case = $case;
-        $this->subject = $subject;
+
+        if ($subjects instanceof User)
+        {
+            $subjects = [$subjects];
+        }
+        elseif ($subjects instanceof \XF\Mvc\Entity\AbstractCollection)
+        {
+            $subjects = $subjects->toArray();
+        }
+        
+        $this->subjects = $subjects;
+        $this->subject = reset($subjects) ?: null;
+
+        if (!$this->subject)
+        {
+            throw new \InvalidArgumentException("Submitter requires at least one subject user.");
+        }
         
         // Ensure required relations are loaded
         $this->case->hydrateRelation('Reporter', $this->case->Reporter);
         $this->case->hydrateRelation('ReportedPerson', $this->case->ReportedPerson);
-        $this->subject->hydrateRelation('Profile', $this->subject->Profile);
-        $this->subject->hydrateRelation('ConnectedAccounts', $this->subject->ConnectedAccounts);
+
+        foreach ($this->subjects as $subject)
+        {
+            $subject->hydrateRelation('Profile', $subject->Profile);
+            $subject->hydrateRelation('ConnectedAccounts', $subject->ConnectedAccounts);
+        }
         
         $options = $this->app->options()->usipsNcmecApi;
         $this->apiClient = $this->service('USIPS\NCMEC:Api\Client', 
@@ -45,12 +68,16 @@ class Submitter extends AbstractService
 
     public function banUser()
     {
-        if (!$this->subject->is_banned)
+        /** @var \XF\Repository\Banning $banRepo */
+        $banRepo = $this->app->repository('XF:Banning');
+
+        foreach ($this->subjects as $subject)
         {
-            /** @var \XF\Repository\Banning $banRepo */
-            $banRepo = $this->app->repository('XF:Banning');
-            $error = null;
-            $banRepo->banUser($this->subject, 0, 'NCMEC Report', $error);
+            if (!$subject->is_banned)
+            {
+                $error = null;
+                $banRepo->banUser($subject, 0, 'NCMEC Report', $error);
+            }
         }
     }
 
@@ -199,8 +226,15 @@ class Submitter extends AbstractService
     {
         // Delete Incident Content (Posts, Threads, etc)
         // Entity deletion methods handle all cleanup including attachments
+        
+        $userIds = [];
+        foreach ($this->subjects as $subject)
+        {
+            $userIds[] = $subject->user_id;
+        }
+
         $incidentContents = $this->finder('USIPS\NCMEC:IncidentContent')
-            ->where('user_id', $this->subject->user_id)
+            ->where('user_id', $userIds)
             ->with('Incident', true)
             ->where('Incident.case_id', $this->case->case_id)
             ->fetch();
@@ -262,10 +296,17 @@ class Submitter extends AbstractService
 
     protected function getOrCreateReport(): Report
     {
-        $report = $this->finder('USIPS\NCMEC:Report')
-            ->where('case_id', $this->case->case_id)
-            ->where('subject_user_id', $this->subject->user_id)
-            ->fetchOne();
+        $finder = $this->finder('USIPS\NCMEC:Report')
+            ->where('case_id', $this->case->case_id);
+
+        // If we have a reported person ID, we are doing a single report for the case
+        // Otherwise, we are doing a report for the specific subject
+        if (!$this->case->reported_person_id)
+        {
+            $finder->where('subject_user_id', $this->subject->user_id);
+        }
+
+        $report = $finder->fetchOne();
 
         if (!$report)
         {
@@ -498,6 +539,30 @@ class Submitter extends AbstractService
         {
             $personElement = $personReported->addChild('personOrUserReportedPerson');
             $this->addPersonData($personElement, $this->case->ReportedPerson, 'person');
+
+            // If we are collapsing multiple users, add their emails to the person data
+            if (count($this->subjects) > 1)
+            {
+                $addedEmails = [];
+                // Pre-fill with existing emails from person record to avoid dupes
+                if (!empty($this->case->ReportedPerson->emails))
+                {
+                    $existing = is_array($this->case->ReportedPerson->emails) 
+                        ? $this->case->ReportedPerson->emails 
+                        : explode(',', $this->case->ReportedPerson->emails);
+                    foreach ($existing as $e) $addedEmails[trim($e)] = true;
+                }
+
+                foreach ($this->subjects as $subject)
+                {
+                    if ($subject->email && !isset($addedEmails[$subject->email]))
+                    {
+                        $email = $personElement->addChild('email');
+                        $email[0] = htmlspecialchars($subject->email);
+                        $addedEmails[$subject->email] = true;
+                    }
+                }
+            }
         }
         
         // ESP Identifier (user ID)
@@ -519,24 +584,63 @@ class Submitter extends AbstractService
         {
             $personReported->addChild('displayName', htmlspecialchars($this->subject->Profile->custom_title));
         }
+
+        // If collapsing multiple users, add their usernames as display names
+        if (count($this->subjects) > 1)
+        {
+            foreach ($this->subjects as $subject)
+            {
+                if ($subject->user_id !== $this->subject->user_id)
+                {
+                    $personReported->addChild('displayName', htmlspecialchars($subject->username));
+                }
+            }
+        }
         
         // Profile URL
         $router = $this->app->router('public');
         $profileUrl = $router->buildLink('canonical:members', $this->subject);
         $personReported->addChild('profileUrl', htmlspecialchars($profileUrl));
+
+        // If collapsing multiple users, add their profile URLs
+        if (count($this->subjects) > 1)
+        {
+            foreach ($this->subjects as $subject)
+            {
+                if ($subject->user_id !== $this->subject->user_id)
+                {
+                    $url = $router->buildLink('canonical:members', $subject);
+                    $personReported->addChild('profileUrl', htmlspecialchars($url));
+                }
+            }
+        }
         
         // Profile Bio (about/signature)
-        if ($this->subject->Profile)
+        // Find the first user with bio info if the main subject doesn't have it, or just use main subject
+        $bioSubject = $this->subject;
+        if (empty($bioSubject->Profile->about) && empty($bioSubject->Profile->signature))
+        {
+            foreach ($this->subjects as $subject)
+            {
+                if (!empty($subject->Profile->about) || !empty($subject->Profile->signature))
+                {
+                    $bioSubject = $subject;
+                    break;
+                }
+            }
+        }
+
+        if ($bioSubject->Profile)
         {
             $bio = '';
-            if (!empty($this->subject->Profile->about))
+            if (!empty($bioSubject->Profile->about))
             {
-                $bio .= "About:\n" . $this->subject->Profile->about;
+                $bio .= "About:\n" . $bioSubject->Profile->about;
             }
-            if (!empty($this->subject->Profile->signature))
+            if (!empty($bioSubject->Profile->signature))
             {
                 if ($bio) $bio .= "\n\n";
-                $bio .= "Signature:\n" . $this->subject->Profile->signature;
+                $bio .= "Signature:\n" . $bioSubject->Profile->signature;
             }
             if ($bio)
             {
@@ -544,23 +648,36 @@ class Submitter extends AbstractService
             }
         }
         
-        // IP Capture Events - all IPs associated with this user
-        $this->addIpCaptureEvents($personReported, $this->subject->user_id);
+        // IP Capture Events - all IPs associated with ALL users if collapsing
+        if ($this->case->reported_person_id)
+        {
+            foreach ($this->subjects as $subject)
+            {
+                $this->addIpCaptureEvents($personReported, $subject->user_id);
+            }
+        }
+        else
+        {
+            $this->addIpCaptureEvents($personReported, $this->subject->user_id);
+        }
         
         // Account disabled status
         $this->addBanStatus($personReported);
         
         // Associated accounts (connected accounts)
-        if ($this->subject->ConnectedAccounts && $this->subject->ConnectedAccounts->count() > 0)
+        foreach ($this->subjects as $subject)
         {
-            foreach ($this->subject->ConnectedAccounts as $connectedAccount)
+            if ($subject->ConnectedAccounts && $subject->ConnectedAccounts->count() > 0)
             {
-                $associatedAccount = $personReported->addChild('associatedAccount');
-                $associatedAccount->addChild('accountType', 'Other');
-                $associatedAccount->addChild('accountDisplayName', htmlspecialchars($connectedAccount->provider));
-                if (!empty($connectedAccount->provider_key))
+                foreach ($subject->ConnectedAccounts as $connectedAccount)
                 {
-                    $associatedAccount->addChild('accountIdentifier', htmlspecialchars($connectedAccount->provider_key));
+                    $associatedAccount = $personReported->addChild('associatedAccount');
+                    $associatedAccount->addChild('accountType', 'Other');
+                    $associatedAccount->addChild('accountDisplayName', htmlspecialchars($connectedAccount->provider));
+                    if (!empty($connectedAccount->provider_key))
+                    {
+                        $associatedAccount->addChild('accountIdentifier', htmlspecialchars($connectedAccount->provider_key));
+                    }
                 }
             }
         }
