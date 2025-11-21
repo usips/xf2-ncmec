@@ -56,7 +56,7 @@ class IncidentContentController extends AbstractController
         $incidentContent = $this->assertIncidentContentRecord($params);
         $incident = $incidentContent->Incident;
 
-        if ($incident && $incident->is_finalized)
+        if ($incident && $incident->finalized_on)
         {
             return $this->error(
                 \XF::phrase('usips_ncmec_incident_finalized_cannot_delete')

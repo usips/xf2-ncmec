@@ -210,11 +210,11 @@ class CaseController extends AbstractController
 
         if ($state === 'archive')
         {
-            $finder->where('is_finalized', true);
+            $finder->where('finalized_on', '!=', null);
         }
         else
         {
-            $finder->where('is_finalized', false);
+            $finder->where('finalized_on', null);
         }
 
         $total = $finder->total();
@@ -333,7 +333,7 @@ class CaseController extends AbstractController
                 }
 
                 // If this is a resubmission (finalized but not finished), clean up first
-                if ($case->is_finalized && !$case->is_finished)
+                if ($case->finalized_on && !$case->finished_on)
                 {
                     // Clean up any existing failed reports before resubmitting
                     $failedReports = $this->finder('USIPS\NCMEC:Report')
@@ -347,7 +347,7 @@ class CaseController extends AbstractController
                     }
                     
                     // Reset finalized flag so job can proceed
-                    $case->is_finalized = false;
+                    $case->finalized_on = null;
                     $case->save();
                 }
 
@@ -366,7 +366,7 @@ class CaseController extends AbstractController
             else
             {
                 // First step: save the case data (only if not finalized)
-                if (!$case->is_finalized)
+                if (!$case->finalized_on)
                 {
                     $this->saveCaseFromInput($case);
                 }

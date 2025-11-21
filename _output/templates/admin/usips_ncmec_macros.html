@@ -24,8 +24,8 @@
 					<xf:date time="$case.created_date" />
 				</xf:cell>
 				<xf:cell>
-					<xf:if is="$case.is_finalized">
-						<xf:if is="$case.is_finished">
+					<xf:if is="$case.finalized_on">
+						<xf:if is="$case.finished_on">
 							{{ phrase('usips_ncmec_case_finished') }}
 							<xf:else />
 							{{ phrase('usips_ncmec_case_finalized') }}
@@ -48,7 +48,7 @@
 						0
 					</xf:if>
 				</xf:cell>
-				<xf:if is="!$case.is_finalized">
+				<xf:if is="!$case.finalized_on">
 					<xf:delete href="{{ link('ncmec-cases/delete', $case) }}" />
 					<xf:else />
 					<xf:cell></xf:cell>
@@ -136,7 +136,7 @@
 		</xf:datarow>
 		<xf:foreach loop="$incidents" value="$incident">
 			<xf:datarow>
-				<xf:if is="$incident.is_finalized">
+				<xf:if is="$incident.finalized_on">
 					<xf:cell></xf:cell>
 					<xf:else />
 					<xf:toggle name="incident_ids[]" value="{$incident.incident_id}" />
@@ -155,7 +155,7 @@
 					<xf:date time="$incident.created_date" />
 				</xf:cell>
 				<xf:cell>
-					<xf:if is="$incident.is_finalized">
+					<xf:if is="$incident.finalized_on">
 						{{ phrase('usips_ncmec_finalized') }}
 						<xf:else />
 						{{ phrase('usips_ncmec_draft') }}
@@ -260,13 +260,13 @@
 					</xf:if>
 				</xf:cell>
 				<xf:cell>
-					<xf:if is="$report.is_finished">
+					<xf:if is="$report.finished_on">
 						{{ phrase('usips_ncmec_finalized') }}
 						<xf:else />
 						{{ phrase('usips_ncmec_draft') }}
 					</xf:if>
 				</xf:cell>
-				<xf:if is="!$report.is_finished">
+				<xf:if is="!$report.finished_on">
 					<xf:action href="{{ link('ncmec-reports/edit', $report) }}">
 						{{ phrase('edit') }}
 					</xf:action>

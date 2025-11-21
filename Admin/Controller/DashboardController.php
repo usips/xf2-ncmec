@@ -42,7 +42,7 @@ class DashboardController extends AbstractController
 
         // Fetch all non-finalized incidents (limit 50)
         $incidents = $this->finder('USIPS\NCMEC:Incident')
-            ->where('is_finalized', 0)
+            ->where('finalized_on', null)
             ->order('created_date', 'DESC')
             ->limit(50)
             ->fetch();

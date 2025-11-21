@@ -35,11 +35,11 @@ class ReportController extends AbstractController
 
         if ($state === 'archive')
         {
-            $finder->where('is_finished', true);
+            $finder->where('finished_on', '!=', null);
         }
         else
         {
-            $finder->where('is_finished', false);
+            $finder->where('finished_on', null);
         }
 
         $total = $finder->total();
@@ -79,7 +79,7 @@ class ReportController extends AbstractController
             return $this->error(XF::phrase('requested_page_not_found'));
         }
 
-        if ($incidents->filter(function(Incident $incident) { return $incident->is_finalized; })->count())
+        if ($incidents->filter(function(Incident $incident) { return $incident->finalized_on; })->count())
         {
             return $this->error(XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
         }
@@ -106,7 +106,7 @@ class ReportController extends AbstractController
                 }
 
                 $report = $this->em()->find('USIPS\NCMEC:Report', $input['existing_report_id']);
-                if (!$report || $report->is_finished)
+                if (!$report || $report->finished_on)
                 {
                     return $this->error(XF::phrase('requested_page_not_found'));
                 }
@@ -161,7 +161,7 @@ class ReportController extends AbstractController
     {
         $report = $this->assertReportExists($params->report_id);
 
-        if ($report->is_finished)
+        if ($report->finished_on)
         {
             return $this->error(XF::phrase('usips_ncmec_cannot_edit_finished_report'));
         }
@@ -195,7 +195,7 @@ class ReportController extends AbstractController
     {
         $report = $this->assertReportExists($params->report_id);
 
-        if ($report->is_finished)
+        if ($report->finished_on)
         {
             return $this->error(XF::phrase('usips_ncmec_cannot_edit_finished_report'));
         }

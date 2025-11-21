@@ -44,7 +44,7 @@
                         <xf:date time="{$report.last_update_date}" />
                     </xf:cell>
                     <xf:cell>
-                        <xf:if is="$report.is_finished">
+                        <xf:if is="$report.finished_on">
                             {{ phrase('usips_ncmec_finalized') }}
                             <xf:else />
                             {{ phrase('usips_ncmec_draft') }}
@@ -85,7 +85,7 @@
                                 <xf:date time="{$incident.created_date}" />
                             </xf:cell>
                             <xf:cell>
-                                <xf:if is="$incident.is_finalized">
+                                <xf:if is="$incident.finalized_on">
                                     {{ phrase('usips_ncmec_finalized') }}
                                     <xf:else />
                                     {{ phrase('usips_ncmec_draft') }}

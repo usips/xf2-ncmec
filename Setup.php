@@ -23,11 +23,11 @@ class Setup extends AbstractSetup
             $table->addColumn('incident_type', 'varchar', 100)->setDefault('');
             $table->addColumn('report_annotations', 'mediumtext')->nullable();
             $table->addColumn('incident_date_time_desc', 'varchar', 3000)->setDefault('');
-            $table->addColumn('is_finalized', 'tinyint', 1)->setDefault(0);
-            $table->addColumn('is_finished', 'tinyint', 1)->setDefault(0);
+            $table->addColumn('finalized_on', 'int')->nullable()->setDefault(null);
+            $table->addColumn('finished_on', 'int')->nullable()->setDefault(null);
             $table->addPrimaryKey('case_id');
-            $table->addKey(['is_finalized']);
-            $table->addKey(['is_finished']);
+            $table->addKey(['finalized_on']);
+            $table->addKey(['finished_on']);
         });
 
         $this->schemaManager()->createTable('xf_usips_ncmec_person', function(Create $table)
@@ -60,7 +60,7 @@ class Setup extends AbstractSetup
             $table->addColumn('last_update_date', 'int');
             $table->addColumn('user_id', 'int');
             $table->addColumn('username', 'varchar', 50);
-            $table->addColumn('is_finalized', 'tinyint', 1)->setDefault(0);
+            $table->addColumn('finalized_on', 'int')->nullable()->setDefault(null);
             $table->addPrimaryKey('incident_id');
             $table->addKey(['case_id']);
         });
@@ -105,12 +105,12 @@ class Setup extends AbstractSetup
             $table->addColumn('username', 'varchar', 50);
             $table->addColumn('subject_user_id', 'int');
             $table->addColumn('subject_username', 'varchar', 50);
-            $table->addColumn('is_finished', 'bool')->setDefault(false);
+            $table->addColumn('finished_on', 'int')->nullable()->setDefault(null);
             $table->addPrimaryKey('report_id');
             $table->addUniqueKey(['ncmec_report_id']);
             $table->addKey(['case_id']);
             $table->addKey(['user_id']);
-            $table->addKey(['is_finished']);
+            $table->addKey(['finished_on']);
             $table->addKey(['subject_user_id']);
         });
 

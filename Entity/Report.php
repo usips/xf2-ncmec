@@ -16,7 +16,7 @@ use XF\Mvc\Entity\Structure;
  * @property string $username
  * @property int $subject_user_id
  * @property string $subject_username
- * @property bool $is_finished
+ * @property int $finished_on
  *
  * RELATIONS
  * @property-read \USIPS\NCMEC\Entity\CaseFile $Case
@@ -27,8 +27,8 @@ use XF\Mvc\Entity\Structure;
  * NOTES
  * Reports track submission state:
  * - Created: Report exists but not yet opened with NCMEC (ncmec_report_id is null)
- * - Opened: Report has been opened with NCMEC (ncmec_report_id assigned, is_finished = false)
- * - Finished: Report has been submitted for review (is_finished = true)
+ * - Opened: Report has been opened with NCMEC (ncmec_report_id assigned, finished_on = null)
+ * - Finished: Report has been submitted for review (finished_on != null)
  * 
  * Reports are immutable once created - they represent submitted data to NCMEC.
  * All case details (incident_type, activity_summary, etc.) are stored in CaseFile.
@@ -51,7 +51,7 @@ class Report extends Entity
             'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
             'subject_user_id' => ['type' => self::UINT, 'required' => true],
             'subject_username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
-            'is_finished' => ['type' => self::BOOL, 'default' => false],
+            'finished_on' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
         ];
         $structure->relations = [
             'Case' => [

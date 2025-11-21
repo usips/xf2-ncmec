@@ -20,8 +20,8 @@ use XF\Mvc\Entity\Structure;
  * @property int $reporter_person_id
  * @property int $reported_person_id
  * @property string $reported_additional_info
- * @property bool $is_finalized - Case is closed and in the process of being submitted (no further modifications allowed)
- * @property bool $is_finished - Case has been fully submitted to NCMEC (final state)
+ * @property int $finalized_on - Timestamp when case was closed and in the process of being submitted
+ * @property int $finished_on - Timestamp when case was fully submitted to NCMEC (final state)
  * 
  * RELATIONS
  * @property-read \XF\Entity\User $User
@@ -50,7 +50,7 @@ class CaseFile extends Entity
             return false;
         }
 
-        if ($this->is_finalized || $this->is_finished)
+        if ($this->finalized_on || $this->finished_on)
         {
             $error = \XF::phrase('usips_ncmec_case_finalized_cannot_edit');
             return false;
@@ -89,7 +89,7 @@ class CaseFile extends Entity
         }
 
         // Can resubmit if finalized but not finished (failed submission)
-        if ($this->is_finalized && !$this->is_finished)
+        if ($this->finalized_on && !$this->finished_on)
         {
             return true;
         }
@@ -116,8 +116,8 @@ class CaseFile extends Entity
             'reporter_person_id' => ['type' => self::UINT, 'default' => 0],
             'reported_person_id' => ['type' => self::UINT, 'default' => 0],
             'reported_additional_info' => ['type' => self::STR, 'default' => '', 'maxLength' => 16777215], // MEDIUMTEXT
-            'is_finalized' => ['type' => self::BOOL, 'default' => false],
-            'is_finished' => ['type' => self::BOOL, 'default' => false],
+            'finalized_on' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
+            'finished_on' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
         ];
         $structure->relations = [
             'User' => [

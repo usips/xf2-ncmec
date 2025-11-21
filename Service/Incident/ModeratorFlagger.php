@@ -123,7 +123,7 @@ class ModeratorFlagger extends AbstractService
     {
         return $this->finder('USIPS\NCMEC:Incident')
             ->where('user_id', $moderatorId)
-            ->where('is_finalized', 0)
+            ->where('finalized_on', null)
             ->order('last_update_date', 'DESC')
             ->fetchOne();
     }

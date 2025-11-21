@@ -21,7 +21,7 @@ class Incident extends Entity
             'last_update_date' => ['type' => self::UINT, 'default' => \XF::$time],
             'user_id' => ['type' => self::UINT, 'required' => true],
             'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
-            'is_finalized' => ['type' => self::BOOL, 'default' => false],
+            'finalized_on' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
         ];
         $structure->relations = [
             'Case' => [

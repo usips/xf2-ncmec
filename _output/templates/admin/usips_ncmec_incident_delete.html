@@ -8,7 +8,7 @@
         </div>
 
         <div class="block-body">
-            <xf:if is="$incident.is_finalized">
+            <xf:if is="$incident.finalized_on">
                 <xf:inforow rowtype="error">
                     {{ phrase('usips_ncmec_incident_finalized_cannot_delete') }}
                 </xf:inforow>

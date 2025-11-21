@@ -36,11 +36,11 @@ class IncidentController extends AbstractController
 
         if ($state === 'archive')
         {
-            $finder->where('is_finalized', true);
+            $finder->where('finalized_on', '!=', null);
         }
         else
         {
-            $finder->where('is_finalized', false);
+            $finder->where('finalized_on', null);
         }
 
         $total = $finder->total();
@@ -182,7 +182,7 @@ class IncidentController extends AbstractController
         if ($this->isPost())
         {
             // Check if incident is finalized
-            if ($incident->is_finalized)
+            if ($incident->finalized_on)
             {
                 return $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
             }
@@ -321,7 +321,7 @@ class IncidentController extends AbstractController
     {
         $incident = $this->assertIncidentExists($params->incident_id);
 
-        if ($incident->is_finalized)
+        if ($incident->finalized_on)
         {
             return $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
         }
@@ -470,8 +470,8 @@ class IncidentController extends AbstractController
     protected function getAssignableCaseFinder()
     {
         return $this->finder('USIPS\NCMEC:CaseFile')
-            ->where('is_finalized', false)
-            ->where('is_finished', false)
+            ->where('finalized_on', null)
+            ->where('finished_on', null)
             ->order('created_date', 'DESC');
     }
 
