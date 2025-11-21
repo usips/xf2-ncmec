@@ -99,6 +99,11 @@ class NotifierService extends XFCP_NotifierService
             return;
         }
 
+        if (!$user->email)
+        {
+            return;
+        }
+
         $report = $this->report;
         $comment = $this->comment;
         $reporter = $comment->User ?: $this->em()->find('XF:User', $comment->user_id);

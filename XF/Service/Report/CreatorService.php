@@ -116,10 +116,8 @@ class CreatorService extends XFCP_CreatorService
             return;
         }
 
-        /** @var \XF\Service\Post\Editor $editor */
-        $editor = $this->service('XF:Post\Editor', $post);
-        $editor->setMessageState('moderated', 'Emergency report pending review');
-        $editor->save();
+        $post->message_state = 'moderated';
+        $post->save();
     }
 
     protected function moderateGenericContentForEmergency(Entity $content): void
@@ -221,10 +219,8 @@ class CreatorService extends XFCP_CreatorService
 
         try
         {
-            /** @var \XF\Service\Thread\Editor $editor */
-            $editor = $this->service('XF:Thread\Editor', $thread);
-            $editor->setDiscussionState('moderated', 'Emergency report pending review');
-            $editor->save();
+            $thread->discussion_state = 'moderated';
+            $thread->save();
         }
         catch (Throwable $e)
         {

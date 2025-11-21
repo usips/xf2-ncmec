@@ -101,8 +101,58 @@ class ReportFlagger extends AbstractService
         $this->queueAssociationJobs($incident->incident_id, $contentUser->user_id, $contentItems);
 
         $this->closeReportsForContent($contentItems, $incident);
+        $this->moderateContent($contentItems);
 
         return $incident;
+    }
+
+    protected function moderateContent(array $contentItems): void
+    {
+        foreach ($contentItems as $item)
+        {
+            if (empty($item['content_type']) || empty($item['content_id']))
+            {
+                continue;
+            }
+
+            $entity = $this->app->findByContentType($item['content_type'], $item['content_id']);
+            if (!$entity)
+            {
+                continue;
+            }
+
+            // Handle Post/Thread special case
+            if ($entity instanceof \XF\Entity\Post)
+            {
+                if ($entity->isFirstPost())
+                {
+                    $thread = $entity->Thread;
+                    if ($thread && $thread->isValidColumn('discussion_state') && $thread->discussion_state === 'visible')
+                    {
+                        $thread->discussion_state = 'moderated';
+                        $thread->save();
+                    }
+                }
+                
+                if ($entity->isValidColumn('message_state') && $entity->message_state === 'visible')
+                {
+                    $entity->message_state = 'moderated';
+                    $entity->save();
+                }
+            }
+            // Handle generic content with message_state
+            elseif ($entity->isValidColumn('message_state') && $entity->message_state === 'visible')
+            {
+                $entity->message_state = 'moderated';
+                $entity->save();
+            }
+            // Handle generic content with discussion_state
+            elseif ($entity->isValidColumn('discussion_state') && $entity->discussion_state === 'visible')
+            {
+                $entity->discussion_state = 'moderated';
+                $entity->save();
+            }
+        }
     }
 
     protected function resolveContentUser(): ?User
