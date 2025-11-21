@@ -292,6 +292,16 @@ class Submitter extends AbstractService
         return $ipLog ? $ipLog->ip : null;
     }
 
+    /**
+     * Generate the XML for preview purposes
+     * 
+     * @return string
+     */
+    public function getPreviewXml(): string
+    {
+        return $this->buildReportXml();
+    }
+
     protected function buildReportXml(): string
     {
         $incidentType = Client::INCIDENT_TYPE_VALUES[$this->case->incident_type] ?? $this->case->incident_type;

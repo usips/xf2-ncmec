@@ -36,6 +36,11 @@ class CaseController extends AbstractController
             'additional_info' => 'str',
         ]);
 
+        if (!$input['incident_type'])
+        {
+            throw $this->exception($this->error(\XF::phrase('usips_ncmec_error_incident_type_required')));
+        }
+
         $case->bulkSet($input);
         $case->save();
 
@@ -377,19 +382,56 @@ class CaseController extends AbstractController
                 {
                     return $this->error(implode("\n", $errors));
                 }
-
-                $viewParams = [
-                    'case' => $case,
-                    'apiEnvironment' => !empty($this->app->options()->usipsNcmecApi['environment']) ? $this->app->options()->usipsNcmecApi['environment'] : 'test'
-                ];
-
-                return $this->view('USIPS\NCMEC:Case\Finalize', 'usips_ncmec_case_finalize', $viewParams);
             }
+        }
+
+        // Generate XML previews
+        $previews = [];
+        
+        // Get all users involved in the case
+        $db = $this->app->db();
+        $userIds = $db->fetchAllColumn("
+            SELECT DISTINCT iu.user_id
+            FROM xf_usips_ncmec_incident_user AS iu
+            INNER JOIN xf_usips_ncmec_incident AS i ON (iu.incident_id = i.incident_id)
+            WHERE i.case_id = ?
+        ", [$case->case_id]);
+
+        $users = $this->em()->findByIds('XF:User', $userIds);
+
+        foreach ($users as $user)
+        {
+            /** @var \USIPS\NCMEC\Service\Report\Submitter $submitter */
+            $submitter = $this->service('USIPS\NCMEC:Report\Submitter', $case, $user);
+            try
+            {
+                $xml = $submitter->getPreviewXml();
+                // Format XML for display
+                $dom = new \DOMDocument();
+                $dom->preserveWhiteSpace = false;
+                $dom->formatOutput = true;
+                $dom->loadXML($xml);
+                $formattedXml = $dom->saveXML();
+                
+                $previews[] = [
+                    'user' => $user,
+                    'xml' => $formattedXml
+                ];
+            }
+            catch (\Exception $e)
+            {
+                $previews[] = [
+                    'user' => $user,
+                    'error' => $e->getMessage()
+                ];
+            }
+            break;
         }
 
         $viewParams = [
             'case' => $case,
-            'apiEnvironment' => !empty($this->app->options()->usipsNcmecApi['environment']) ? $this->app->options()->usipsNcmecApi['environment'] : 'test'
+            'apiEnvironment' => !empty($this->app->options()->usipsNcmecApi['environment']) ? $this->app->options()->usipsNcmecApi['environment'] : 'test',
+            'previews' => $previews
         ];
 
         return $this->view('USIPS\NCMEC:Case\Finalize', 'usips_ncmec_case_finalize', $viewParams);

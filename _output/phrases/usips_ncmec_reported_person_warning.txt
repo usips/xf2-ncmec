@@ -1,0 +1,1 @@
+If a Person is not assigned as the Reported Person, each User will be assigned their own NCMEC Report. Adding a Person will create a single report.

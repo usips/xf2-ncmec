@@ -92,7 +92,13 @@
                     {{ phrase('usips_ncmec_person_or_user_reported') }}
                 </span>
             </h3>
+
             <div class="block-body block-body--collapsible is-active">
+                <xf:formrow>
+                    <div class="block-rowMessage block-rowMessage--warning">
+                        {{ phrase('usips_ncmec_reported_person_warning') }}
+                    </div>
+                </xf:formrow>
                 <xf:macro template="usips_ncmec_macros" name="person_select" arg-name="reported_person_id"
                     arg-value="{$case.reported_person_id}" arg-persons="{$persons}"
                     arg-label="{{ phrase('usips_ncmec_reported_person') }}" />
