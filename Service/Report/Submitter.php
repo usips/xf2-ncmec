@@ -217,7 +217,14 @@ class Submitter extends AbstractService
                     // - Threads: _postDelete() removes all posts and their attachments
                     // - ProfilePosts: _postDelete() removes attachments
                     // First posts automatically trigger thread deletion via isFirstPost() check
-                    $entity->delete();
+                    if ($entity instanceof \XF\Entity\Post && $entity->isFirstPost() && $entity->Thread)
+                    {
+                        $entity->Thread->delete();
+                    }
+                    else
+                    {
+                        $entity->delete();
+                    }
                 }
                 catch (\Exception $e)
                 {
