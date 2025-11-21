@@ -474,13 +474,6 @@ class Submitter extends AbstractService
         {
             $reporter->addChild('termsOfService', htmlspecialchars($tosUrl));
         }
-        
-        // Legal URL (optional) - link to help/privacy or similar
-        $legalUrl = $router->buildLink('canonical:help/privacy-policy');
-        if ($legalUrl)
-        {
-            $reporter->addChild('legalURL', htmlspecialchars($legalUrl));
-        }
     }
     
     /**
