@@ -1,10 +1,5 @@
 <xf:title>{{ phrase('usips_ncmec_report') }}</xf:title>
 
-<xf:if is="$report.is_finished">
-    <xf:breadcrumb href="{{ link('ncmec-reports/archive') }}">{{ phrase('usips_ncmec_reports_finalized') }}
-    </xf:breadcrumb>
-</xf:if>
-
 <div class="block">
     <div class="block-container">
         <h2 class="block-header">{{ phrase('details') }}</h2>
@@ -65,7 +60,6 @@
     <div class="block-container">
         <h2 class="block-header">
             {{ phrase('usips_ncmec_incidents') }}
-            <span class="block-counter">({$incidents.count()})</span>
         </h2>
         <xf:if is="$incidents.count()">
             <div class="block-body">
@@ -101,6 +95,9 @@
                     </xf:foreach>
                 </xf:datalist>
             </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ display_totals($incidents) }}</span>
+            </div>
             <xf:else />
             <div class="block-body block-row">
                 {{ phrase('usips_ncmec_no_incidents_in_report') }}
@@ -113,52 +110,13 @@
     <div class="block-container">
         <h2 class="block-header">
             {{ phrase('usips_ncmec_report_logs') }}
-            <xf:if is="$apiLogs.count()">
-                <span class="block-counter">({$apiLogs.count()})</span>
-            </xf:if>
         </h2>
         <xf:if is="$apiLogs.count()">
             <div class="block-body">
-                <xf:datalist class="dataList">
-                    <xf:datarow rowtype="header">
-                        <xf:cell>{{ phrase('date') }}</xf:cell>
-                        <xf:cell>Method</xf:cell>
-                        <xf:cell>Endpoint</xf:cell>
-                        <xf:cell>{{ phrase('status') }}</xf:cell>
-                        <xf:cell></xf:cell>
-                    </xf:datarow>
-                    <xf:foreach loop="$apiLogs" value="$log">
-                        <xf:datarow>
-                            <xf:cell>
-                                <xf:date time="{$log.request_date}" />
-                            </xf:cell>
-                            <xf:cell>{$log.request_method|upper}</xf:cell>
-                            <xf:cell>
-                                <xf:if is="$log.request_endpoint">
-                                    {$log.request_endpoint}
-                                    <xf:else />
-                                    {$log.request_url}
-                                </xf:if>
-                                <div class="u-muted">{$log.environment}</div>
-                            </xf:cell>
-                            <xf:cell>
-                                <xf:if is="$log.success">
-                                    <span class="label label--success">{{ phrase('success') }}</span>
-                                    <xf:else />
-                                    <span class="label label--accent">Failed</span>
-                                </xf:if>
-                                <xf:if is="$log.response_code">
-                                    <div class="u-muted">HTTP {$log.response_code}</div>
-                                </xf:if>
-                            </xf:cell>
-                            <xf:cell class="dataList-cell--action">
-                                <a href="{{ link('ncmec-api-logs/view', $log) }}" data-xf-click="overlay">
-                                    {{ phrase('view') }}
-                                </a>
-                            </xf:cell>
-                        </xf:datarow>
-                    </xf:foreach>
-                </xf:datalist>
+                <xf:macro template="usips_ncmec_macros" name="api_log_list" arg-logs="{$apiLogs}" />
+            </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ display_totals($apiLogs) }}</span>
             </div>
             <xf:else />
             <div class="block-body block-row">{{ phrase('no_results_found') }}</div>

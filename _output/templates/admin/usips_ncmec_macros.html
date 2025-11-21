@@ -199,7 +199,8 @@
 					</span>
 				</div>
 
-				<xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-incidents" />
+				<xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-incidents"
+					wrapperclass="block-outer block-outer--after" />
 				<xf:else />
 				<div class="block-body block-row">{{ phrase('no_results_found') }}</div>
 			</xf:if>
@@ -288,7 +289,8 @@
 					<xf:macro id="report_list" arg-reports="{$reports}" />
 				</div>
 
-				<xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-reports" />
+				<xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-reports"
+					wrapperclass="block-outer block-outer--after" />
 				<xf:else />
 				<div class="block-body block-row">{{ phrase('no_results_found') }}</div>
 			</xf:if>

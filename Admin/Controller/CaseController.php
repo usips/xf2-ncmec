@@ -197,12 +197,25 @@ class CaseController extends AbstractController
     {
         $page = $this->filterPage();
         $perPage = 100;
+        $state = $this->filter('state', 'str');
+        if (!$state)
+        {
+            $state = 'open';
+        }
 
         $finder = $this->finder('USIPS\NCMEC:CaseFile')
             ->with('User')
-            ->where('is_finalized', false)
             ->order('created_date', 'DESC')
             ->limitByPage($page, $perPage);
+
+        if ($state === 'archive')
+        {
+            $finder->where('is_finalized', true);
+        }
+        else
+        {
+            $finder->where('is_finalized', false);
+        }
 
         $total = $finder->total();
         $this->assertValidPage($page, $perPage, $total, 'ncmec-cases');
@@ -212,33 +225,14 @@ class CaseController extends AbstractController
             'page' => $page,
             'perPage' => $perPage,
             'total' => $total,
+            'state' => $state,
+            'tabs' => [
+                'open' => \XF::phrase('open'),
+                'archive' => \XF::phrase('usips_ncmec_archive')
+            ]
         ];
 
         return $this->view('USIPS\NCMEC:Case\Listing', 'usips_ncmec_case_list', $viewParams);
-    }
-
-    public function actionArchive(ParameterBag $params)
-    {
-        $page = $this->filterPage();
-        $perPage = 100;
-
-        $finder = $this->finder('USIPS\NCMEC:CaseFile')
-            ->with('User')
-            ->where('is_finalized', true)
-            ->order('created_date', 'DESC')
-            ->limitByPage($page, $perPage);
-
-        $total = $finder->total();
-        $this->assertValidPage($page, $perPage, $total, 'ncmec-cases/archive');
-
-        $viewParams = [
-            'cases' => $finder->fetch(),
-            'page' => $page,
-            'perPage' => $perPage,
-            'total' => $total,
-        ];
-
-        return $this->view('USIPS\NCMEC:Case\Archive', 'usips_ncmec_case_list_archive', $viewParams);
     }
 
     public function actionCreate(ParameterBag $params)

@@ -245,6 +245,12 @@
         "version_string": "1.0.0",
         "hash": "166968748a74b87c2d2b3156c931d7d5"
     },
+    "usips_ncmec_archive.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "e727b00944f81e1d0a95c12886ac4641"
+    },
     "usips_ncmec_assign_case.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -329,6 +335,24 @@
         "version_string": "1.0.0",
         "hash": "3ee2fb72893048345ae298fa5a4304ed"
     },
+    "usips_ncmec_case_finalized_cannot_edit.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "3220ff2dbfaf7d50331246eeb0008644"
+    },
+    "usips_ncmec_case_finished.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "8f3d10eb21bd36347c258679eba9e92b"
+    },
+    "usips_ncmec_case_finished_desc.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "775466b8e963ace6ee7415c485768737"
+    },
     "usips_ncmec_case_resubmit.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -340,6 +364,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "289af205976d7f4453063019bb83b79d"
+    },
+    "usips_ncmec_case_statistics.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "427384cb9324467bc46a2c162c8ea229"
     },
     "usips_ncmec_cases.txt": {
         "global_cache": false,

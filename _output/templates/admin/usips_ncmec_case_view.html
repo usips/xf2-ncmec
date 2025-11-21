@@ -121,12 +121,14 @@
         <div class="block-container">
             <h3 class="block-header">
                 {{ phrase('usips_ncmec_incidents') }}
-                <span class="block-counter">({$incidentCount})</span>
             </h3>
             <div class="block-body">
                 <div class="structItemContainer">
                     <xf:macro template="usips_ncmec_macros" name="incident_list" arg-incidents="{$incidents}" />
                 </div>
+            </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ display_totals($incidents) }}</span>
             </div>
             <xf:if is="$canEditCase">
                 <xf:formrow>
@@ -144,12 +146,14 @@
         <div class="block-container">
             <h3 class="block-header">
                 {{ phrase('usips_ncmec_reports') }}
-                <span class="block-counter">({$reportCount})</span>
             </h3>
             <div class="block-body">
                 <div class="structItemContainer">
                     <xf:macro template="usips_ncmec_macros" name="report_list" arg-reports="{$reports}" />
                 </div>
+            </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ display_totals($reports) }}</span>
             </div>
             <xf:if is="$canEditCase">
                 <xf:formrow>

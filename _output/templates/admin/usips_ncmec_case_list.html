@@ -7,26 +7,26 @@
 </xf:pageaction>
 
 <xf:form action="{{ link('ncmec-cases/create') }}" class="block">
+    <div class="block-outer">
+        <xf:macro template="filter_macros" name="quick_filter" arg-key="cases" arg-class="block-outer-opposite" />
+    </div>
     <div class="block-container">
+        <h2 class="block-tabHeader tabs hScroller" data-xf-init="h-scroller">
+            <span class="hScroller-scroll">
+                <xf:foreach loop="$tabs" key="$tabState" value="$tabLabel">
+                    <a href="{{ link('ncmec-cases', null, {'state': $tabState}) }}"
+                        class="tabs-tab {{ $tabState == $state ? 'is-active' : '' }}">{$tabLabel}</a>
+                </xf:foreach>
+            </span>
+        </h2>
         <div class="block-body">
-            <xf:if contentcheck="true">
-                <div class="block-filterBar">
-                    <div class="filterBar">
-                        <xf:contentcheck>
-                            <xf:macro template="filter_macros" name="quick_filter" arg-key="cases"
-                                arg-class="block-filterBar-input" />
-                        </xf:contentcheck>
-                    </div>
-                </div>
-
-                <div class="structItemContainer">
-                    <xf:macro template="usips_ncmec_macros" name="case_list" arg-cases="{$cases}" />
-                </div>
-
-                <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-cases" />
+            <xf:if is="$cases is not empty">
+                <xf:macro template="usips_ncmec_macros" name="case_list" arg-cases="{$cases}" />
                 <xf:else />
-                <div class="blockMessage">{{ phrase('usips_ncmec_no_cases_open') }}</div>
+                <div class="block-row">{{ phrase('no_results_found') }}</div>
             </xf:if>
         </div>
     </div>
+    <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-cases"
+        wrapperclass="block-outer block-outer--after" />
 </xf:form>

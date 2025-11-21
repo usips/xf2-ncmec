@@ -50,17 +50,17 @@
                         {{ phrase('usips_ncmec_case_finalized_cannot_edit') }}
                     </div>
                 </xf:formrow>
-            </xf:if>
 
-            <xf:formrow label="{{ phrase('usips_ncmec_associated_users') }}">
-                {{ $counts.users|number }}
-            </xf:formrow>
-            <xf:formrow label="{{ phrase('usips_ncmec_associated_content') }}">
-                {{ $counts.content|number }}
-            </xf:formrow>
-            <xf:formrow label="{{ phrase('usips_ncmec_associated_attachment_data') }}">
-                {{ $counts.attachments|number }}
-            </xf:formrow>
+                <xf:formrow label="{{ phrase('usips_ncmec_associated_users') }}">
+                    {{ $counts.users|number }}
+                </xf:formrow>
+                <xf:formrow label="{{ phrase('usips_ncmec_associated_content') }}">
+                    {{ $counts.content|number }}
+                </xf:formrow>
+                <xf:formrow label="{{ phrase('usips_ncmec_associated_attachment_data') }}">
+                    {{ $counts.attachments|number }}
+                </xf:formrow>
+            </xf:if>
 
             <xf:if is="$caseEditable">
                 <xf:submitrow sticky="true" icon="save" />
@@ -69,16 +69,18 @@
     </div>
 </xf:form>
 
-<xf:if is="$contentData">
+<xf:if is="$incident.IncidentUsers is not empty">
     <div class="block">
         <div class="block-container">
             <h2 class="block-header">
                 {{ phrase('usips_ncmec_associated_users') }}
-                <span class="block-counter">({$incident.IncidentUsers|count})</span>
             </h2>
             <div class="block-body">
                 <xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$incident.IncidentUsers}"
                     arg-incident="{$incident}" />
+            </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ display_totals($incident.IncidentUsers) }}</span>
             </div>
         </div>
     </div>
@@ -89,7 +91,6 @@
         <div class="block-container">
             <h2 class="block-header">
                 {{ phrase('usips_ncmec_associated_content') }}
-                <span class="block-counter">({$contentData|count})</span>
             </h2>
             <div class="block-body">
                 <xf:datalist class="dataList">

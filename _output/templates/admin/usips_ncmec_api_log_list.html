@@ -14,14 +14,12 @@
                 </div>
             </div>
 
-            <xf:if is="$total > $perPage">
-                <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-api-logs" />
-            </xf:if>
-
             <xf:else />
             <div class="block-body">
                 <div class="blockMessage">{{ phrase('no_items_to_display') }}</div>
             </div>
         </xf:if>
     </div>
+    <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-api-logs"
+        wrapperclass="block-outer block-outer--after" />
 </div>

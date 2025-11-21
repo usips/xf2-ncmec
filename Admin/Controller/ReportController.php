@@ -23,10 +23,24 @@ class ReportController extends AbstractController
     {
         $page = $this->filterPage();
         $perPage = 100;
+        $state = $this->filter('state', 'str');
+        if (!$state)
+        {
+            $state = 'open';
+        }
 
         $finder = $this->finder('USIPS\NCMEC:Report')
             ->order('created_date', 'DESC')
             ->limitByPage($page, $perPage);
+
+        if ($state === 'archive')
+        {
+            $finder->where('is_finished', true);
+        }
+        else
+        {
+            $finder->where('is_finished', false);
+        }
 
         $total = $finder->total();
         $this->assertValidPage($page, $perPage, $total, 'ncmec-reports');
@@ -36,32 +50,14 @@ class ReportController extends AbstractController
             'page' => $page,
             'perPage' => $perPage,
             'total' => $total,
+            'state' => $state,
+            'tabs' => [
+                'open' => \XF::phrase('open'),
+                'archive' => \XF::phrase('usips_ncmec_archive')
+            ]
         ];
 
         return $this->view('USIPS\NCMEC:Report\Listing', 'usips_ncmec_report_list', $viewParams);
-    }
-
-    public function actionArchive(ParameterBag $params)
-    {
-        $page = $this->filterPage();
-        $perPage = 100;
-
-        $finder = $this->finder('USIPS\NCMEC:Report')
-            ->where('is_finished', true)
-            ->order('created_date', 'DESC')
-            ->limitByPage($page, $perPage);
-
-        $total = $finder->total();
-        $this->assertValidPage($page, $perPage, $total, 'ncmec-reports/archive');
-
-        $viewParams = [
-            'reports' => $finder->fetch(),
-            'page' => $page,
-            'perPage' => $perPage,
-            'total' => $total,
-        ];
-
-        return $this->view('USIPS\NCMEC:Report\Listing', 'usips_ncmec_report_list_archive', $viewParams);
     }
 
     public function actionCreate(ParameterBag $params)

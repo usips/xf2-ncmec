@@ -23,11 +23,25 @@ class IncidentController extends AbstractController
     {
         $page = $this->filterPage();
         $perPage = 100;
+        $state = $this->filter('state', 'str');
+        if (!$state)
+        {
+            $state = 'open';
+        }
 
         $finder = $this->finder('USIPS\NCMEC:Incident')
             ->with('User')
             ->order('created_date', 'DESC')
             ->limitByPage($page, $perPage);
+
+        if ($state === 'archive')
+        {
+            $finder->where('is_finalized', true);
+        }
+        else
+        {
+            $finder->where('is_finalized', false);
+        }
 
         $total = $finder->total();
         $this->assertValidPage($page, $perPage, $total, 'ncmec-incidents');
@@ -37,32 +51,14 @@ class IncidentController extends AbstractController
             'page' => $page,
             'perPage' => $perPage,
             'total' => $total,
+            'state' => $state,
+            'tabs' => [
+                'open' => \XF::phrase('open'),
+                'archive' => \XF::phrase('usips_ncmec_archive')
+            ]
         ];
 
         return $this->view('USIPS\NCMEC:Incident\Listing', 'usips_ncmec_incident_list', $viewParams);
-    }
-
-    public function actionArchive(ParameterBag $params)
-    {
-        $page = $this->filterPage();
-        $perPage = 100;
-
-        $finder = $this->finder('USIPS\NCMEC:Incident')
-            ->where('is_finalized', true)
-            ->order('created_date', 'DESC')
-            ->limitByPage($page, $perPage);
-
-        $total = $finder->total();
-        $this->assertValidPage($page, $perPage, $total, 'ncmec-incidents/archive');
-
-        $viewParams = [
-            'incidents' => $finder->fetch(),
-            'page' => $page,
-            'perPage' => $perPage,
-            'total' => $total,
-        ];
-
-        return $this->view('USIPS\NCMEC:Incident\Listing', 'usips_ncmec_incident_list_archive', $viewParams);
     }
 
     public function actionCreate(ParameterBag $params)
