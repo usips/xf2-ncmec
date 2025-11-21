@@ -82,10 +82,9 @@
     <div class="block-container">
         <h2 class="block-header">Response</h2>
         <div class="block-body">
-            <div class="codeBlock codeBlock--smaller">
-                <pre
-                    class="codeBlock-code"><code>{{ $responseBody !== '' ? $responseBody : ('// ' . phrase('n_a')) }}</code></pre>
-            </div>
+            <xf:codeeditorrow name="response_body"
+                value="{{ $responseBody !== '' ? $responseBody : ('// ' . phrase('n_a')) }}" mode="{$responseMode}"
+                readonly="true" rowtype="fullWidth noLabel" />
         </div>
     </div>
 </div>
@@ -94,10 +93,9 @@
     <div class="block-container">
         <h2 class="block-header">Request</h2>
         <div class="block-body">
-            <div class="codeBlock codeBlock--smaller">
-                <pre
-                    class="codeBlock-code"><code>{{ $requestBody !== '' ? $requestBody : ('// ' . phrase('n_a')) }}</code></pre>
-            </div>
+            <xf:codeeditorrow name="request_body"
+                value="{{ $requestBody !== '' ? $requestBody : ('// ' . phrase('n_a')) }}" mode="{$requestMode}"
+                readonly="true" rowtype="fullWidth noLabel" />
         </div>
     </div>
 </div>

@@ -44,13 +44,32 @@ class ApiLogController extends AbstractController
     {
         $log = $this->assertApiLogExists($params->log_id, ['Report', 'Report.Case', 'User']);
 
+        $requestBody = $this->prepareRequestBody($log->request_data);
+        $responseBody = $this->prepareResponseBody($log->response_data);
+
         $viewParams = [
             'log' => $log,
-            'requestBody' => $this->prepareRequestBody($log->request_data),
-            'responseBody' => $this->prepareResponseBody($log->response_data),
+            'requestBody' => $requestBody,
+            'responseBody' => $responseBody,
+            'requestMode' => $this->detectMode($requestBody),
+            'responseMode' => $this->detectMode($responseBody),
         ];
 
         return $this->view('USIPS\\NCMEC:ApiLog\\View', 'usips_ncmec_api_log_view', $viewParams);
+    }
+
+    protected function detectMode($content)
+    {
+        $content = trim($content);
+        if (strpos($content, '<') === 0)
+        {
+            return 'xml';
+        }
+        if (strpos($content, '{') === 0 || strpos($content, '[') === 0)
+        {
+            return 'json';
+        }
+        return 'text';
     }
 
     protected function prepareRequestBody($data)
@@ -68,7 +87,7 @@ class ApiLogController extends AbstractController
         // If the data contains an 'xml' key, return the raw XML
         if (isset($data['xml']))
         {
-            return (string) $data['xml'];
+            return $this->formatXml((string) $data['xml']);
         }
 
         // Otherwise, return formatted JSON
@@ -88,6 +107,35 @@ class ApiLogController extends AbstractController
             return '';
         }
 
-        return trim((string) $data);
+        $data = trim((string) $data);
+
+        if (strpos($data, '<') === 0)
+        {
+            return $this->formatXml($data);
+        }
+
+        return $data;
+    }
+
+    protected function formatXml($xml)
+    {
+        if (!$xml)
+        {
+            return '';
+        }
+
+        $dom = new \DOMDocument('1.0');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+
+        // Suppress errors for invalid XML
+        libxml_use_internal_errors(true);
+        if ($dom->loadXML($xml))
+        {
+            return $dom->saveXML();
+        }
+        libxml_clear_errors();
+
+        return $xml;
     }
 }
