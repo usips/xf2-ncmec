@@ -364,7 +364,10 @@ class CaseController extends AbstractController
                     ['case_id' => $case->case_id]
                 );
 
-                return $this->redirect($this->buildLink('tools/run-job', null, ['only_id' => $jobId]));
+                return $this->redirect($this->buildLink('tools/run-job', null, [
+                    'only_id' => $jobId,
+                    'redirect' => $this->buildLink('ncmec')
+                ]));
             }
             else
             {
