@@ -1,0 +1,13 @@
+<xf:title>{{ phrase('usips_ncmec_unassign_incident_from_case') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-incidents/unassign-case', $incident) }}" class="block" ajax="true">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:inforow rowtype="confirm">
+                {{ phrase('usips_ncmec_please_confirm_that_you_want_to_unassign_incident_from_case', {'title':
+                $incident.title}) }}
+            </xf:inforow>
+        </div>
+        <xf:submitrow submit="{{ phrase('usips_ncmec_unassign') }}" rowtype="simple" />
+    </div>
+</xf:form>

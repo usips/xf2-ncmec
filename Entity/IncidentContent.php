@@ -5,6 +5,21 @@ namespace USIPS\NCMEC\Entity;
 use XF\Mvc\Entity\Entity;
 use XF\Mvc\Entity\Structure;
 
+/**
+ * COLUMNS
+ * @property int $incident_id
+ * @property string $content_type
+ * @property int $content_id
+ * @property int $user_id
+ * @property string $username
+ *
+ * GETTERS
+ * @property-read Entity|null $content
+ *
+ * RELATIONS
+ * @property-read \USIPS\NCMEC\Entity\Incident $Incident
+ * @property-read \XF\Entity\User $User
+ */
 class IncidentContent extends Entity
 {
     public static function getStructure(Structure $structure)
@@ -18,6 +33,9 @@ class IncidentContent extends Entity
             'content_id' => ['type' => self::UINT, 'required' => true],
             'user_id' => ['type' => self::UINT, 'required' => true],
             'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
+        ];
+        $structure->getters = [
+            'content' => true,
         ];
         $structure->relations = [
             'Incident' => [

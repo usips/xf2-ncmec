@@ -5,6 +5,25 @@ namespace USIPS\NCMEC\Entity;
 use XF\Mvc\Entity\Entity;
 use XF\Mvc\Entity\Structure;
 
+/**
+ * COLUMNS
+ * @property int $incident_id
+ * @property int $case_id
+ * @property string $title
+ * @property string $additional_info
+ * @property int $created_date
+ * @property int $last_update_date
+ * @property int $user_id
+ * @property string $username
+ * @property int|null $finalized_on
+ *
+ * RELATIONS
+ * @property-read \USIPS\NCMEC\Entity\CaseFile $Case
+ * @property-read \XF\Entity\User $User
+ * @property-read \XF\Mvc\Entity\AbstractCollection<\USIPS\NCMEC\Entity\IncidentUser> $IncidentUsers
+ * @property-read \XF\Mvc\Entity\AbstractCollection<\USIPS\NCMEC\Entity\IncidentContent> $IncidentContents
+ * @property-read \XF\Mvc\Entity\AbstractCollection<\USIPS\NCMEC\Entity\IncidentAttachmentData> $IncidentAttachmentData
+ */
 class Incident extends Entity
 {
     public static function getStructure(Structure $structure)

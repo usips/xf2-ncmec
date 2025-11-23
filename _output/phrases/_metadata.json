@@ -851,6 +851,12 @@
         "version_string": "1.0.0",
         "hash": "f43c23eaaaee2e16dfaeb75cf43c1b4c"
     },
+    "usips_ncmec_please_confirm_that_you_want_to_unassign_incident_from_case.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "8b2dacda2ee263d80fdd4d9db4d6a642"
+    },
     "usips_ncmec_quick_actions.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -1024,6 +1030,18 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "6b8184cef2ff7ed4e836883ac7f39bd2"
+    },
+    "usips_ncmec_unassign.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "e4f89a97f3302f647acacd1f945b097c"
+    },
+    "usips_ncmec_unassign_incident_from_case.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "d87bd997f4eb443bf64f44fa364e16b6"
     },
     "usips_ncmec_unique_users.txt": {
         "global_cache": false,

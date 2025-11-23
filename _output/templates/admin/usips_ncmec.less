@@ -30,6 +30,10 @@
         justify-self: center;
     }
 
+    .usips-attachment--inIncident {
+        background: rgba(255, 0, 0, 0.1);
+    }
+
     .usips-attachmentCheckbox {
         position: absolute;
         top: 10px;
@@ -50,15 +54,29 @@
         height: 100%;
         border: 2px solid transparent;
         box-sizing: border-box;
+        position: relative;
 
         &:hover .usips-attachmentOverlay {
             opacity: 1;
         }
+    }
 
-        &.is-in-incident {
-            border-color: orange;
-            border-style: dashed;
-        }
+    .usips-attachmentIndicator {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 5;
+        background: white;
+        color: #D32F2F;
+        /* Red 700 */
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        font-size: 12px;
     }
 
     .usips-attachmentOverlay {
@@ -67,9 +85,57 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.85);
         opacity: 0;
-        transition: opacity 0.1s;
+        transition: opacity 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        z-index: 10;
+        pointer-events: none;
+        /* Allow clicking through to the link/checkbox if needed, but we have links inside */
+
+        /* Enable pointer events for the content so links work */
+        .usips-attachmentInfo {
+            pointer-events: auto;
+            width: 100%;
+            max-height: 100%;
+            overflow-y: auto;
+            color: #f0f0f0;
+            font-size: 11px;
+            text-align: center;
+
+            ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+
+                li {
+                    margin-bottom: 4px;
+                    word-wrap: break-word;
+
+                    &:last-child {
+                        margin-bottom: 0;
+                    }
+                }
+            }
+
+            a {
+                color: #64B5F6;
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+
+            .usips-attachmentInfo-label {
+                color: #999;
+                font-size: 10px;
+                text-transform: uppercase;
+            }
+        }
     }
 
     .usips-attachmentLink {

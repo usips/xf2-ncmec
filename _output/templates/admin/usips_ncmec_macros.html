@@ -74,12 +74,19 @@
 	<xf:js src="USIPS/NCMEC/attachment_browser.js" />
 	<div class="usips-attachments">
 		<xf:foreach loop="$attachments" value="$attachment">
-			<span class="usips-attachment">
+			<span
+				class="usips-attachment {{ $attachment.IncidentAttachmentData ? 'usips-attachment--inIncident' : '' }}">
 				<input type="checkbox" class="usips-attachmentCheckbox"
 					id="usips_attachment_{$attachment.attachment_id}" name="attachment_ids[]"
 					value="{{ $attachment.attachment_id }}" {{ in_array($attachment.attachment_id, $checked) ? 'checked'
 					: '' }} />
 				<label class="usips-attachmentLabel" for="usips_attachment_{$attachment.attachment_id}">
+					<xf:if is="$attachment.IncidentAttachmentData">
+						<span class="usips-attachmentIndicator"
+							title="{{ phrase('usips_ncmec_attachment_in_incident') }}" data-xf-init="tooltip">
+							<xf:fa icon="fa-exclamation-triangle" />
+						</span>
+					</xf:if>
 					<div class="usips-attachmentOverlay">
 						<div class="usips-attachmentInfo">
 							<ul>
@@ -91,29 +98,46 @@
 									<xf:date time="{{ $attachment.Data.upload_date }}" />
 								</li>
 								<li>{$attachment.filename}</li>
+								<xf:if is="$attachment.IncidentAttachmentData">
+									<xf:foreach loop="$attachment.IncidentAttachmentData" value="$iad">
+										<li class="u-marginTopSmall">
+											<span class="usips-attachmentInfo-label">{{ phrase('usips_ncmec_incident')
+												}}</span><br />
+											<a
+												href="{{ link('ncmec-incidents/view', $iad.Incident) }}">{$iad.Incident.title}</a>
+										</li>
+										<xf:if is="$iad.Incident.Case">
+											<li>
+												<span class="usips-attachmentInfo-label">{{ phrase('usips_ncmec_case')
+													}}</span><br />
+												<a
+													href="{{ link('ncmec-cases/view', $iad.Incident.Case) }}">{$iad.Incident.Case.title}</a>
+											</li>
+										</xf:if>
+									</xf:foreach>
+								</xf:if>
 							</ul>
 						</div>
 					</div>
 					<xf:if is="$attachment.has_thumbnail">
 						<a href="{{ link('ncmec-attachments/view', $attachment) }}"
-							class="usips-attachmentLink usips-attachmentThumbnail{{ $attachment.in_incident ? ' is-in-incident' : '' }}"
+							class="usips-attachmentLink usips-attachmentThumbnail"
 							style="background-image: url({$attachment.thumbnail_url})" alt="{$attachment.filename}">
 						</a>
 						<xf:elseif is="$attachment.is_audio" />
 						<a href="{{ link('ncmec-attachments/view', $attachment) }}"
-							class="usips-attachmentLink usips-attachmentIcon{{ $attachment.in_incident ? ' is-in-incident' : '' }}">
+							class="usips-attachmentLink usips-attachmentIcon">
 							<xf:fa icon="fa-volume fa-4x" />
 						</a>
 						<xf:elseif is="$attachment.is_video" />
-						<a href="{{ link('ncmec-attachments/view', $attachment) }}"
-							class="usips-attachmentLink{{ $attachment.in_incident ? ' is-in-incident' : '' }}">
+						<a href="{{ link('ncmec-attachments/view', $attachment) }}" class="usips-attachmentLink">
 							<video title="{$attachment.filename}" class="usips-attachmentVideo">
 								<source src="{$attachment.direct_url}" />
 							</video>
 						</a>
 						<xf:else />
 						<a href="{{ link('ncmec-attachments/view', $attachment) }}"
-							class="usips-attachmentLink usips-attachmentIcon{{ $attachment.in_incident ? ' is-in-incident' : '' }}">
+							class="usips-attachmentLink usips-attachmentIcon">
 							<xf:fa icon="fa-file fa-4x" />
 						</a>
 					</xf:if>
@@ -123,7 +147,7 @@
 	</div>
 </xf:macro>
 
-<xf:macro id="incident_list" arg-incidents="{{ [] }}">
+<xf:macro id="incident_list" arg-incidents="{{ [] }}" arg-case="{{ null }}">
 	<xf:datalist class="dataList">
 		<xf:datarow rowtype="header">
 			<xf:cell></xf:cell>
@@ -136,7 +160,9 @@
 		</xf:datarow>
 		<xf:foreach loop="$incidents" value="$incident">
 			<xf:datarow>
-				<xf:if is="$incident.finalized_on">
+				<xf:if is="$case">
+					<xf:cell></xf:cell>
+					<xf:elseif is="$incident.finalized_on" />
 					<xf:cell></xf:cell>
 					<xf:else />
 					<xf:toggle name="incident_ids[]" value="{$incident.incident_id}" />
@@ -161,14 +187,22 @@
 						{{ phrase('usips_ncmec_draft') }}
 					</xf:if>
 				</xf:cell>
-				<xf:if is="$incident.case_id">
+				<xf:if is="$incident.case_id && !$case">
 					<xf:action href="{{ link('ncmec-cases/view', $incident.Case) }}">
 						{{ phrase('usips_ncmec_case') }}
 					</xf:action>
 					<xf:else />
 					<xf:cell></xf:cell>
 				</xf:if>
-				<xf:delete href="{{ link('ncmec-incidents/delete', $incident) }}" />
+				<xf:if is="$case">
+					<xf:action href="{{ link('ncmec-incidents/unassign-case', $incident) }}" overlay="true">
+						{{ phrase('usips_ncmec_unassign') }}
+					</xf:action>
+					<xf:elseif is="$incident.case_id" />
+					<xf:delete href=" {{ link('ncmec-incidents/delete', $incident) }}" />
+					<xf:else />
+					<xf:cell></xf:cell>
+				</xf:if>
 			</xf:datarow>
 		</xf:foreach>
 	</xf:datalist>
@@ -224,7 +258,6 @@
 			<xf:cell>{{ phrase('usips_ncmec_report_id') }}</xf:cell>
 			<xf:cell>{{ phrase('created_by') }}</xf:cell>
 			<xf:cell>{{ phrase('date') }}</xf:cell>
-			<xf:cell>{{ phrase('usips_ncmec_incidents') }}</xf:cell>
 			<xf:cell>{{ phrase('status') }}</xf:cell>
 			<xf:cell></xf:cell>
 		</xf:datarow>
@@ -253,26 +286,15 @@
 					<xf:date time="$report.created_date" />
 				</xf:cell>
 				<xf:cell>
-					<xf:if is="$report.Incidents">
-						{$report.Incidents.count()}
-						<xf:else />
-						0
-					</xf:if>
-				</xf:cell>
-				<xf:cell>
 					<xf:if is="$report.finished_on">
 						{{ phrase('usips_ncmec_finalized') }}
 						<xf:else />
 						{{ phrase('usips_ncmec_draft') }}
 					</xf:if>
 				</xf:cell>
-				<xf:if is="!$report.finished_on">
-					<xf:action href="{{ link('ncmec-reports/edit', $report) }}">
-						{{ phrase('edit') }}
-					</xf:action>
-					<xf:else />
-					<xf:cell></xf:cell>
-				</xf:if>
+				<xf:action href="{{ link('ncmec-cases/view', $report.Case) }}">
+					{{ phrase('usips_ncmec_case') }}
+				</xf:action>
 			</xf:datarow>
 		</xf:foreach>
 	</xf:datalist>

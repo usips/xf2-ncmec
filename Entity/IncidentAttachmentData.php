@@ -5,6 +5,18 @@ namespace USIPS\NCMEC\Entity;
 use XF\Mvc\Entity\Entity;
 use XF\Mvc\Entity\Structure;
 
+/**
+ * COLUMNS
+ * @property int $incident_id
+ * @property int $data_id
+ * @property int $user_id
+ * @property string $username
+ *
+ * RELATIONS
+ * @property-read \USIPS\NCMEC\Entity\Incident $Incident
+ * @property-read \XF\Entity\AttachmentData $Data
+ * @property-read \XF\Entity\User $User
+ */
 class IncidentAttachmentData extends Entity
 {
     public static function getStructure(Structure $structure)

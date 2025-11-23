@@ -124,6 +124,40 @@ class IncidentController extends AbstractController
                 }
             }
 
+            // Hydrate incident data for all attachments
+            $allAttachments = $attachments->toArray();
+            foreach ($attachmentsByUser as $userAttachments)
+            {
+                $allAttachments = array_merge($allAttachments, $userAttachments);
+            }
+            
+            if (!empty($allAttachments))
+            {
+                $dataIds = [];
+                foreach ($allAttachments as $attachment)
+                {
+                    $dataIds[] = $attachment->data_id;
+                }
+                $dataIds = array_unique($dataIds);
+                
+                if ($dataIds)
+                {
+                    $incidentData = $this->finder('USIPS\NCMEC:IncidentAttachmentData')
+                        ->where('attachment_data_id', $dataIds)
+                        ->with(['Incident', 'Incident.Case'])
+                        ->fetch()
+                        ->groupBy('attachment_data_id');
+                        
+                    foreach ($allAttachments as $attachment)
+                    {
+                        if (isset($incidentData[$attachment->data_id]))
+                        {
+                            $attachment->hydrateRelation('IncidentAttachmentData', $incidentData[$attachment->data_id]);
+                        }
+                    }
+                }
+            }
+
             if (!$input['submit'])
             {
                 $viewParams = [
@@ -449,6 +483,26 @@ class IncidentController extends AbstractController
         ];
 
         return $this->view('USIPS\NCMEC:Incident\AssignCase', 'usips_ncmec_incident_assign_case', $viewParams);
+    }
+
+    public function actionUnassignCase(ParameterBag $params)
+    {
+        $incident = $this->assertIncidentExists($params->incident_id);
+
+        if ($this->isPost())
+        {
+            $incident->case_id = 0;
+            $incident->save();
+
+            return $this->redirect($this->getDynamicRedirect());
+        }
+        else
+        {
+            $viewParams = [
+                'incident' => $incident,
+            ];
+            return $this->view('USIPS\NCMEC:Incident\UnassignCase', 'usips_ncmec_incident_unassign_case', $viewParams);
+        }
     }
 
     protected function getAssignableCaseFinder()
