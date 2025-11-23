@@ -21,11 +21,21 @@ class ApiLogController extends AbstractController
     {
         $page = $this->filterPage();
         $perPage = 100;
+        $state = $this->filter('state', 'str');
+        if (!$state)
+        {
+            $state = 'all';
+        }
         
         $logFinder = $this->finder('USIPS\\NCMEC:ApiLog')
             ->with(['Report', 'Report.Case', 'User'])
             ->order('request_date', 'DESC')
             ->limitByPage($page, $perPage);
+
+        if ($state === 'receipts')
+        {
+            $logFinder->where('request_endpoint', '/finish');
+        }
         
         $logs = $logFinder->fetch();
         $total = $logFinder->total();
@@ -35,6 +45,11 @@ class ApiLogController extends AbstractController
             'total' => $total,
             'page' => $page,
             'perPage' => $perPage,
+            'state' => $state,
+            'tabs' => [
+                'all' => \XF::phrase('all'),
+                'receipts' => \XF::phrase('usips_ncmec_receipts')
+            ]
         ];
         
         return $this->view('USIPS\\NCMEC:ApiLog\\Index', 'usips_ncmec_api_log_list', $viewParams);

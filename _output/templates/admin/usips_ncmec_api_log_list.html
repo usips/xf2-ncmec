@@ -2,6 +2,15 @@
 
 <div class="block">
     <div class="block-container">
+        <h2 class="block-tabHeader tabs hScroller" data-xf-init="h-scroller">
+            <span class="hScroller-scroll">
+                <xf:foreach loop="$tabs" key="$tabState" value="$tabLabel">
+                    <a href="{{ link('ncmec-api-logs', null, {'state': $tabState}) }}"
+                        class="tabs-tab {{ $tabState == $state ? 'is-active' : '' }}">{$tabLabel}</a>
+                </xf:foreach>
+            </span>
+        </h2>
+
         <xf:if is="$logs.count()">
             <div class="block-body">
                 <div class="structItemContainer">

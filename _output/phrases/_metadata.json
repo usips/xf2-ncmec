@@ -545,6 +545,12 @@
         "version_string": "1.0.0",
         "hash": "bab7e08fe5248490daf37816b59d7850"
     },
+    "usips_ncmec_endpoint.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "2a6ba72e93aa7fa676d07973ed2716bb"
+    },
     "usips_ncmec_env_live.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -862,6 +868,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "d22052ddc4a2b3e2e330e051f45f6ac8"
+    },
+    "usips_ncmec_receipts.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "49babe4d38cea06979b992cebcae3ff8"
     },
     "usips_ncmec_remove_user.txt": {
         "global_cache": false,
