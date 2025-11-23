@@ -1,0 +1,9 @@
+{
+    "template": "post_macros",
+    "description": "Adds a report icon to the top of posts so it may be actioned without seeing the post.",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "str_replace",
+    "find": "<xf:if is=\"$showPosition\">",
+    "replace": "<xf:macro template=\"usips_ncmec_post_macros\" name=\"report_post\" arg-post=\"{$post}\" arg-thread=\"{$thread}\" />\n\n$0"
+}

@@ -1,0 +1,11 @@
+<xf:macro name="report_post" arg-post="!" arg-thread="!">
+<xf:if is="$post.canReport()">
+	<li>
+		<a href="{{ link('posts/report', $post) }}"
+		   class="message-attribution-gadget"
+		   data-xf-click="overlay" data-cache="false" rel="nofollow">
+			<xf:fa icon="fa-exclamation-triangle" />
+		</a>
+	</li>
+</xf:if>
+</xf:macro>

@@ -11,6 +11,12 @@
     <replace><![CDATA[{{ phrase('unassociated') }}
 									<span class="dataList-secondRow">{$attachment.getContentTypePhrase()|parens}</span>]]></replace>
   </modification>
+  <modification type="public" template="post_macros" modification_key="usips_ncmec_post_macros_report" description="Adds a report icon to the top of posts so it may be actioned without seeing the post." execution_order="10" enabled="1" action="str_replace">
+    <find><![CDATA[<xf:if is="$showPosition">]]></find>
+    <replace><![CDATA[<xf:macro template="usips_ncmec_post_macros" name="report_post" arg-post="{$post}" arg-thread="{$thread}" />
+
+$0]]></replace>
+  </modification>
   <modification type="public" template="report_view" modification_key="usips_ncmec_report_view" description="Adds the &quot;Flag as CSAM&quot; option to the Report view." execution_order="10" enabled="1" action="preg_replace">
     <find><![CDATA[/(<xf:radiorow[^>]*name="report_state"[^>]*>)(.*?)(<\/xf:radiorow>)/s]]></find>
     <replace><![CDATA[<xf:include template="usips_ncmec_report_state" />]]></replace>

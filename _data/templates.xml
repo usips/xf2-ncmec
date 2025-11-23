@@ -136,11 +136,6 @@
 
 <div class="block">
     <div class="block-container">
-        <h3 class="block-header">
-            {{ phrase('usips_ncmec_api_logs') }}
-            <span class="block-counter">({$total})</span>
-        </h3>
-
         <xf:if is="$logs.count()">
             <div class="block-body">
                 <div class="structItemContainer">
@@ -148,16 +143,14 @@
                 </div>
             </div>
 
-            <xf:if is="$total > $perPage">
-                <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-api-logs" />
-            </xf:if>
-
             <xf:else />
             <div class="block-body">
                 <div class="blockMessage">{{ phrase('no_items_to_display') }}</div>
             </div>
         </xf:if>
     </div>
+    <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-api-logs"
+        wrapperclass="block-outer block-outer--after" />
 </div>]]></template>
   <template type="admin" title="usips_ncmec_api_log_view" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_report_logs') }}</xf:title>
 
@@ -193,7 +186,7 @@
             </dl>
             <dl class="pairs pairs--rows pairs--rows--fluid">
                 <dt>Method</dt>
-                <dd>{$log.request_method|upper}</dd>
+                <dd>{$log.request_method|to_upper}</dd>
             </dl>
             <dl class="pairs pairs--rows pairs--rows--fluid">
                 <dt>Endpoint / URL</dt>
@@ -243,10 +236,9 @@
     <div class="block-container">
         <h2 class="block-header">Response</h2>
         <div class="block-body">
-            <div class="codeBlock codeBlock--smaller">
-                <pre
-                    class="codeBlock-code"><code>{{ $responseBody !== '' ? $responseBody : ('// ' . phrase('n_a')) }}</code></pre>
-            </div>
+            <xf:codeeditorrow name="response_body"
+                value="{{ $responseBody !== '' ? $responseBody : ('// ' . phrase('n_a')) }}" mode="{$responseMode}"
+                readonly="true" rowtype="fullWidth noLabel" />
         </div>
     </div>
 </div>
@@ -255,10 +247,9 @@
     <div class="block-container">
         <h2 class="block-header">Request</h2>
         <div class="block-body">
-            <div class="codeBlock codeBlock--smaller">
-                <pre
-                    class="codeBlock-code"><code>{{ $requestBody !== '' ? $requestBody : ('// ' . phrase('n_a')) }}</code></pre>
-            </div>
+            <xf:codeeditorrow name="request_body"
+                value="{{ $requestBody !== '' ? $requestBody : ('// ' . phrase('n_a')) }}" mode="{$requestMode}"
+                readonly="true" rowtype="fullWidth noLabel" />
         </div>
     </div>
 </div>]]></template>
@@ -427,7 +418,13 @@
                     {{ phrase('usips_ncmec_person_or_user_reported') }}
                 </span>
             </h3>
+
             <div class="block-body block-body--collapsible is-active">
+                <xf:formrow>
+                    <div class="block-rowMessage block-rowMessage--warning">
+                        {{ phrase('usips_ncmec_reported_person_warning') }}
+                    </div>
+                </xf:formrow>
                 <xf:macro template="usips_ncmec_macros" name="person_select" arg-name="reported_person_id"
                     arg-value="{$case.reported_person_id}" arg-persons="{$persons}"
                     arg-label="{{ phrase('usips_ncmec_reported_person') }}" />
@@ -484,27 +481,40 @@
 <xf:form action="{{ link('ncmec-cases/finalize', $case) }}" ajax="true" class="block">
     <div class="block-container">
         <div class="block-body">
+            <xf:if is="$apiEnvironment == 'production'">
+                <div class="block-rowMessage block-rowMessage--success">
+                    {{phrase('usips_ncmec_environment_live') }}
+                </div>
+                <xf:else />
+                <div class="block-rowMessage block-rowMessage--warning">
+                    {{ phrase('usips_ncmec_environment_test') }}
+                </div>
+            </xf:if>
+
             <xf:inforow rowtype="confirm">
                 {{ phrase('usips_ncmec_finalize_case_confirm_text', {'title': $case.title}) }}
             </xf:inforow>
 
-            <xf:if is="$apiEnvironment == 'production'">
-                <div class="block-rowMessage block-rowMessage--error block-rowMessage--iconFormat">
-                    <strong>{{ phrase('usips_ncmec_environment_warning') }}:</strong> {{
-                    phrase('usips_ncmec_environment_live') }}
-                </div>
-                <xf:else />
-                <div class="block-rowMessage block-rowMessage--warning block-rowMessage--iconFormat">
-                    <strong>{{ phrase('usips_ncmec_environment_warning') }}:</strong> {{
-                    phrase('usips_ncmec_environment_test') }}
-                </div>
+            <xf:if is="$previews is not empty">
+                <xf:foreach loop="$previews" value="$preview">
+                    <h3 class="block-formSectionHeader">
+                        <span class="block-formSectionHeader-aligner">
+                            {{ phrase('usips_ncmec_report') }}: {$preview.user.username}
+                        </span>
+                    </h3>
+                    <xf:if is="$preview.error">
+                        <div class="block-row">
+                            <div class="blockMessage blockMessage--error">{$preview.error}</div>
+                        </div>
+                        <xf:else />
+                        <xf:codeeditorrow name="xml_preview_{$preview.user.user_id}" value="{$preview.xml}" mode="xml"
+                            readonly="true" rowtype="fullWidth noLabel" />
+                    </xf:if>
+                </xf:foreach>
+                <hr class="block-separator" />
             </xf:if>
 
-            <div class="block-rowMessage block-rowMessage--important block-rowMessage--iconFormat">
-                <strong>{{ phrase('warning') }}:</strong> {{ phrase('usips_ncmec_finalize_deletion_warning') }}
-            </div>
-
-            <xf:checkboxrow>
+            <xf:checkboxrow explain="{{ phrase('usips_ncmec_finalize_deletion_warning') }}">
                 <xf:option name="confirm" value="1" label="{{ phrase('usips_ncmec_confirm_finalize_permanent') }}"
                     required="true" />
             </xf:checkboxrow>
@@ -521,28 +531,28 @@
 </xf:pageaction>
 
 <xf:form action="{{ link('ncmec-cases/create') }}" class="block">
+    <div class="block-outer">
+        <xf:macro template="filter_macros" name="quick_filter" arg-key="cases" arg-class="block-outer-opposite" />
+    </div>
     <div class="block-container">
+        <h2 class="block-tabHeader tabs hScroller" data-xf-init="h-scroller">
+            <span class="hScroller-scroll">
+                <xf:foreach loop="$tabs" key="$tabState" value="$tabLabel">
+                    <a href="{{ link('ncmec-cases', null, {'state': $tabState}) }}"
+                        class="tabs-tab {{ $tabState == $state ? 'is-active' : '' }}">{$tabLabel}</a>
+                </xf:foreach>
+            </span>
+        </h2>
         <div class="block-body">
-            <xf:if contentcheck="true">
-                <div class="block-filterBar">
-                    <div class="filterBar">
-                        <xf:contentcheck>
-                            <xf:macro template="filter_macros" name="quick_filter" arg-key="cases"
-                                arg-class="block-filterBar-input" />
-                        </xf:contentcheck>
-                    </div>
-                </div>
-
-                <div class="structItemContainer">
-                    <xf:macro template="usips_ncmec_macros" name="case_list" arg-cases="{$cases}" />
-                </div>
-
-                <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-cases" />
+            <xf:if is="$cases is not empty">
+                <xf:macro template="usips_ncmec_macros" name="case_list" arg-cases="{$cases}" />
                 <xf:else />
-                <div class="blockMessage">{{ phrase('usips_ncmec_no_cases_open') }}</div>
+                <div class="block-row">{{ phrase('no_results_found') }}</div>
             </xf:if>
         </div>
     </div>
+    <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-cases"
+        wrapperclass="block-outer block-outer--after" />
 </xf:form>]]></template>
   <template type="admin" title="usips_ncmec_case_view" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_case') }}</xf:title>
 
@@ -580,9 +590,9 @@
                 </xf:formrow>
             </xf:if>
 
-            <xf:if is="$case.is_finalized">
+            <xf:if is="$case.finalized_on">
                 <xf:formrow label="{{ phrase('usips_ncmec_status') }}">
-                    <xf:if is="$case.is_finished">
+                    <xf:if is="$case.finished_on">
                         <span class="label label--green">{{ phrase('usips_ncmec_case_finished') }}</span>
                         <div class="inputGroup-text">
                             {{ phrase('usips_ncmec_case_finished_desc') }}
@@ -611,7 +621,7 @@
                 <xf:button href="{{ link('ncmec-cases/finalize', $case) }}" icon="confirm" overlay="true">
                     {{ phrase('usips_ncmec_finalize_case') }}
                 </xf:button>
-                <xf:elseif is="$case.is_finalized AND !$case.is_finished" />
+                <xf:elseif is="$case.finalized_on AND !$case.finished_on" />
                 <xf:button href="{{ link('ncmec-cases/submit', $case) }}" icon="export" overlay="true">
                     {{ phrase('usips_ncmec_submit_case_to_ncmec') }}
                 </xf:button>
@@ -667,12 +677,14 @@
         <div class="block-container">
             <h3 class="block-header">
                 {{ phrase('usips_ncmec_incidents') }}
-                <span class="block-counter">({$incidentCount})</span>
             </h3>
             <div class="block-body">
                 <div class="structItemContainer">
                     <xf:macro template="usips_ncmec_macros" name="incident_list" arg-incidents="{$incidents}" />
                 </div>
+            </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ display_totals($incidents) }}</span>
             </div>
             <xf:if is="$canEditCase">
                 <xf:formrow>
@@ -690,12 +702,14 @@
         <div class="block-container">
             <h3 class="block-header">
                 {{ phrase('usips_ncmec_reports') }}
-                <span class="block-counter">({$reportCount})</span>
             </h3>
             <div class="block-body">
                 <div class="structItemContainer">
                     <xf:macro template="usips_ncmec_macros" name="report_list" arg-reports="{$reports}" />
                 </div>
+            </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ display_totals($reports) }}</span>
             </div>
             <xf:if is="$canEditCase">
                 <xf:formrow>
@@ -1028,9 +1042,44 @@
 	</xf:button>
 </xf:pageaction>
 
-<xf:form action="{{ link('ncmec-incidents/assign-case') }}" class="" ajax="true" data-xf-init="select-plus"
+<xf:form action="{{ link('ncmec-incidents/assign-case') }}" class="block" ajax="true" data-xf-init="select-plus"
 	data-sp-checkbox="input[name='incident_ids[]']" data-sp-container=".dataList-row">
-	<xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" arg-total="{$total}" />
+	<div class="block-outer">
+		<xf:macro template="filter_macros" name="quick_filter" arg-key="incidents" arg-class="block-outer-opposite" />
+	</div>
+	<div class="block-container">
+		<h2 class="block-tabHeader tabs hScroller" data-xf-init="h-scroller">
+			<span class="hScroller-scroll">
+				<xf:foreach loop="$tabs" key="$tabState" value="$tabLabel">
+					<a href="{{ link('ncmec-incidents', null, {'state': $tabState}) }}"
+						class="tabs-tab {{ $tabState == $state ? 'is-active' : '' }}">{$tabLabel}</a>
+				</xf:foreach>
+			</span>
+		</h2>
+		<div class="block-body">
+			<xf:if is="$incidents is not empty">
+				<xf:macro template="usips_ncmec_macros" name="incident_list" arg-incidents="{$incidents}" />
+				<xf:else />
+				<div class="block-row">{{ phrase('no_results_found') }}</div>
+			</xf:if>
+		</div>
+		<xf:if is="$incidents is not empty">
+			<div class="block-footer block-footer--split">
+				<span class="block-footer-counter">{{ display_totals($incidents, $total) }}</span>
+				<span class="block-footer-select">
+					<xf:checkbox standalone="true">
+						<xf:option check-all="< .block-container" label="{{ phrase('select_all') }}" />
+					</xf:checkbox>
+				</span>
+				<span class="block-footer-controls">
+					<xf:button type="submit" name="assign_case" icon="merge" overlay="true">{{
+						phrase('usips_ncmec_assign_case') }}</xf:button>
+				</span>
+			</div>
+		</xf:if>
+	</div>
+	<xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-incidents"
+		wrapperclass="block-outer block-outer--after" />
 </xf:form>]]></template>
   <template type="admin" title="usips_ncmec_incident_remove_content" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_remove_content_from_incident') }}</xf:title>
 
@@ -1144,7 +1193,7 @@
             <xf:textboxrow name="title" value="{$incident.title}" label="{{ phrase('title') }}" />
 
             <xf:formrow label="{{ phrase('usips_ncmec_incident_status') }}">
-                <xf:if is="$incident.is_finalized">
+                <xf:if is="$incident.finalized_on">
                     {{ phrase('usips_ncmec_finalized') }}
                     <xf:else />
                     {{ phrase('usips_ncmec_draft') }}
@@ -1172,17 +1221,17 @@
                         {{ phrase('usips_ncmec_case_finalized_cannot_edit') }}
                     </div>
                 </xf:formrow>
-            </xf:if>
 
-            <xf:formrow label="{{ phrase('usips_ncmec_associated_users') }}">
-                {{ $counts.users|number }}
-            </xf:formrow>
-            <xf:formrow label="{{ phrase('usips_ncmec_associated_content') }}">
-                {{ $counts.content|number }}
-            </xf:formrow>
-            <xf:formrow label="{{ phrase('usips_ncmec_associated_attachment_data') }}">
-                {{ $counts.attachments|number }}
-            </xf:formrow>
+                <xf:formrow label="{{ phrase('usips_ncmec_associated_users') }}">
+                    {{ $counts.users|number }}
+                </xf:formrow>
+                <xf:formrow label="{{ phrase('usips_ncmec_associated_content') }}">
+                    {{ $counts.content|number }}
+                </xf:formrow>
+                <xf:formrow label="{{ phrase('usips_ncmec_associated_attachment_data') }}">
+                    {{ $counts.attachments|number }}
+                </xf:formrow>
+            </xf:if>
 
             <xf:if is="$caseEditable">
                 <xf:submitrow sticky="true" icon="save" />
@@ -1191,16 +1240,18 @@
     </div>
 </xf:form>
 
-<xf:if is="$contentData">
+<xf:if is="$incident.IncidentUsers is not empty">
     <div class="block">
         <div class="block-container">
             <h2 class="block-header">
                 {{ phrase('usips_ncmec_associated_users') }}
-                <span class="block-counter">({$incident.IncidentUsers|count})</span>
             </h2>
             <div class="block-body">
                 <xf:macro name="usips_ncmec_macros::user_avatar_list" arg-users="{$incident.IncidentUsers}"
                     arg-incident="{$incident}" />
+            </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ display_totals($incident.IncidentUsers) }}</span>
             </div>
         </div>
     </div>
@@ -1211,7 +1262,6 @@
         <div class="block-container">
             <h2 class="block-header">
                 {{ phrase('usips_ncmec_associated_content') }}
-                <span class="block-counter">({$contentData|count})</span>
             </h2>
             <div class="block-body">
                 <xf:datalist class="dataList">
@@ -1278,8 +1328,8 @@
 					<xf:date time="$case.created_date" />
 				</xf:cell>
 				<xf:cell>
-					<xf:if is="$case.is_finalized">
-						<xf:if is="$case.is_finished">
+					<xf:if is="$case.finalized_on">
+						<xf:if is="$case.finished_on">
 							{{ phrase('usips_ncmec_case_finished') }}
 							<xf:else />
 							{{ phrase('usips_ncmec_case_finalized') }}
@@ -1302,7 +1352,7 @@
 						0
 					</xf:if>
 				</xf:cell>
-				<xf:if is="!$case.is_finalized">
+				<xf:if is="!$case.finalized_on">
 					<xf:delete href="{{ link('ncmec-cases/delete', $case) }}" />
 					<xf:else />
 					<xf:cell></xf:cell>
@@ -1390,7 +1440,7 @@
 		</xf:datarow>
 		<xf:foreach loop="$incidents" value="$incident">
 			<xf:datarow>
-				<xf:if is="$incident.is_finalized">
+				<xf:if is="$incident.finalized_on">
 					<xf:cell></xf:cell>
 					<xf:else />
 					<xf:toggle name="incident_ids[]" value="{$incident.incident_id}" />
@@ -1409,7 +1459,7 @@
 					<xf:date time="$incident.created_date" />
 				</xf:cell>
 				<xf:cell>
-					<xf:if is="$incident.is_finalized">
+					<xf:if is="$incident.finalized_on">
 						{{ phrase('usips_ncmec_finalized') }}
 						<xf:else />
 						{{ phrase('usips_ncmec_draft') }}
@@ -1453,7 +1503,8 @@
 					</span>
 				</div>
 
-				<xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-incidents" />
+				<xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-incidents"
+					wrapperclass="block-outer block-outer--after" />
 				<xf:else />
 				<div class="block-body block-row">{{ phrase('no_results_found') }}</div>
 			</xf:if>
@@ -1513,13 +1564,13 @@
 					</xf:if>
 				</xf:cell>
 				<xf:cell>
-					<xf:if is="$report.is_finished">
+					<xf:if is="$report.finished_on">
 						{{ phrase('usips_ncmec_finalized') }}
 						<xf:else />
 						{{ phrase('usips_ncmec_draft') }}
 					</xf:if>
 				</xf:cell>
-				<xf:if is="!$report.is_finished">
+				<xf:if is="!$report.finished_on">
 					<xf:action href="{{ link('ncmec-reports/edit', $report) }}">
 						{{ phrase('edit') }}
 					</xf:action>
@@ -1542,7 +1593,8 @@
 					<xf:macro id="report_list" arg-reports="{$reports}" />
 				</div>
 
-				<xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-reports" />
+				<xf:pagenav page="$page" perpage="$perPage" total="$total" link="ncmec-reports"
+					wrapperclass="block-outer block-outer--after" />
 				<xf:else />
 				<div class="block-body block-row">{{ phrase('no_results_found') }}</div>
 			</xf:if>
@@ -1834,10 +1886,30 @@
 </xf:form>]]></template>
   <template type="admin" title="usips_ncmec_report_list" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_reports') }}</xf:title>
 
-<xf:macro id="usips_ncmec_macros::report_list_block" arg-reports="{$reports}" arg-total="{$total}" />]]></template>
-  <template type="admin" title="usips_ncmec_report_list_archive" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_reports_archive') }}</xf:title>
-
-<xf:macro id="usips_ncmec_macros::report_list_block" arg-reports="{$reports}" arg-total="{$total}" />]]></template>
+<div class="block">
+    <div class="block-outer">
+        <xf:macro template="filter_macros" name="quick_filter" arg-key="reports" arg-class="block-outer-opposite" />
+    </div>
+    <div class="block-container">
+        <h2 class="block-tabHeader tabs hScroller" data-xf-init="h-scroller">
+            <span class="hScroller-scroll">
+                <xf:foreach loop="$tabs" key="$tabState" value="$tabLabel">
+                    <a href="{{ link('ncmec-reports', null, {'state': $tabState}) }}"
+                        class="tabs-tab {{ $tabState == $state ? 'is-active' : '' }}">{$tabLabel}</a>
+                </xf:foreach>
+            </span>
+        </h2>
+        <div class="block-body">
+            <xf:if is="$reports is not empty">
+                <xf:macro template="usips_ncmec_macros" name="report_list" arg-reports="{$reports}" />
+                <xf:else />
+                <div class="block-row">{{ phrase('no_results_found') }}</div>
+            </xf:if>
+        </div>
+    </div>
+    <xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ncmec-reports"
+        wrapperclass="block-outer block-outer--after" />
+</div>]]></template>
   <template type="admin" title="usips_ncmec_report_step1" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_finalize_report') }} - {{ phrase('usips_ncmec_step_1_incident_summary') }}</xf:title>
 
 <xf:breadcrumb href="{{ link('ncmec-reports') }}">{{ phrase('usips_ncmec_reports') }}</xf:breadcrumb>
@@ -1889,11 +1961,6 @@
 </xf:form>]]></template>
   <template type="admin" title="usips_ncmec_report_view" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_report') }}</xf:title>
 
-<xf:if is="$report.is_finished">
-    <xf:breadcrumb href="{{ link('ncmec-reports/archive') }}">{{ phrase('usips_ncmec_reports_finalized') }}
-    </xf:breadcrumb>
-</xf:if>
-
 <div class="block">
     <div class="block-container">
         <h2 class="block-header">{{ phrase('details') }}</h2>
@@ -1938,7 +2005,7 @@
                         <xf:date time="{$report.last_update_date}" />
                     </xf:cell>
                     <xf:cell>
-                        <xf:if is="$report.is_finished">
+                        <xf:if is="$report.finished_on">
                             {{ phrase('usips_ncmec_finalized') }}
                             <xf:else />
                             {{ phrase('usips_ncmec_draft') }}
@@ -1954,7 +2021,6 @@
     <div class="block-container">
         <h2 class="block-header">
             {{ phrase('usips_ncmec_incidents') }}
-            <span class="block-counter">({$incidents.count()})</span>
         </h2>
         <xf:if is="$incidents.count()">
             <div class="block-body">
@@ -1980,7 +2046,7 @@
                                 <xf:date time="{$incident.created_date}" />
                             </xf:cell>
                             <xf:cell>
-                                <xf:if is="$incident.is_finalized">
+                                <xf:if is="$incident.finalized_on">
                                     {{ phrase('usips_ncmec_finalized') }}
                                     <xf:else />
                                     {{ phrase('usips_ncmec_draft') }}
@@ -1989,6 +2055,9 @@
                         </xf:datarow>
                     </xf:foreach>
                 </xf:datalist>
+            </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ display_totals($incidents) }}</span>
             </div>
             <xf:else />
             <div class="block-body block-row">
@@ -2002,52 +2071,13 @@
     <div class="block-container">
         <h2 class="block-header">
             {{ phrase('usips_ncmec_report_logs') }}
-            <xf:if is="$apiLogs.count()">
-                <span class="block-counter">({$apiLogs.count()})</span>
-            </xf:if>
         </h2>
         <xf:if is="$apiLogs.count()">
             <div class="block-body">
-                <xf:datalist class="dataList">
-                    <xf:datarow rowtype="header">
-                        <xf:cell>{{ phrase('date') }}</xf:cell>
-                        <xf:cell>Method</xf:cell>
-                        <xf:cell>Endpoint</xf:cell>
-                        <xf:cell>{{ phrase('status') }}</xf:cell>
-                        <xf:cell></xf:cell>
-                    </xf:datarow>
-                    <xf:foreach loop="$apiLogs" value="$log">
-                        <xf:datarow>
-                            <xf:cell>
-                                <xf:date time="{$log.request_date}" />
-                            </xf:cell>
-                            <xf:cell>{$log.request_method|upper}</xf:cell>
-                            <xf:cell>
-                                <xf:if is="$log.request_endpoint">
-                                    {$log.request_endpoint}
-                                    <xf:else />
-                                    {$log.request_url}
-                                </xf:if>
-                                <div class="u-muted">{$log.environment}</div>
-                            </xf:cell>
-                            <xf:cell>
-                                <xf:if is="$log.success">
-                                    <span class="label label--success">{{ phrase('success') }}</span>
-                                    <xf:else />
-                                    <span class="label label--accent">Failed</span>
-                                </xf:if>
-                                <xf:if is="$log.response_code">
-                                    <div class="u-muted">HTTP {$log.response_code}</div>
-                                </xf:if>
-                            </xf:cell>
-                            <xf:cell class="dataList-cell--action">
-                                <a href="{{ link('ncmec-api-logs/view', $log) }}" data-xf-click="overlay">
-                                    {{ phrase('view') }}
-                                </a>
-                            </xf:cell>
-                        </xf:datarow>
-                    </xf:foreach>
-                </xf:datalist>
+                <xf:macro template="usips_ncmec_macros" name="api_log_list" arg-logs="{$apiLogs}" />
+            </div>
+            <div class="block-footer">
+                <span class="block-footer-counter">{{ display_totals($apiLogs) }}</span>
             </div>
             <xf:else />
             <div class="block-body block-row">{{ phrase('no_results_found') }}</div>
@@ -2123,6 +2153,17 @@
     <xf:macro id="message_macros::attachments" arg-attachments="{{ $attachments }}"
         arg-message="{{ $attachmentMessage }}" arg-canView="{{ true }}" />
 </xf:if>]]></template>
+  <template type="public" title="usips_ncmec_post_macros" version_id="0" version_string="1.0.0"><![CDATA[<xf:macro name="report_post" arg-post="!" arg-thread="!">
+<xf:if is="$post.canReport()">
+	<li>
+		<a href="{{ link('posts/report', $post) }}"
+		   class="message-attribution-gadget"
+		   data-xf-click="overlay" data-cache="false" rel="nofollow">
+			<xf:fa icon="fa-exclamation-triangle" />
+		</a>
+	</li>
+</xf:if>
+</xf:macro>]]></template>
   <template type="public" title="usips_ncmec_report_create" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('report_content') }}</xf:title>
 
 <xf:form action="{$confirmUrl}" class="block" ajax="true" data-skip-overlay-redirect="true">

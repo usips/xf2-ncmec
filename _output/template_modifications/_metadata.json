@@ -8,6 +8,9 @@
     "public/usips_ncmec_approval_queue_macros.json": {
         "hash": "98f9645b01787b78fcb2134f92e97536"
     },
+    "public/usips_ncmec_post_macros_report.json": {
+        "hash": "8bc1fe8ddcc83d70d750cd57d4c033b6"
+    },
     "public/usips_ncmec_report_view.json": {
         "hash": "7fc775c51960d720df3c14fa20630d61"
     },
