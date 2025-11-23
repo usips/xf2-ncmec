@@ -53,6 +53,16 @@ class IncidentAttachmentData extends Entity
         return $structure;
     }
 
+    protected function _preSave()
+    {
+        parent::_preSave();
+
+        if ($this->Incident && $this->Incident->finalized_on)
+        {
+            $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
+        }
+    }
+
     protected function _postSave()
     {
         parent::_postSave();
@@ -64,8 +74,13 @@ class IncidentAttachmentData extends Entity
 
     }
 
-    protected function _postDelete()
+    protected function _preDelete()
     {
+        if ($this->Incident && $this->Incident->finalized_on)
+        {
+            $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
+        }
+
         parent::_postDelete();
         
         /** @var \USIPS\NCMEC\Service\Incident\AttachmentManager $attachmentManager */

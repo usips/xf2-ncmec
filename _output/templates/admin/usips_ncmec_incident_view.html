@@ -11,10 +11,13 @@
             {{ phrase('usips_ncmec_assign_case') }}
         </xf:button>
     </xf:if>
-    <xf:button href="{{ link('ncmec-incidents/delete', $incident) }}" icon="delete" overlay="true" />
+    <xf:if is="!$incident.finalized_on">
+        <xf:button href="{{ link('ncmec-incidents/delete', $incident) }}" icon="delete" overlay="true" />
+    </xf:if>
 </xf:pageaction>
 
-<xf:set var="$caseEditable" value="{{ !$incident.case_id || ($incident.Case && $incident.Case.canEdit()) }}" />
+<xf:set var="$caseEditable"
+    value="{{ !$incident.finalized_on && (!$incident.case_id || ($incident.Case && $incident.Case.canEdit())) }}" />
 
 <xf:form action="{{ link('ncmec-incidents/update', $incident) }}" ajax="true" class="block">
 
@@ -117,8 +120,10 @@
                             </xf:cell>
                             <xf:action href="{{ $data.content.getContentUrl(true) }}">{{ phrase('view_content') }}
                             </xf:action>
-                            <xf:delete href="{{ link('ncmec-incidents/content/delete', $data.incident_content) }}"
-                                tooltip="{{ phrase('usips_ncmec_disassociate') }}" />
+                            <xf:if is="!$incident.finalized_on">
+                                <xf:delete href="{{ link('ncmec-incidents/content/delete', $data.incident_content) }}"
+                                    tooltip="{{ phrase('usips_ncmec_disassociate') }}" />
+                            </xf:if>
                         </xf:datarow>
                     </xf:foreach>
                 </xf:datalist>

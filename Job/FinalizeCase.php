@@ -66,14 +66,15 @@ class FinalizeCase extends AbstractJob
             
             if ($successfulReports > 0)
             {
-                // At least one report succeeded, mark case as finished
-                $case->finished_on = \XF::$time;
+                // At least one report succeeded, mark case as submitted
+                $case->submitted_on = \XF::$time;
                 $case->save();
 
                 // Finalize all incidents
                 foreach ($case->Incidents as $incident)
                 {
                     $incident->finalized_on = \XF::$time;
+                    $incident->submitted_on = \XF::$time;
                     $incident->save();
                 }
             }
@@ -81,7 +82,7 @@ class FinalizeCase extends AbstractJob
             {
                 // All reports failed, reset case to allow resubmission
                 $case->finalized_on = null;
-                $case->finished_on = null;
+                $case->submitted_on = null;
                 $case->save();
                 
                 \XF::logError("NCMEC Case #{$case->case_id}: All reports failed. Case has been unlocked for resubmission.");

@@ -17,7 +17,7 @@ class UserController extends BaseUserController
         {
             $viewParams = $response->getParams();
             $viewParams['nonFinalizedIncidents'] = $this->finder('USIPS\NCMEC:Incident')
-                ->where('is_finalized', 0)
+                ->where('finalized_on', null)
                 ->order('created_date', 'DESC')
                 ->fetch();
             $viewParams['timeLimitDefault'] = TimeLimit::getDefaultSeconds();

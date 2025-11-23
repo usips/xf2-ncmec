@@ -26,8 +26,17 @@
     "XF-Entity-Attachment_USIPS-NCMEC-XF-Entity-Attachment.json": {
         "hash": "7aa224e80ddc1117bc32795666cbd75d"
     },
+    "XF-Entity-User_USIPS-NCMEC-XF-Entity-User.json": {
+        "hash": "33ab91352d36c52a483ec58a03ed1bd7"
+    },
     "XF-Pub-Controller-ReportController_USIPS-NCMEC-XF-Pub-Controller-ReportController.json": {
         "hash": "d8f998ceecea9cdc64a1082cb117972f"
+    },
+    "XF-Repository-ChangeLog_USIPS-NCMEC-XF-Repository-ChangeLog.json": {
+        "hash": "3ba9a6207254beacfdde2c7e113dc4c0"
+    },
+    "XF-Repository-Ip_USIPS-NCMEC-XF-Repository-Ip.json": {
+        "hash": "ad3e1d460be91fa529ee0a34e4a7c4c8"
     },
     "XF-Service-Report-CreatorService_USIPS-NCMEC-XF-Service-Report-CreatorService.json": {
         "hash": "52334cb4ba979fa29d5ca44d7747ccc0"

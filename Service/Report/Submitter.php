@@ -277,13 +277,13 @@ class Submitter extends AbstractService
         $this->apiClient->setReportId($this->report->report_id);
 
         // 4. Finish Report
-        if (!$this->report->finished_on && $this->report->ncmec_report_id)
+        if (!$this->report->submitted_on && $this->report->ncmec_report_id)
         {
             $response = $this->apiClient->finishReport($this->report->ncmec_report_id);
             
             if ($response && (string)$response->responseCode === '0')
             {
-                $this->report->finished_on = \XF::$time;
+                $this->report->submitted_on = \XF::$time;
                 $this->report->save();
             }
             else

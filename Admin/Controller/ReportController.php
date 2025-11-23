@@ -34,11 +34,11 @@ class ReportController extends AbstractController
 
         if ($state === 'archive')
         {
-            $finder->where('finished_on', '!=', null);
+            $finder->where('submitted_on', '!=', null);
         }
         else
         {
-            $finder->where('finished_on', null);
+            $finder->where('submitted_on', null);
         }
 
         $total = $finder->total();

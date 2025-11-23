@@ -17,6 +17,22 @@ use XF\Mvc\Entity\Structure;
  */
 class IncidentUser extends Entity
 {
+    protected function _preSave()
+    {
+        if ($this->Incident && $this->Incident->finalized_on)
+        {
+            $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
+        }
+    }
+
+    protected function _preDelete()
+    {
+        if ($this->Incident && $this->Incident->finalized_on)
+        {
+            $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
+        }
+    }
+
     public static function getStructure(Structure $structure)
     {
         $structure->table = 'xf_usips_ncmec_incident_user';

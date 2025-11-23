@@ -1,2 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<code_event_listeners/>
+<code_event_listeners>
+  <listener event_id="entity_pre_delete" execute_order="10" callback_class="USIPS\NCMEC\Listener" callback_method="entityPreDelete" active="1" description="18 U.S. Code § 2703 - Entity preservation."/>
+</code_event_listeners>

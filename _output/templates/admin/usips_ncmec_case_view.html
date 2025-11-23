@@ -32,10 +32,10 @@
 
             <xf:if is="$case.finalized_on">
                 <xf:formrow label="{{ phrase('usips_ncmec_status') }}">
-                    <xf:if is="$case.finished_on">
-                        <span class="label label--green">{{ phrase('usips_ncmec_case_finished') }}</span>
+                    <xf:if is="$case.submitted_on">
+                        <span class="label label--green">{{ phrase('usips_ncmec_case_submitted') }}</span>
                         <div class="inputGroup-text">
-                            {{ phrase('usips_ncmec_case_finished_desc') }}
+                            {{ phrase('usips_ncmec_case_submitted_desc') }}
                         </div>
                         <xf:else />
                         <span class="label label--orange">{{ phrase('usips_ncmec_case_finalized') }}</span>
@@ -61,9 +61,9 @@
                 <xf:button href="{{ link('ncmec-cases/finalize', $case) }}" icon="confirm" overlay="true">
                     {{ phrase('usips_ncmec_finalize_case') }}
                 </xf:button>
-                <xf:elseif is="$case.finalized_on AND !$case.finished_on" />
+                <xf:elseif is="$case.finalized_on AND !$case.submitted_on" />
                 <xf:button href="{{ link('ncmec-cases/submit', $case) }}" icon="export" overlay="true">
-                    {{ phrase('usips_ncmec_submit_case_to_ncmec') }}
+                    {{ phrase('usips_ncmec_case_submit') }}
                 </xf:button>
             </xf:if>
         </xf:formrow>

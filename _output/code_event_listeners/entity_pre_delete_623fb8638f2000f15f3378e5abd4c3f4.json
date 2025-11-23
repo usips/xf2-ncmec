@@ -1,0 +1,9 @@
+{
+    "event_id": "entity_pre_delete",
+    "execute_order": 10,
+    "callback_class": "USIPS\\NCMEC\\Listener",
+    "callback_method": "entityPreDelete",
+    "active": true,
+    "hint": "",
+    "description": "18 U.S. Code \u00a7 2703 - Entity preservation."
+}

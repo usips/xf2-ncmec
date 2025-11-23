@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Repository\\ChangeLog",
+    "to_class": "USIPS\\NCMEC\\XF\\Repository\\ChangeLog",
+    "execute_order": 10,
+    "active": true
+}

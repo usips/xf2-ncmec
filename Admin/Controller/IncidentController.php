@@ -509,7 +509,7 @@ class IncidentController extends AbstractController
     {
         return $this->finder('USIPS\NCMEC:CaseFile')
             ->where('finalized_on', null)
-            ->where('finished_on', null)
+            ->where('submitted_on', null)
             ->order('created_date', 'DESC');
     }
 

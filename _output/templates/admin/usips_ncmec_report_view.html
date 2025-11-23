@@ -44,7 +44,7 @@
                         <xf:date time="{$report.last_update_date}" />
                     </xf:cell>
                     <xf:cell>
-                        <xf:if is="$report.finished_on">
+                        <xf:if is="$report.submitted_on">
                             {{ phrase('usips_ncmec_finalized') }}
                             <xf:else />
                             {{ phrase('usips_ncmec_draft') }}

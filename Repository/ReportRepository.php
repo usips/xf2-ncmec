@@ -15,7 +15,7 @@ class ReportRepository extends Repository
     public function findOpenReports(): Finder
     {
         return $this->finder('USIPS\\NCMEC:Report')
-            ->where('finished_on', null)
+            ->where('submitted_on', null)
             ->order('created_date', 'DESC');
     }
 

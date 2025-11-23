@@ -31,11 +31,18 @@ namespace USIPS\NCMEC\XF\Entity
 	class XFCP_ApprovalQueue extends \XF\Entity\ApprovalQueue {}
 	class XFCP_Attachment extends \XF\Entity\Attachment {}
 	class XFCP_AttachmentData extends \XF\Entity\AttachmentData {}
+	class XFCP_User extends \XF\Entity\User {}
 }
 
 namespace USIPS\NCMEC\XF\Pub\Controller
 {
 	class XFCP_ReportController extends \XF\Pub\Controller\ReportController {}
+}
+
+namespace USIPS\NCMEC\XF\Repository
+{
+	class XFCP_ChangeLog extends \XF\Repository\ChangeLog {}
+	class XFCP_Ip extends \XF\Repository\Ip {}
 }
 
 namespace USIPS\NCMEC\XF\Service\Report

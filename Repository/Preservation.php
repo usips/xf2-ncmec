@@ -13,7 +13,7 @@ class Preservation extends Repository
             FROM xf_usips_ncmec_incident_user AS iu
             INNER JOIN xf_usips_ncmec_incident AS i ON (iu.incident_id = i.incident_id)
             WHERE iu.user_id = ?
-            AND i.finalized_on IS NOT NULL
+            AND i.submitted_on IS NOT NULL
             LIMIT 1
         ", [$userId]);
     }
@@ -24,7 +24,7 @@ class Preservation extends Repository
             SELECT DISTINCT iu.user_id
             FROM xf_usips_ncmec_incident_user AS iu
             INNER JOIN xf_usips_ncmec_incident AS i ON (iu.incident_id = i.incident_id)
-            WHERE i.finalized_on IS NOT NULL
+            WHERE i.submitted_on IS NOT NULL
         ");
     }
 }

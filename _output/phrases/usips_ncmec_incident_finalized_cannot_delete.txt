@@ -1,1 +1,1 @@
-This incident has been finalized and cannot be deleted.
+Incident is finalized and cannot be modified or deleted

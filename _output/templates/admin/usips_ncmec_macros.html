@@ -25,8 +25,8 @@
 				</xf:cell>
 				<xf:cell>
 					<xf:if is="$case.finalized_on">
-						<xf:if is="$case.finished_on">
-							{{ phrase('usips_ncmec_case_finished') }}
+						<xf:if is="$case.submitted_on">
+							{{ phrase('usips_ncmec_case_submitted') }}
 							<xf:else />
 							{{ phrase('usips_ncmec_case_finalized') }}
 						</xf:if>
@@ -150,22 +150,26 @@
 <xf:macro id="incident_list" arg-incidents="{{ [] }}" arg-case="{{ null }}">
 	<xf:datalist class="dataList">
 		<xf:datarow rowtype="header">
-			<xf:cell></xf:cell>
+			<xf:if is="!$case">
+				<xf:cell></xf:cell>
+			</xf:if>
 			<xf:cell>{{ phrase('title') }}</xf:cell>
 			<xf:cell>{{ phrase('user') }}</xf:cell>
 			<xf:cell>{{ phrase('date') }}</xf:cell>
 			<xf:cell>{{ phrase('status') }}</xf:cell>
 			<xf:cell></xf:cell>
-			<xf:cell></xf:cell>
+			<xf:if is="!$case OR !$case.finalized_on">
+				<xf:cell></xf:cell>
+			</xf:if>
 		</xf:datarow>
 		<xf:foreach loop="$incidents" value="$incident">
 			<xf:datarow>
-				<xf:if is="$case">
-					<xf:cell></xf:cell>
-					<xf:elseif is="$incident.finalized_on" />
-					<xf:cell></xf:cell>
-					<xf:else />
-					<xf:toggle name="incident_ids[]" value="{$incident.incident_id}" />
+				<xf:if is="!$case">
+					<xf:if is="$incident.finalized_on">
+						<xf:cell></xf:cell>
+						<xf:else />
+						<xf:toggle name="incident_ids[]" value="{$incident.incident_id}" />
+					</xf:if>
 				</xf:if>
 
 				<xf:cell class="dataList-cell--link">
@@ -194,14 +198,18 @@
 					<xf:else />
 					<xf:cell></xf:cell>
 				</xf:if>
-				<xf:if is="$case">
-					<xf:action href="{{ link('ncmec-incidents/unassign-case', $incident) }}" overlay="true">
-						{{ phrase('usips_ncmec_unassign') }}
-					</xf:action>
-					<xf:elseif is="$incident.case_id" />
-					<xf:delete href=" {{ link('ncmec-incidents/delete', $incident) }}" />
-					<xf:else />
-					<xf:cell></xf:cell>
+				<xf:if is="!$case OR !$case.finalized_on">
+					<xf:if is="$case">
+						<xf:action href="{{ link('ncmec-incidents/unassign-case', $incident) }}" overlay="true">
+							{{ phrase('usips_ncmec_unassign') }}
+						</xf:action>
+						<xf:elseif is="$incident.case_id" />
+						<xf:if is="!$incident.finalized_on">
+							<xf:delete href=" {{ link('ncmec-incidents/delete', $incident) }}" />
+						</xf:if>
+						<xf:else />
+						<xf:cell></xf:cell>
+					</xf:if>
 				</xf:if>
 			</xf:datarow>
 		</xf:foreach>
@@ -286,7 +294,7 @@
 					<xf:date time="$report.created_date" />
 				</xf:cell>
 				<xf:cell>
-					<xf:if is="$report.finished_on">
+					<xf:if is="$report.submitted_on">
 						{{ phrase('usips_ncmec_finalized') }}
 						<xf:else />
 						{{ phrase('usips_ncmec_draft') }}
@@ -395,7 +403,8 @@
 <xf:macro id="user_avatar_list" arg-users="{{ [] }}" arg-incident="{{ false }}">
 	<div class="user-avatars">
 		<xf:foreach loop="$users" value="$user">
-			<xf:avatar user="$user.User" size="s" href="{{ $incident ? link('ncmec-incidents/user', $user) : '' }}" />
+			<xf:avatar user="$user.User" size="s"
+				href="{{ $incident ? ($incident.finalized_on ? link('users/edit', $user.User) : link('ncmec-incidents/user', $user)) : '' }}" />
 		</xf:foreach>
 	</div>
 </xf:macro>

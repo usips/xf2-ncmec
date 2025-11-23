@@ -16,6 +16,7 @@ use XF\Mvc\Entity\Structure;
  * @property int $user_id
  * @property string $username
  * @property int|null $finalized_on
+ * @property int|null $submitted_on
  *
  * RELATIONS
  * @property-read \USIPS\NCMEC\Entity\CaseFile $Case
@@ -41,6 +42,7 @@ class Incident extends Entity
             'user_id' => ['type' => self::UINT, 'required' => true],
             'username' => ['type' => self::STR, 'maxLength' => 50, 'required' => true],
             'finalized_on' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
+            'submitted_on' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
         ];
         $structure->relations = [
             'Case' => [
@@ -72,6 +74,22 @@ class Incident extends Entity
         ];
 
         return $structure;
+    }
+
+    protected function _preSave()
+    {
+        if ($this->isUpdate() && $this->getExistingValue('finalized_on'))
+        {
+            $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
+        }
+    }
+
+    protected function _preDelete()
+    {
+        if ($this->finalized_on)
+        {
+            $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
+        }
     }
 
     public static function getWithEverything()

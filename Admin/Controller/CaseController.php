@@ -202,7 +202,7 @@ class CaseController extends AbstractController
     {
         $case = $this->assertCaseExists($params->case_id);
 
-        if ($case->finalized_on || $case->finished_on)
+        if ($case->finalized_on || $case->submitted_on)
         {
             return $this->error(\XF::phrase('usips_ncmec_case_finalized_cannot_delete'));
         }
@@ -315,7 +315,7 @@ class CaseController extends AbstractController
                 }
 
                 $case = $this->assertCaseExists($input['case_id']);
-                if ($case->finalized_on || $case->finished_on)
+                if ($case->finalized_on || $case->submitted_on)
                 {
                     return $this->error(\XF::phrase('usips_ncmec_case_finalized_cannot_edit'));
                 }
@@ -403,7 +403,7 @@ class CaseController extends AbstractController
     {
         return $this->finder('USIPS\NCMEC:CaseFile')
             ->where('finalized_on', null)
-            ->where('finished_on', null)
+            ->where('submitted_on', null)
             ->order('created_date', 'DESC');
     }
 
@@ -442,8 +442,8 @@ class CaseController extends AbstractController
                     return $this->error(implode("\n", $errors));
                 }
 
-                // If this is a resubmission (finalized but not finished), clean up first
-                if ($case->finalized_on && !$case->finished_on)
+                // If this is a resubmission (finalized but not submitted), clean up first
+                if ($case->finalized_on && !$case->submitted_on)
                 {
                     // Clean up any existing failed reports before resubmitting
                     $failedReports = $this->finder('USIPS\NCMEC:Report')
