@@ -375,29 +375,6 @@ class IncidentController extends AbstractController
         }
     }
 
-    public function actionCreateCase(ParameterBag $params)
-    {
-        $incident = $this->assertIncidentExists($params->incident_id);
-
-        if ($this->isPost())
-        {
-            $title = $this->filter('title', 'str');
-            $case = $this->createCaseRecord($title);
-
-            $incident->case_id = $case->case_id;
-            $incident->save();
-
-            return $this->redirect($this->buildLink('ncmec-incidents/view', $incident));
-        }
-
-        $viewParams = [
-            'incident' => $incident,
-            'defaultTitle' => $this->generateAutoCaseTitle(),
-        ];
-
-        return $this->view('USIPS\NCMEC:Incident\CreateCase', 'usips_ncmec_incident_create_case', $viewParams);
-    }
-
     public function actionAssignCase(ParameterBag $params)
     {
         $incidentIds = $this->filter('incident_ids', 'array-uint');
@@ -422,9 +399,16 @@ class IncidentController extends AbstractController
             return $this->error(\XF::phrase('requested_page_not_found'));
         }
 
-        if ($this->isPost())
+        if ($this->isPost() && $this->filter('assign_action', 'str'))
         {
-            $caseId = $this->filter('case_id', 'uint');
+            $assignAction = $this->filter('assign_action', 'str');
+            $caseId = 0;
+            
+            if ($assignAction === 'existing')
+            {
+                $caseId = $this->filter('case_id', 'uint');
+            }
+            
             $newCaseTitle = $this->filter('new_case_title', 'str');
 
             if ($caseId)
@@ -435,7 +419,7 @@ class IncidentController extends AbstractController
 
                 if (!$case)
                 {
-                    return $this->error(\XF::phrase('usips_ncmec_invalid_case_selection'));
+                    return $this->error(\XF::phrase('usips_ncmec_invalid_case'));
                 }
             }
             else
@@ -454,7 +438,7 @@ class IncidentController extends AbstractController
                 $incident->save();
             }
 
-            return $this->redirect($this->buildLink('ncmec-incidents'));
+            return $this->redirect($this->buildLink('ncmec-cases/view', $case));
         }
 
         $viewParams = [

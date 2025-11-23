@@ -1,15 +1,39 @@
-<xf:title>{{ phrase('usips_ncmec_create_case') }}</xf:title>
+<xf:title>{{ phrase('usips_ncmec_assign_case') }}</xf:title>
 
-<xf:form action="{{ link('ncmec-incidents/create-case', $incident) }}" ajax="true" class="block">
+<xf:form action="{{ link('ncmec-cases/create') }}" ajax="true" class="block">
+    <xf:foreach loop="$incidentIds" value="$incidentId">
+        <xf:hiddenval name="incident_ids[]" value="{$incidentId}" />
+    </xf:foreach>
+
     <div class="block-container">
         <div class="block-body">
             <xf:formrow rowtype="confirm">
-                {{ phrase('usips_ncmec_incident_case_create_description') }}
+                {{ phrase('usips_ncmec_assign_case_description', {'count': $incidentCount}) }}
             </xf:formrow>
 
-            <xf:textboxrow name="title" value="{$defaultTitle}" label="{{ phrase('title') }}" />
+            <xf:radiorow name="assign_action" value="new" label="{{ phrase('action') }}">
+                <xf:option value="new" label="{{ phrase('usips_ncmec_create_new_case') }}" selected="true">
+                    <xf:dependent>
+                        <xf:textbox name="new_case_title" value="{$defaultTitle}" placeholder="{{ phrase('title') }}"
+                            maxlength="100" />
+                        <div class="formRow-explain">{{ phrase('usips_ncmec_new_case_title_hint') }}</div>
+                    </xf:dependent>
+                </xf:option>
+                <xf:option value="existing" label="{{ phrase('usips_ncmec_add_to_existing_case') }}"
+                    disabled="{{ $availableCases is empty }}">
+                    <xf:dependent>
+                        <xf:select name="case_id">
+                            <xf:foreach loop="$availableCases" value="$case">
+                                <xf:option value="{$case.case_id}">{{ $case.title ?: phrase('usips_ncmec_untitled_case')
+                                    }}
+                                </xf:option>
+                            </xf:foreach>
+                        </xf:select>
+                    </xf:dependent>
+                </xf:option>
+            </xf:radiorow>
         </div>
 
-        <xf:submitrow icon="save" submit="{{ phrase('usips_ncmec_create_case') }}" />
+        <xf:submitrow icon="merge" submit="{{ phrase('usips_ncmec_assign_case') }}" />
     </div>
 </xf:form>

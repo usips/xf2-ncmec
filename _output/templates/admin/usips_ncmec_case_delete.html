@@ -1,0 +1,16 @@
+<xf:title>{{ phrase('confirm_action') }}</xf:title>
+
+<xf:form action="{{ link('ncmec-cases/delete', $case) }}" ajax="true" class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:inforow rowtype="confirm">
+                {{ phrase('please_confirm_that_you_want_to_delete_following:') }}
+                <strong>{$case.title}</strong>
+            </xf:inforow>
+            <xf:inforow rowtype="warning">
+                {{ phrase('usips_ncmec_case_delete_warning_incidents_unassigned') }}
+            </xf:inforow>
+        </div>
+        <xf:submitrow rowtype="simple" icon="delete" />
+    </div>
+</xf:form>

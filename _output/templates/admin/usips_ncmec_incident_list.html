@@ -6,7 +6,7 @@
 	</xf:button>
 </xf:pageaction>
 
-<xf:form action="{{ link('ncmec-incidents/assign-case') }}" class="block" ajax="true" data-xf-init="select-plus"
+<xf:form action="{{ link('ncmec-incidents/assign-case') }}" class="block" data-xf-init="select-plus"
 	data-sp-checkbox="input[name='incident_ids[]']" data-sp-container=".dataList-row">
 	<div class="block-outer">
 		<xf:macro template="filter_macros" name="quick_filter" arg-key="incidents" arg-class="block-outer-opposite" />
@@ -36,7 +36,7 @@
 					</xf:checkbox>
 				</span>
 				<span class="block-footer-controls">
-					<xf:button type="submit" name="assign_case" icon="merge" overlay="true">{{
+					<xf:button type="submit" name="assign_case" icon="merge">{{
 						phrase('usips_ncmec_assign_case') }}</xf:button>
 				</span>
 			</div>

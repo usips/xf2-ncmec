@@ -58,8 +58,11 @@
 	</div>
 </div>
 
-<xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" arg-nav="{{ false }}"
-	arg-header="{{ true }}" />
+<xf:form action="{{ link('ncmec-incidents/assign-case') }}" data-xf-init="select-plus"
+	data-sp-checkbox="input[name='incident_ids[]']" data-sp-container=".dataList-row">
+	<xf:macro id="usips_ncmec_macros::incident_list_block" arg-incidents="{$incidents}" arg-nav="{{ false }}"
+		arg-header="{{ true }}" arg-total="{{ $incidents|count }}" />
+</xf:form>
 
 <xf:macro id="usips_ncmec_macros::report_list_block" arg-incidents="{$reports}" arg-nav="{{ false }}"
 	arg-header="{{ true }}" />

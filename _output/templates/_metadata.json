@@ -34,6 +34,11 @@
         "version_string": "1.0.0",
         "hash": "9c297a4e18f0afb4302105dedaf21324"
     },
+    "admin/usips_ncmec_case_delete.html": {
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "2fd3955f09bb94c944b594a00019eaa2"
+    },
     "admin/usips_ncmec_case_edit.html": {
         "version_id": 0,
         "version_string": "1.0.0",
@@ -52,7 +57,7 @@
     "admin/usips_ncmec_case_view.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "cc8bab108b8aef4ca6dce1d56bc46c2f"
+        "hash": "8b688e62042b356d175ce8be8819897b"
     },
     "admin/usips_ncmec_config.html": {
         "version_id": 0,
@@ -72,12 +77,7 @@
     "admin/usips_ncmec_dashboard.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "19e60115a80664c9fc64f5168c47b34a"
-    },
-    "admin/usips_ncmec_incident_assign_case.html": {
-        "version_id": 0,
-        "version_string": "1.0.0",
-        "hash": "5a0cbe05aaa10d1993f153a9ea665def"
+        "hash": "a5dacf0d5395e0d9ea2d34985e0e803d"
     },
     "admin/usips_ncmec_incident_create.html": {
         "version_id": 0,
@@ -87,7 +87,7 @@
     "admin/usips_ncmec_incident_create_case.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "9d52512dc6c2d997f4bd1ec7cfda8127"
+        "hash": "ce753e274defb9b1c356e58cb457fb8a"
     },
     "admin/usips_ncmec_incident_delete.html": {
         "version_id": 0,
@@ -97,7 +97,7 @@
     "admin/usips_ncmec_incident_list.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "f04dc7e7cb1c599d49a9751d71c44c52"
+        "hash": "89bd25c95cf8b2e8948344bc67cc7fce"
     },
     "admin/usips_ncmec_incident_remove_content.html": {
         "version_id": 0,
@@ -117,12 +117,12 @@
     "admin/usips_ncmec_incident_view.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "82b59f48f221decdff4b5892a7116d88"
+        "hash": "02337801c4a7a8054e383de80402f0dd"
     },
     "admin/usips_ncmec_macros.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "f9ed649c5c73947fd30bd9c1ba7ed395"
+        "hash": "17984f3947238444841d40fae29f3678"
     },
     "admin/usips_ncmec_person_edit.html": {
         "version_id": 0,

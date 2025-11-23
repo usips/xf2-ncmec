@@ -197,6 +197,12 @@
         "version_string": "1.0.0",
         "hash": "d0f2496c3273e64eedc753d1c0f23647"
     },
+    "usips_ncmec_add_to_existing_case.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "a8d2d8fe574e5a1ef7bb7837e4b9681b"
+    },
     "usips_ncmec_additional_info.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -328,6 +334,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "ac08b44c53aa670f38d342414b6e1882"
+    },
+    "usips_ncmec_case_delete_warning_incidents_unassigned.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "30ca86ec4ce3c6cd99409d84340eea9d"
     },
     "usips_ncmec_case_details.txt": {
         "global_cache": false,
@@ -466,6 +478,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "530d75349cf6604edf1c69fbb6094501"
+    },
+    "usips_ncmec_create_new_case.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "53fc7d22a0fb5d7f5d87a1636270a589"
     },
     "usips_ncmec_create_new_case_option.txt": {
         "global_cache": false,
@@ -629,12 +647,6 @@
         "version_string": "1.0.0",
         "hash": "124617f0ad4a4ecb40ac0b9dcad97ed9"
     },
-    "usips_ncmec_incident_case_create_description.txt": {
-        "global_cache": false,
-        "version_id": 0,
-        "version_string": "1.0.0",
-        "hash": "b54d0bdfef6bf9c65dd17a486ba8c7dc"
-    },
     "usips_ncmec_incident_date_time.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -730,6 +742,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "6770b3489d6ca19eaa0238e4fb220ee5"
+    },
+    "usips_ncmec_invalid_case.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "389029a7e7ece8518ff660a68fcb8dd0"
     },
     "usips_ncmec_invalid_case_selection.txt": {
         "global_cache": false,

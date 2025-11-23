@@ -1,0 +1,1 @@
+Incidents assigned to this case will be unassigned but will not be deleted.

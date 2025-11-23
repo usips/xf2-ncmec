@@ -10,7 +10,6 @@ class PostHandler extends XFCP_PostHandler
 
     public function actionFlagCsam(Post $post): void
     {
-        parent::actionDelete($post);
         $this->flagContentForNcmec($post);
     }
 }

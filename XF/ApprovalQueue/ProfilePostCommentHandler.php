@@ -10,7 +10,6 @@ class ProfilePostCommentHandler extends XFCP_ProfilePostCommentHandler
 
     public function actionFlagCsam(ProfilePostComment $comment): void
     {
-        parent::actionDelete($comment);
         $this->flagContentForNcmec($comment);
     }
 }

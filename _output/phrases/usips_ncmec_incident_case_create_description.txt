@@ -1,1 +1,0 @@
-A new case will be created and this incident will be assigned to it automatically.

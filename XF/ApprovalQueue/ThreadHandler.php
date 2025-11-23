@@ -10,7 +10,6 @@ class ThreadHandler extends XFCP_ThreadHandler
 
     public function actionFlagCsam(Thread $thread): void
     {
-        parent::actionDelete($thread);
         $this->flagContentForNcmec($thread);
     }
 }

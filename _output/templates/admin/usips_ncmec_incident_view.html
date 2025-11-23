@@ -6,8 +6,9 @@
             {{ phrase('usips_ncmec_view_case') }}
         </xf:button>
         <xf:else />
-        <xf:button href="{{ link('ncmec-incidents/create-case', $incident) }}" icon="merge" overlay="true">
-            {{ phrase('usips_ncmec_create_case') }}
+        <xf:button href="{{ link('ncmec-cases/create', null, {'incident_id': $incident.incident_id}) }}" icon="merge"
+            overlay="true">
+            {{ phrase('usips_ncmec_assign_case') }}
         </xf:button>
     </xf:if>
     <xf:button href="{{ link('ncmec-incidents/delete', $incident) }}" icon="delete" overlay="true" />

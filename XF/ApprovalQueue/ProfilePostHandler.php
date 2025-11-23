@@ -10,7 +10,6 @@ class ProfilePostHandler extends XFCP_ProfilePostHandler
 
     public function actionFlagCsam(ProfilePost $profilePost): void
     {
-        parent::actionDelete($profilePost);
         $this->flagContentForNcmec($profilePost);
     }
 }

@@ -198,6 +198,49 @@ class CaseController extends AbstractController
         return $this->view('USIPS\NCMEC:Case\Edit', 'usips_ncmec_case_edit', $viewParams);
     }
 
+    public function actionDelete(ParameterBag $params)
+    {
+        $case = $this->assertCaseExists($params->case_id);
+
+        if ($case->finalized_on || $case->finished_on)
+        {
+            return $this->error(\XF::phrase('usips_ncmec_case_finalized_cannot_delete'));
+        }
+
+        $reportCount = $this->finder('USIPS\NCMEC:Report')
+            ->where('case_id', $case->case_id)
+            ->total();
+
+        if ($reportCount > 0)
+        {
+            return $this->error(\XF::phrase('usips_ncmec_case_has_reports_cannot_delete'));
+        }
+
+        if ($this->isPost())
+        {
+            $incidents = $this->finder('USIPS\NCMEC:Incident')
+                ->where('case_id', $case->case_id)
+                ->fetch();
+
+            foreach ($incidents as $incident)
+            {
+                $incident->case_id = 0;
+                $incident->save();
+            }
+
+            $case->delete();
+
+            return $this->redirect($this->buildLink('ncmec-cases'));
+        }
+        else
+        {
+            $viewParams = [
+                'case' => $case
+            ];
+            return $this->view('USIPS\NCMEC:Case\Delete', 'usips_ncmec_case_delete', $viewParams);
+        }
+    }
+
     public function actionIndex(ParameterBag $params)
     {
         $page = $this->filterPage();
@@ -246,12 +289,15 @@ class CaseController extends AbstractController
         {
             $input = $this->filter([
                 'incident_ids' => 'array-uint',
+                'assign_action' => 'str',
+                'new_case_title' => 'str',
+                'title' => 'str',
+                'case_id' => 'uint'
             ]);
 
-            // Sanity check: verify incidents exist and are not already assigned
+            // Sanity check: verify incidents exist
             $incidents = $this->finder('USIPS\NCMEC:Incident')
                 ->whereIds($input['incident_ids'])
-                ->where('case_id', 0)
                 ->fetch();
 
             if (!$incidents->count())
@@ -259,29 +305,67 @@ class CaseController extends AbstractController
                 return $this->error(\XF::phrase('usips_ncmec_no_valid_incidents_selected'));
             }
 
-            // Generate auto title like "Case created on [date] at [time]"
-            $title = \XF::phrase('usips_ncmec_case_created_on_x', [
-                'datetime' => \XF::phrase('date_x_at_time_y', [
-                    'date' => \XF::language()->date(\XF::$time),
-                    'time' => \XF::language()->time(\XF::$time)
-                ])
-            ])->render();
+            $case = null;
 
-            // Create the case
-            $case = $this->em()->create('USIPS\NCMEC:CaseFile');
-            $case->title = $title;
-            $case->user_id = \XF::visitor()->user_id;
-            $case->username = \XF::visitor()->username;
-            $case->save();
+            if ($input['assign_action'] === 'existing')
+            {
+                if (!$input['case_id'])
+                {
+                    return $this->error(\XF::phrase('usips_ncmec_invalid_case_selection'));
+                }
+
+                $case = $this->assertCaseExists($input['case_id']);
+                if ($case->finalized_on || $case->finished_on)
+                {
+                    return $this->error(\XF::phrase('usips_ncmec_case_finalized_cannot_edit'));
+                }
+            }
+            else
+            {
+                // Generate auto title like "Case created on [date] at [time]"
+                // Support both 'new_case_title' (from assign dialog) and 'title' (from create form)
+                $titleInput = $input['new_case_title'] ?: $input['title'];
+                $title = $titleInput ?: $this->generateAutoCaseTitle();
+
+                // Create the case
+                $case = $this->em()->create('USIPS\NCMEC:CaseFile');
+                $case->title = $title;
+                $case->user_id = \XF::visitor()->user_id;
+                $case->username = \XF::visitor()->username;
+                $case->save();
+            }
 
             // Assign incidents to case
             foreach ($incidents as $incident)
             {
+                // Skip if already assigned to this case
+                if ($incident->case_id == $case->case_id)
+                {
+                    continue;
+                }
+                
                 $incident->case_id = $case->case_id;
                 $incident->save();
             }
 
             return $this->redirect($this->buildLink('ncmec-cases/view', $case));
+        }
+
+        // Check if we are coming from a specific incident (e.g. "Create Case" button on incident view)
+        $incidentId = $this->filter('incident_id', 'uint');
+        if ($incidentId)
+        {
+            $incident = $this->em()->find('USIPS\NCMEC:Incident', $incidentId);
+            if ($incident)
+            {
+                $viewParams = [
+                    'incidentIds' => [$incident->incident_id],
+                    'incidentCount' => 1,
+                    'availableCases' => $this->getAssignableCaseFinder()->fetch(),
+                    'defaultTitle' => $this->generateAutoCaseTitle(),
+                ];
+                return $this->view('USIPS\NCMEC:Case\CreateFromIncident', 'usips_ncmec_incident_create_case', $viewParams);
+            }
         }
 
         // Get pre-selected incident IDs from request
@@ -313,6 +397,27 @@ class CaseController extends AbstractController
         ];
 
         return $this->view('USIPS\NCMEC:Case\Create', 'usips_ncmec_case_create', $viewParams);
+    }
+
+    protected function getAssignableCaseFinder()
+    {
+        return $this->finder('USIPS\NCMEC:CaseFile')
+            ->where('finalized_on', null)
+            ->where('finished_on', null)
+            ->order('created_date', 'DESC');
+    }
+
+    protected function generateAutoCaseTitle(): string
+    {
+        $lang = \XF::language();
+        $datePhrase = \XF::phrase('date_x_at_time_y', [
+            'date' => $lang->date(\XF::$time),
+            'time' => $lang->time(\XF::$time)
+        ]);
+
+        return \XF::phrase('usips_ncmec_case_created_on_x', [
+            'datetime' => $datePhrase
+        ])->render();
     }
 
     public function actionFinalize(ParameterBag $params)
