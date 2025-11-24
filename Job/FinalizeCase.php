@@ -12,6 +12,7 @@ class FinalizeCase extends AbstractJob
         'user_ids' => [],
         'current_user_index' => 0,
         'state' => 'init', // init, ban, report, files, content, finish
+        'phase' => 'submit', // submit, cleanup
     ];
 
     public function run($maxRunTime)
@@ -44,6 +45,7 @@ class FinalizeCase extends AbstractJob
             $this->data['user_ids'] = $userIds;
             $this->data['current_user_index'] = 0;
             $this->data['state'] = 'init';
+            $this->data['phase'] = 'submit';
         }
 
         $userIds = $this->data['user_ids'];
@@ -55,6 +57,17 @@ class FinalizeCase extends AbstractJob
         
         if ($this->data['current_user_index'] >= ($isSingleReport ? 1 : $count))
         {
+            // End of current phase loop
+            
+            if ($this->data['phase'] === 'submit')
+            {
+                // Switch to cleanup phase
+                $this->data['phase'] = 'cleanup';
+                $this->data['current_user_index'] = 0;
+                $this->data['state'] = 'content';
+                return $this->resume();
+            }
+
             // All users processed - clean up and finalize
             $this->cleanupFailedReports($case);
             
@@ -117,7 +130,7 @@ class FinalizeCase extends AbstractJob
             {
                 // User missing, skip
                 $this->data['current_user_index']++;
-                $this->data['state'] = 'init';
+                $this->data['state'] = ($this->data['phase'] === 'submit') ? 'init' : 'content';
                 return $this->resume();
             }
             $submitterSubjects = $user;
@@ -185,13 +198,8 @@ class FinalizeCase extends AbstractJob
                     else
                     {
                         // No more files
-                        $this->data['state'] = 'content';
+                        $this->data['state'] = 'finish';
                     }
-                    break;
-
-                case 'content':
-                    $submitter->deleteContent();
-                    $this->data['state'] = 'finish';
                     break;
 
                 case 'finish':
@@ -200,6 +208,14 @@ class FinalizeCase extends AbstractJob
                     // Move to next user (or finish if single report)
                     $this->data['current_user_index']++;
                     $this->data['state'] = 'init';
+                    break;
+
+                case 'content':
+                    $submitter->deleteContent();
+                    
+                    // Move to next user
+                    $this->data['current_user_index']++;
+                    $this->data['state'] = 'content';
                     break;
             }
         }
@@ -227,7 +243,7 @@ class FinalizeCase extends AbstractJob
             
             // Move to next user on error to avoid infinite loop
             $this->data['current_user_index']++;
-            $this->data['state'] = 'init';
+            $this->data['state'] = ($this->data['phase'] === 'submit') ? 'init' : 'content';
         }
 
         if (microtime(true) - $startTime > $maxRunTime)
@@ -263,7 +279,8 @@ class FinalizeCase extends AbstractJob
         $total = count($this->data['user_ids']);
         $current = $this->data['current_user_index'] + 1;
         $state = $this->data['state'];
-        return sprintf('Finalizing NCMEC Case... User %d / %d (%s)', $current, $total, $state);
+        $phase = $this->data['phase'] ?? 'submit';
+        return sprintf('Finalizing NCMEC Case... User %d / %d (%s - %s)', $current, $total, $phase, $state);
     }
 
     public function canCancel()
