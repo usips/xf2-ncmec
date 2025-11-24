@@ -25,8 +25,7 @@ class Client extends AbstractService
     
     // Base URLs for different environments
     public const BASE_URL_TEST = 'https://exttest.cybertip.org/ispws';
-    public const BASE_URL_PRODUCTION = 'https://NOT_A_REAL_ADDRESS_FOR_TESTING_PURPOSES/ispws';
-    //public const BASE_URL_PRODUCTION = 'https://report.cybertip.org/ispws';
+    public const BASE_URL_PRODUCTION = 'https://report.cybertip.org/ispws';
     
     // API Endpoints
     public const ENDPOINT_STATUS = '/status';
