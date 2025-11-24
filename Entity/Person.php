@@ -41,6 +41,7 @@ class Person extends Entity
             'username' => ['type' => self::STR, 'maxLength' => 50, 'default' => ''],
             'created_by_user_id' => ['type' => self::UINT, 'default' => 0],
             'created_by_username' => ['type' => self::STR, 'maxLength' => 50, 'default' => ''],
+            'title' => ['type' => self::STR, 'maxLength' => 255, 'nullable' => true, 'default' => null],
             'first_name' => ['type' => self::STR, 'maxLength' => 100, 'nullable' => true, 'default' => null],
             'last_name' => ['type' => self::STR, 'maxLength' => 100, 'nullable' => true, 'default' => null],
             'phones' => ['type' => self::STR, 'nullable' => true, 'default' => null],
@@ -82,6 +83,11 @@ class Person extends Entity
             $this->created_by_user_id = $visitor->user_id;
             $this->created_by_username = $visitor->username;
         }
+
+        if ($this->title === '')
+        {
+            $this->title = null;
+        }
     }
 
     public function getYearsOld(): int|null
@@ -106,6 +112,11 @@ class Person extends Entity
 
     public function getDisplayName(): string
     {
+        if ($this->title)
+        {
+            return $this->title;
+        }
+
         $last = $this->normaliseNamePart($this->last_name);
         $first = $this->normaliseNamePart($this->first_name);
         $dob = $this->date_of_birth ? trim((string) $this->date_of_birth) : '';

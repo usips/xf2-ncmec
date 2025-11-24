@@ -88,6 +88,7 @@ class PersonController extends AbstractController
     {
         $input = $this->filter([
             'username' => 'str',
+            'title' => 'str',
             'first_name' => 'str',
             'last_name' => 'str',
             'age_selector' => 'str',

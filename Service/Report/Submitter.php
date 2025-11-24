@@ -241,10 +241,11 @@ class Submitter extends AbstractService
 
         foreach ($incidentContents as $content)
         {
-            $entity = $content->getContent();
-            if ($entity)
+            try
             {
-                try
+                $entity = $content->getContent();
+                
+                if ($entity)
                 {
                     // Direct entity deletion:
                     // - Posts: _postDelete() removes attachments, updates thread
@@ -260,14 +261,15 @@ class Submitter extends AbstractService
                         $entity->delete();
                     }
                 }
-                catch (\Exception $e)
-                {
-                    // Log error but continue processing other content
-                    \XF::logException($e, false, "Failed to delete content entity {$entity->getEntityContentType()}:{$entity->getEntityId()}: ");
-                }
+
+                // Delete the incident content record
+                $content->delete();
             }
-            // Delete the incident content record
-            $content->delete();
+            catch (\Exception $e)
+            {
+                // Log error but continue processing other content
+                \XF::logException($e, false, "Failed to delete content entity or incident record for ID {$content->incident_content_id}: ");
+            }
         }
     }
 
@@ -538,31 +540,32 @@ class Submitter extends AbstractService
         if ($this->case->reported_person_id && $this->case->ReportedPerson)
         {
             $personElement = $personReported->addChild('personOrUserReportedPerson');
-            $this->addPersonData($personElement, $this->case->ReportedPerson, 'person');
-
+            
+            $extraEmails = [];
             // If we are collapsing multiple users, add their emails to the person data
             if (count($this->subjects) > 1)
             {
-                $addedEmails = [];
                 // Pre-fill with existing emails from person record to avoid dupes
+                $existingEmails = [];
                 if (!empty($this->case->ReportedPerson->emails))
                 {
                     $existing = is_array($this->case->ReportedPerson->emails) 
                         ? $this->case->ReportedPerson->emails 
                         : explode(',', $this->case->ReportedPerson->emails);
-                    foreach ($existing as $e) $addedEmails[trim($e)] = true;
+                    foreach ($existing as $e) $existingEmails[trim($e)] = true;
                 }
 
                 foreach ($this->subjects as $subject)
                 {
-                    if ($subject->email && !isset($addedEmails[$subject->email]))
+                    if ($subject->email && !isset($existingEmails[$subject->email]))
                     {
-                        $email = $personElement->addChild('email');
-                        $email[0] = htmlspecialchars($subject->email);
-                        $addedEmails[$subject->email] = true;
+                        $extraEmails[] = $subject->email;
+                        $existingEmails[$subject->email] = true;
                     }
                 }
             }
+
+            $this->addPersonData($personElement, $this->case->ReportedPerson, 'person', $extraEmails);
         }
         
         // ESP Identifier (user ID)
@@ -723,8 +726,9 @@ class Submitter extends AbstractService
      * @param \SimpleXMLElement $element Parent XML element
      * @param \USIPS\NCMEC\Entity\Person $person Person entity
      * @param string $type 'person' or 'contactPerson' (contactPerson excludes age/DOB)
+     * @param array $extraEmails Additional emails to include
      */
-    protected function addPersonData(\SimpleXMLElement $element, $person, string $type = 'person'): void
+    protected function addPersonData(\SimpleXMLElement $element, $person, string $type = 'person', array $extraEmails = []): void
     {
         if (!empty($person->first_name))
         {
@@ -752,17 +756,29 @@ class Submitter extends AbstractService
         }
         
         // Emails (can be multiple, comma-separated or JSON)
+        $emailList = [];
         if (!empty($person->emails))
         {
             $emails = is_array($person->emails) ? $person->emails : explode(',', $person->emails);
             foreach ($emails as $emailStr)
             {
-                $emailStr = trim($emailStr);
-                if ($emailStr)
-                {
-                    $email = $element->addChild('email');
-                    $email[0] = htmlspecialchars($emailStr);
-                }
+                $emailList[] = trim($emailStr);
+            }
+        }
+
+        foreach ($extraEmails as $email)
+        {
+            $emailList[] = trim($email);
+        }
+
+        $emailList = array_unique($emailList);
+
+        foreach ($emailList as $emailStr)
+        {
+            if ($emailStr)
+            {
+                $email = $element->addChild('email');
+                $email[0] = htmlspecialchars($emailStr);
             }
         }
         

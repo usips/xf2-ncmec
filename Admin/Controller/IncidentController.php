@@ -69,6 +69,8 @@ class IncidentController extends AbstractController
                 'title' => 'str',
                 'submit' => 'bool',
                 'attachment_ids' => 'array-int',
+                'existing_incident_id' => 'uint',
+                'incident_action' => 'str',
             ]);
 
             $attachments = [];
@@ -152,7 +154,9 @@ class IncidentController extends AbstractController
                     {
                         if (isset($incidentData[$attachment->data_id]))
                         {
-                            $attachment->hydrateRelation('IncidentAttachmentData', $incidentData[$attachment->data_id]);
+                            $records = $incidentData[$attachment->data_id];
+                            $record = reset($records);
+                            $attachment->hydrateRelation('IncidentAttachmentData', $record);
                         }
                     }
                 }
@@ -166,6 +170,7 @@ class IncidentController extends AbstractController
                     'attachmentsChecked' => $attachmentsChecked,
                     'users' => $users,
                     'title' => $input['title'],
+                    'existingIncidents' => $this->getOpenIncidentsForVisitor(),
                 ];
 
                 return $this->view('USIPS\NCMEC:Incident\Create', 'usips_ncmec_incident_create', $viewParams);
@@ -174,30 +179,53 @@ class IncidentController extends AbstractController
             {
                 /** @var \USIPS\NCMEC\Service\Incident\Creator $creator */
                 $creator = $this->service('USIPS\NCMEC:Incident\Creator');
-                $incident = $creator->createIncident(\XF::visitor()->user_id, \XF::visitor()->username, $input['title']);
+                
+                $incident = null;
+                if ($input['incident_action'] == 'existing' && $input['existing_incident_id'])
+                {
+                    $incident = $this->em()->find('USIPS\NCMEC:Incident', $input['existing_incident_id']);
+                }
+
+                if (!$incident)
+                {
+                    // Check for auto-append
+                    $userIds = [];
+                    foreach ($attachments as $attachment)
+                    {
+                        $userIds[] = $attachment->Data->user_id;
+                    }
+                    $userIds = array_unique($userIds);
+                    
+                    if (count($userIds) === 1)
+                    {
+                        $incident = $this->findOpenIncidentForUser(reset($userIds));
+                    }
+                }
+
+                if (!$incident)
+                {
+                    $incident = $creator->createIncident(\XF::visitor()->user_id, \XF::visitor()->username, $input['title']);
+                }
 
                 $creator->setIncident($incident);
 
-                if ($attachments)
+                if ($attachments->count())
                 {
                     // Extract data IDs from attachments
-                    $dataIds = $attachments->pluck(function($attachment)
+                    $dataIds = [];
+                    foreach ($attachments as $attachment)
                     {
-                        return $attachment->data_id;
-                    });
+                        $dataIds[] = $attachment->data_id;
+                    }
 
                     // Enqueue AssociateAttachmentData job
                     \XF::app()->jobManager()->enqueue('USIPS\NCMEC:AssociateAttachmentData', [
                         'incident_id' => $incident->incident_id,
                         'attachment_data_ids' => $dataIds
                     ]);
-
-                    // Associate users and content synchronously
-                    $creator->associateAttachmentUsers($attachments);
-                    $creator->associateContent($attachments);
                 }
 
-                return $this->redirect($this->buildLink('ncmec-incidents', $incident));
+                return $this->redirect($this->buildLink('ncmec-incidents/view', $incident));
             }
         }
 
@@ -206,6 +234,7 @@ class IncidentController extends AbstractController
             'attachmentsByUser' => [],
             'attachmentChecked' => [],
             'title' => '',
+            'existingIncidents' => $this->getOpenIncidentsForVisitor(),
         ];
 
         return $this->view('USIPS\NCMEC:Incident\Create', 'usips_ncmec_incident_create', $viewParams);
@@ -506,6 +535,36 @@ class IncidentController extends AbstractController
             ];
             return $this->view('USIPS\NCMEC:Incident\UnassignCase', 'usips_ncmec_incident_unassign_case', $viewParams);
         }
+    }
+
+    protected function getOpenIncidentsForVisitor()
+    {
+        return $this->finder('USIPS\NCMEC:Incident')
+            ->where('user_id', \XF::visitor()->user_id)
+            ->where('finalized_on', null)
+            ->order('created_date', 'DESC')
+            ->fetch();
+    }
+
+    protected function findOpenIncidentForUser($userId)
+    {
+        $incidentUsers = $this->finder('USIPS\NCMEC:IncidentUser')
+            ->where('user_id', $userId)
+            ->fetch();
+
+        $incidentIds = $incidentUsers->pluckNamed('incident_id');
+
+        if (!$incidentIds)
+        {
+            return null;
+        }
+
+        return $this->finder('USIPS\NCMEC:Incident')
+            ->where('incident_id', $incidentIds)
+            ->where('user_id', \XF::visitor()->user_id)
+            ->where('finalized_on', null)
+            ->order('created_date', 'DESC')
+            ->fetchOne();
     }
 
     protected function getAssignableCaseFinder()

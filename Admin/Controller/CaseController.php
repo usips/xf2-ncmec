@@ -175,8 +175,21 @@ class CaseController extends AbstractController
 
         // Fetch persons for select box
         $persons = $this->finder('USIPS\NCMEC:Person')
-            ->order('last_update_date', 'DESC')
+            ->order(['title', 'last_name', 'first_name', 'username'])
             ->fetch();
+
+        // Default reporter logic: if not set, try to find a person matching the case creator
+        if (!$case->reporter_person_id && $case->user_id)
+        {
+            $matchingPerson = $this->finder('USIPS\NCMEC:Person')
+                ->where('user_id', $case->user_id)
+                ->fetchOne();
+            
+            if ($matchingPerson)
+            {
+                $case->reporter_person_id = $matchingPerson->person_id;
+            }
+        }
 
         $options = $this->app->options();
         $contactPerson = null;
@@ -338,6 +351,17 @@ class CaseController extends AbstractController
                 $case->title = $title;
                 $case->user_id = \XF::visitor()->user_id;
                 $case->username = \XF::visitor()->username;
+
+                // Auto-assign reporter if a person exists for this user
+                $matchingPerson = $this->finder('USIPS\NCMEC:Person')
+                    ->where('user_id', $case->user_id)
+                    ->fetchOne();
+                
+                if ($matchingPerson)
+                {
+                    $case->reporter_person_id = $matchingPerson->person_id;
+                }
+
                 $case->save();
             }
 

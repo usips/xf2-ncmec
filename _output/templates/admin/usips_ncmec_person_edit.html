@@ -9,6 +9,7 @@
         </xf:if>
         <div class="block-body">
             <xf:textboxrow name="username" value="{$person.username}" label="{{ phrase('user') }}" ac="single" />
+            <xf:textboxrow name="title" value="{$person.title}" label="{{ phrase('title') }}" maxlength="255" />
             <xf:textboxrow name="first_name" value="{$person.first_name}" label="{{ phrase('usips_ncmec_first_name') }}"
                 maxlength="100" />
             <xf:textboxrow name="last_name" value="{$person.last_name}" label="{{ phrase('usips_ncmec_last_name') }}"

@@ -515,6 +515,12 @@
         "version_string": "1.0.0",
         "hash": "de2ce172dc2e1b370bdd4647ec1b2bf6"
     },
+    "usips_ncmec_create_new_incident.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "0fb4065de4d58bc7a8a49e919255e90a"
+    },
     "usips_ncmec_create_report.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -634,6 +640,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "deaa6ad198f554d9d7f533af60ff0d19"
+    },
+    "usips_ncmec_existing_incident.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "ce2185a3a451798baa09ccc27b243b3b"
     },
     "usips_ncmec_failed_lines.txt": {
         "global_cache": false,

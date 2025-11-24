@@ -3,7 +3,24 @@
 <xf:form action="{{ link('ncmec-incidents/create') }}" class="block">
     <div class="block-container">
         <div class="block-body">
-            <xf:textboxrow name="title" value="{$title}" label="{{ phrase('title') }}" />
+            <xf:radiorow name="incident_action" label="{{ phrase('usips_ncmec_incident') }}" value="new">
+                <xf:option value="new" label="{{ phrase('usips_ncmec_create_new_incident') }}">
+                    <xf:dependent>
+                        <xf:textbox name="title" value="{$title}" label="{{ phrase('title') }}" />
+                    </xf:dependent>
+                </xf:option>
+                <xf:option value="existing" label="{{ phrase('usips_ncmec_existing_incident') }}"
+                    disabled="{{ !$existingIncidents }}">
+                    <xf:dependent>
+                        <xf:select name="existing_incident_id">
+                            <xf:foreach loop="$existingIncidents" value="$incident">
+                                <xf:option value="{$incident.incident_id}">{$incident.title} ({{
+                                    date($incident.created_date) }})</xf:option>
+                            </xf:foreach>
+                        </xf:select>
+                    </xf:dependent>
+                </xf:option>
+            </xf:radiorow>
         </div>
 
         <xf:if is="$attachments">

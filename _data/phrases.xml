@@ -88,6 +88,7 @@
   <phrase title="usips_ncmec_create_incident" version_id="0" version_string="1.0.0"><![CDATA[Create incident]]></phrase>
   <phrase title="usips_ncmec_create_new_case" version_id="0" version_string="1.0.0"><![CDATA[Create new case]]></phrase>
   <phrase title="usips_ncmec_create_new_case_option" version_id="0" version_string="1.0.0"><![CDATA[Create a new case]]></phrase>
+  <phrase title="usips_ncmec_create_new_incident" version_id="0" version_string="1.0.0"><![CDATA[Create new incident]]></phrase>
   <phrase title="usips_ncmec_create_report" version_id="0" version_string="1.0.0"><![CDATA[Create Report]]></phrase>
   <phrase title="usips_ncmec_created_by" version_id="0" version_string="1.0.0"><![CDATA[Created by]]></phrase>
   <phrase title="usips_ncmec_created_on" version_id="0" version_string="1.0.0"><![CDATA[Created on]]></phrase>
@@ -109,6 +110,7 @@
   <phrase title="usips_ncmec_error_reporter_person_required" version_id="0" version_string="1.0.0"><![CDATA[Reporter contact person is required before finalizing the case. Please select a reporting person.]]></phrase>
   <phrase title="usips_ncmec_esp_credentials" version_id="0" version_string="1.0.0"><![CDATA[ESP credentials]]></phrase>
   <phrase title="usips_ncmec_esp_credentials_explain" version_id="0" version_string="1.0.0"><![CDATA[Enter your basic access authentication credentials provided by the NCMEC for your ESP. These should arrive by email in a password-protected PDF, the password for which is provided in another email.]]></phrase>
+  <phrase title="usips_ncmec_existing_incident" version_id="0" version_string="1.0.0"><![CDATA[Existing incident]]></phrase>
   <phrase title="usips_ncmec_failed_lines" version_id="0" version_string="1.0.0"><![CDATA[Rejected Input]]></phrase>
   <phrase title="usips_ncmec_finalize_case" version_id="0" version_string="1.0.0"><![CDATA[Finalize case]]></phrase>
   <phrase title="usips_ncmec_finalize_case_confirm_text" version_id="0" version_string="1.0.0"><![CDATA[Please confirm that you wish to finalize this case.]]></phrase>

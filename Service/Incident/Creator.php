@@ -212,6 +212,10 @@ class Creator extends AbstractService
 
             $userFieldService->updateIncidentField($userId, true);
         }
+
+        /** @var \USIPS\NCMEC\Service\UserPromotion $userPromotionService */
+        $userPromotionService = $this->service('USIPS\NCMEC:UserPromotion');
+        $userPromotionService->updateUsers($userIds);
     }
 
     /**
@@ -293,6 +297,10 @@ class Creator extends AbstractService
             $stillInIncident = $userFieldService->checkUserInAnyIncident($userId);
             $userFieldService->updateIncidentField($userId, $stillInIncident);
         }
+
+        /** @var \USIPS\NCMEC\Service\UserPromotion $userPromotionService */
+        $userPromotionService = $this->service('USIPS\NCMEC:UserPromotion');
+        $userPromotionService->updateUsers($userIds);
     }
 
     // Content association methods
@@ -325,6 +333,18 @@ class Creator extends AbstractService
 
             $content = $this->em()->find($entity, $data['content_id']);
             if (!$content)
+            {
+                continue;
+            }
+
+            // Check for existing incident content to avoid duplicates
+            $existing = $this->finder('USIPS\NCMEC:IncidentContent')
+                ->where('incident_id', $this->incident->incident_id)
+                ->where('content_type', $data['content_type'])
+                ->where('content_id', $data['content_id'])
+                ->fetchOne();
+
+            if ($existing)
             {
                 continue;
             }

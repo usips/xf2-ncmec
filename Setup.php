@@ -39,6 +39,7 @@ class Setup extends AbstractSetup
             $table->addColumn('username', 'varchar', 50)->setDefault('');
             $table->addColumn('created_by_user_id', 'int')->setDefault(0);
             $table->addColumn('created_by_username', 'varchar', 50)->setDefault('');
+            $table->addColumn('title', 'varchar', 255)->nullable()->setDefault(null);
             $table->addColumn('first_name', 'varchar', 100)->nullable();
             $table->addColumn('last_name', 'varchar', 100)->nullable();
             $table->addColumn('phones', 'mediumtext')->nullable();

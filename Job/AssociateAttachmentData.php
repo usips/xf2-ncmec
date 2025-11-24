@@ -40,6 +40,17 @@ class AssociateAttachmentData extends AbstractJob
         try {
             // Associate attachment data
             $creator->associateAttachmentsByDataIds($attachmentDataIds);
+
+            // Find attachments to associate content and users
+            $attachments = $app->finder('XF:Attachment')
+                ->where('data_id', $attachmentDataIds)
+                ->fetch();
+
+            if ($attachments->count())
+            {
+                $creator->associateAttachmentUsers($attachments);
+                $creator->associateContent($attachments);
+            }
         } catch (\Exception $e) {
             // Log the error but don't fail the job
             \XF::logError('NCMEC AssociateAttachmentData job failed: ' . $e->getMessage());

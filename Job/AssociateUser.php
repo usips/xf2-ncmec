@@ -52,9 +52,6 @@ class AssociateUser extends AbstractRebuildJob
 
         try {
             $creator->associateUserCascade($id, $timeLimitSeconds);
-
-            // Update promotions for this user after association is complete
-            $this->getUserPromotionService()->updateUser($id);
         } catch (\Exception $e) {
             // Log the error but continue with other users
             \XF::logError('NCMEC AssociateUser job failed for user ' . $id . ': ' . $e->getMessage());
