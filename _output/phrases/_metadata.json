@@ -521,6 +521,12 @@
         "version_string": "1.0.0",
         "hash": "b0c50459ea82e265fe68f6a12ce6debd"
     },
+    "usips_ncmec_created_by.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "c8e6a7ed1489c036564b6bc24c92cca4"
+    },
     "usips_ncmec_created_on.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -797,6 +803,12 @@
         "version_string": "1.0.0",
         "hash": "8d3f5eff9c40ee315d452392bed5309b"
     },
+    "usips_ncmec_last_updated_on.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "d3864e5de58e9a31ee0d28789499d48f"
+    },
     "usips_ncmec_law_enforcement.txt": {
         "global_cache": false,
         "version_id": 0,
@@ -850,6 +862,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "882407c64209843f20401fdc545f086f"
+    },
+    "usips_ncmec_no_open_incidents.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "e38b273e00231b2f2728614af7083594"
     },
     "usips_ncmec_not_yet_supported.txt": {
         "global_cache": false,
@@ -1030,6 +1048,12 @@
         "version_id": 0,
         "version_string": "1.0.0",
         "hash": "cf565402d32b79d33f626252949a6941"
+    },
+    "usips_ncmec_select_incidents_for_case.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "0aa00f1495e9b9c4457df5c995ddb805"
     },
     "usips_ncmec_start_finalizing.txt": {
         "global_cache": false,

@@ -32,11 +32,11 @@
     "XF-Pub-Controller-ReportController_USIPS-NCMEC-XF-Pub-Controller-ReportController.json": {
         "hash": "d8f998ceecea9cdc64a1082cb117972f"
     },
-    "XF-Repository-ChangeLog_USIPS-NCMEC-XF-Repository-ChangeLog.json": {
-        "hash": "3ba9a6207254beacfdde2c7e113dc4c0"
+    "XF-Repository-ChangeLogRepository_USIPS-NCMEC-XF-Repository-ChangeLog.json": {
+        "hash": "74fb2ea519a15e023898fe181b11ec8f"
     },
-    "XF-Repository-Ip_USIPS-NCMEC-XF-Repository-Ip.json": {
-        "hash": "ad3e1d460be91fa529ee0a34e4a7c4c8"
+    "XF-Repository-IpRepository_USIPS-NCMEC-XF-Repository-Ip.json": {
+        "hash": "b9cd4c39e5bb4f504850a2436f1202ad"
     },
     "XF-Service-Report-CreatorService_USIPS-NCMEC-XF-Service-Report-CreatorService.json": {
         "hash": "52334cb4ba979fa29d5ca44d7747ccc0"

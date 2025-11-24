@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use XF\Cli\Command\AllowInactiveAddOnCommandInterface;
+use XF\Util\Color;
 use XF\Util\File;
 
 class GenerateTestData extends Command implements AllowInactiveAddOnCommandInterface
@@ -232,13 +233,56 @@ class GenerateTestData extends Command implements AllowInactiveAddOnCommandInter
         $height = 500;
         
         $im = imagecreatetruecolor($width, $height);
+
+        // Calculate base color from username (logic from XF\Template\Templater::getDefaultAvatarStyling)
+        $bytes = md5($user->username, true);
+        $r = dechex(round(5 * ord($bytes[0]) / 255) * 0x33);
+        $g = dechex(round(5 * ord($bytes[1]) / 255) * 0x33);
+        $b = dechex(round(5 * ord($bytes[2]) / 255) * 0x33);
+        $hexBgColor = sprintf('%02s%02s%02s', $r, $g, $b);
+
+        $hslBgColor = Color::hexToHsl($hexBgColor);
+
+        $bgChanged = false;
+        if ($hslBgColor[1] > 60)
+        {
+            $hslBgColor[1] = 60;
+            $bgChanged = true;
+        }
+        else if ($hslBgColor[1] < 15)
+        {
+            $hslBgColor[1] = 15;
+            $bgChanged = true;
+        }
+
+        if ($hslBgColor[2] > 85)
+        {
+            $hslBgColor[2] = 85;
+            $bgChanged = true;
+        }
+        else if ($hslBgColor[2] < 15)
+        {
+            $hslBgColor[2] = 15;
+            $bgChanged = true;
+        }
+
+        if ($bgChanged)
+        {
+            $hexBgColor = Color::hslToHex($hslBgColor);
+        }
+
+        [$baseR, $baseG, $baseB] = Color::hexToRgb($hexBgColor);
         
-        // Noise background
+        // Noise background based on user color
         for ($x = 0; $x < $width; $x++)
         {
             for ($y = 0; $y < $height; $y++)
             {
-                $color = imagecolorallocate($im, rand(0, 255), rand(0, 255), rand(0, 255));
+                $r = max(0, min(255, $baseR + rand(-30, 30)));
+                $g = max(0, min(255, $baseG + rand(-30, 30)));
+                $b = max(0, min(255, $baseB + rand(-30, 30)));
+                
+                $color = imagecolorallocate($im, $r, $g, $b);
                 imagesetpixel($im, $x, $y, $color);
             }
         }

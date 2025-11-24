@@ -45,12 +45,10 @@
                 </span>
             </div>
 
-            <xf:submitrow sticky="true" icon="save">
-                {{ phrase('usips_ncmec_create_case') }}
-            </xf:submitrow>
+            <xf:submitrow sticky="true" submit="{{ phrase('usips_ncmec_create_case') }}" icon="save" />
             <xf:else />
             <div class="block-body">
-                <div class="blockMessage">{{ phrase('usips_ncmec_no_unassigned_incidents') }}</div>
+                <div class="blockMessage">{{ phrase('usips_ncmec_no_open_incidents') }}</div>
             </div>
         </xf:if>
     </div>

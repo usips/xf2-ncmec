@@ -52,6 +52,34 @@
                 </xf:formrow>
             </xf:if>
         </div>
+        <xf:formrow label="{{ phrase('usips_ncmec_case_statistics') }}">
+            <div class="pairWrapper pairWrapper--spaced">
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_incidents') }}</dt>
+                    <dd>{$incidentCount}</dd>
+                </dl>
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_reports') }}</dt>
+                    <dd>{$reportCount}</dd>
+                </dl>
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_unique_users') }}</dt>
+                    <dd>{$uniqueUserCount}</dd>
+                </dl>
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_associated_users') }}</dt>
+                    <dd>{$totalUsers|number}</dd>
+                </dl>
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_associated_content') }}</dt>
+                    <dd>{$totalContent|number}</dd>
+                </dl>
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_associated_attachment_data') }}</dt>
+                    <dd>{$totalAttachments|number}</dd>
+                </dl>
+            </div>
+        </xf:formrow>
 
         <xf:formrow>
             <xf:if is="{{ $case.canEdit() }}">
@@ -67,48 +95,6 @@
                 </xf:button>
             </xf:if>
         </xf:formrow>
-    </div>
-</div>
-
-<div class="block">
-    <div class="block-container">
-        <h3 class="block-header">
-            {{ phrase('usips_ncmec_case_statistics') }}
-        </h3>
-        <div class="block-body">
-            <div class="structItemContainer">
-                <div class="structItem structItem--middle">
-                    <div class="structItem-cell">
-                        <div class="pairs pairs--columns pairs--fixedSmall">
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_incidents') }}</dt>
-                                <dd>{$incidentCount}</dd>
-                            </dl>
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_reports') }}</dt>
-                                <dd>{$reportCount}</dd>
-                            </dl>
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_unique_users') }}</dt>
-                                <dd>{$uniqueUserCount}</dd>
-                            </dl>
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_associated_users') }}</dt>
-                                <dd>{$totalUsers|number}</dd>
-                            </dl>
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_associated_content') }}</dt>
-                                <dd>{$totalContent|number}</dd>
-                            </dl>
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_associated_attachment_data') }}</dt>
-                                <dd>{$totalAttachments|number}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 

@@ -399,6 +399,61 @@
     <xf:else />
     <div class="blockMessage">{{ phrase('no_results_found') }}</div>
 </xf:if>]]></template>
+  <template type="admin" title="usips_ncmec_case_create" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('usips_ncmec_create_case') }}</xf:title>
+
+<xf:breadcrumb href="{{ link('ncmec-cases') }}">{{ phrase('usips_ncmec_cases') }}</xf:breadcrumb>
+
+<xf:form action="{{ link('ncmec-cases/create') }}" ajax="true" class="block">
+    <div class="block-container">
+        <h3 class="block-header">{{ phrase('usips_ncmec_select_incidents_for_case') }}</h3>
+
+        <xf:if is="$incidents is not empty">
+            <div class="block-body">
+                <xf:datalist class="dataList">
+                    <xf:datarow rowtype="header">
+                        <xf:cell></xf:cell>
+                        <xf:cell>{{ phrase('title') }}</xf:cell>
+                        <xf:cell>{{ phrase('user') }}</xf:cell>
+                        <xf:cell>{{ phrase('date') }}</xf:cell>
+                    </xf:datarow>
+                    <xf:foreach loop="$incidents" value="$incident">
+                        <xf:datarow>
+                            <xf:toggle name="incident_ids[]" value="{$incident.incident_id}"
+                                checked="{{ in_array($incident.incident_id, $preSelectedIds) }}" />
+
+                            <xf:cell class="dataList-cell--link">
+                                <a href="{{ link('ncmec-incidents/view', $incident) }}">
+                                    {{ $incident.title ?: phrase('usips_ncmec_untitled_incident') }}
+                                </a>
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:avatar user="$incident.User" size="xxs" />
+                                <xf:username user="$incident.User" />
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:date time="$incident.created_date" />
+                            </xf:cell>
+                        </xf:datarow>
+                    </xf:foreach>
+                </xf:datalist>
+            </div>
+
+            <div class="block-footer block-footer--split">
+                <span class="block-footer-select">
+                    <xf:checkbox standalone="true">
+                        <xf:option check-all="< .block-container" label="{{ phrase('select_all') }}" />
+                    </xf:checkbox>
+                </span>
+            </div>
+
+            <xf:submitrow sticky="true" submit="{{ phrase('usips_ncmec_create_case') }}" icon="save" />
+            <xf:else />
+            <div class="block-body">
+                <div class="blockMessage">{{ phrase('usips_ncmec_no_open_incidents') }}</div>
+            </div>
+        </xf:if>
+    </div>
+</xf:form>]]></template>
   <template type="admin" title="usips_ncmec_case_delete" version_id="0" version_string="1.0.0"><![CDATA[<xf:title>{{ phrase('confirm_action') }}</xf:title>
 
 <xf:form action="{{ link('ncmec-cases/delete', $case) }}" ajax="true" class="block">
@@ -699,6 +754,34 @@
                 </xf:formrow>
             </xf:if>
         </div>
+        <xf:formrow label="{{ phrase('usips_ncmec_case_statistics') }}">
+            <div class="pairWrapper pairWrapper--spaced">
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_incidents') }}</dt>
+                    <dd>{$incidentCount}</dd>
+                </dl>
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_reports') }}</dt>
+                    <dd>{$reportCount}</dd>
+                </dl>
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_unique_users') }}</dt>
+                    <dd>{$uniqueUserCount}</dd>
+                </dl>
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_associated_users') }}</dt>
+                    <dd>{$totalUsers|number}</dd>
+                </dl>
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_associated_content') }}</dt>
+                    <dd>{$totalContent|number}</dd>
+                </dl>
+                <dl class="pairs pairs--columns pairs--fixedSmall">
+                    <dt>{{ phrase('usips_ncmec_associated_attachment_data') }}</dt>
+                    <dd>{$totalAttachments|number}</dd>
+                </dl>
+            </div>
+        </xf:formrow>
 
         <xf:formrow>
             <xf:if is="{{ $case.canEdit() }}">
@@ -714,48 +797,6 @@
                 </xf:button>
             </xf:if>
         </xf:formrow>
-    </div>
-</div>
-
-<div class="block">
-    <div class="block-container">
-        <h3 class="block-header">
-            {{ phrase('usips_ncmec_case_statistics') }}
-        </h3>
-        <div class="block-body">
-            <div class="structItemContainer">
-                <div class="structItem structItem--middle">
-                    <div class="structItem-cell">
-                        <div class="pairs pairs--columns pairs--fixedSmall">
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_incidents') }}</dt>
-                                <dd>{$incidentCount}</dd>
-                            </dl>
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_reports') }}</dt>
-                                <dd>{$reportCount}</dd>
-                            </dl>
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_unique_users') }}</dt>
-                                <dd>{$uniqueUserCount}</dd>
-                            </dl>
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_associated_users') }}</dt>
-                                <dd>{$totalUsers|number}</dd>
-                            </dl>
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_associated_content') }}</dt>
-                                <dd>{$totalContent|number}</dd>
-                            </dl>
-                            <dl>
-                                <dt>{{ phrase('usips_ncmec_associated_attachment_data') }}</dt>
-                                <dd>{$totalAttachments|number}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -1034,6 +1075,16 @@
 
 <xf:macro name="attachment_user_list" arg-attachmentsByUser="!" arg-users="!" arg-checked="{{ [] }}">
     <xf:datalist data-xf-init="responsive-data-list">
+        <xf:datarow rowtype="header">
+            <xf:cell>
+                <span class="u-pullRight">
+                    <xf:checkbox standalone="true">
+                        <xf:option check-all="< .dataList" label="{{ phrase('select_all') }}" />
+                    </xf:checkbox>
+                </span>
+                {{ phrase('users') }}
+            </xf:cell>
+        </xf:datarow>
         <xf:foreach loop="$attachmentsByUser" value="$attachments" key="$userId">
             <xf:set var="$user" value="{$users.{$userId}}" />
             <tbody class="dataList-rowGroup">
@@ -1902,9 +1953,9 @@
                         <xf:cell>{{ phrase('name') }}</xf:cell>
                         <xf:cell>{{ phrase('age') }}</xf:cell>
                         <xf:cell>{{ phrase('user') }}</xf:cell>
-                        <xf:cell>{{ phrase('created_by') }}</xf:cell>
-                        <xf:cell>{{ phrase('created_on') }}</xf:cell>
-                        <xf:cell>{{ phrase('last_updated_on') }}</xf:cell>
+                        <xf:cell>{{ phrase('usips_ncmec_created_by') }}</xf:cell>
+                        <xf:cell>{{ phrase('usips_ncmec_created_on') }}</xf:cell>
+                        <xf:cell>{{ phrase('usips_ncmec_last_updated_on') }}</xf:cell>
                         <xf:cell></xf:cell>
                     </xf:datarow>
                     <xf:foreach loop="$persons" value="$person">

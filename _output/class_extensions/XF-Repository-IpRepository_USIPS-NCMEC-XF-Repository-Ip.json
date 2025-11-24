@@ -1,5 +1,5 @@
 {
-    "from_class": "XF\\Repository\\Ip",
+    "from_class": "XF\\Repository\\IpRepository",
     "to_class": "USIPS\\NCMEC\\XF\\Repository\\Ip",
     "execute_order": 10,
     "active": true

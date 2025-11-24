@@ -27,6 +27,16 @@
 
 <xf:macro name="attachment_user_list" arg-attachmentsByUser="!" arg-users="!" arg-checked="{{ [] }}">
     <xf:datalist data-xf-init="responsive-data-list">
+        <xf:datarow rowtype="header">
+            <xf:cell>
+                <span class="u-pullRight">
+                    <xf:checkbox standalone="true">
+                        <xf:option check-all="< .dataList" label="{{ phrase('select_all') }}" />
+                    </xf:checkbox>
+                </span>
+                {{ phrase('users') }}
+            </xf:cell>
+        </xf:datarow>
         <xf:foreach loop="$attachmentsByUser" value="$attachments" key="$userId">
             <xf:set var="$user" value="{$users.{$userId}}" />
             <tbody class="dataList-rowGroup">

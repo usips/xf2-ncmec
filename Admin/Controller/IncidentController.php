@@ -143,10 +143,10 @@ class IncidentController extends AbstractController
                 if ($dataIds)
                 {
                     $incidentData = $this->finder('USIPS\NCMEC:IncidentAttachmentData')
-                        ->where('attachment_data_id', $dataIds)
+                        ->where('data_id', $dataIds)
                         ->with(['Incident', 'Incident.Case'])
                         ->fetch()
-                        ->groupBy('attachment_data_id');
+                        ->groupBy('data_id');
                         
                     foreach ($allAttachments as $attachment)
                     {
@@ -181,7 +181,10 @@ class IncidentController extends AbstractController
                 if ($attachments)
                 {
                     // Extract data IDs from attachments
-                    $dataIds = $attachments->pluck('data_id');
+                    $dataIds = $attachments->pluck(function($attachment)
+                    {
+                        return $attachment->data_id;
+                    });
 
                     // Enqueue AssociateAttachmentData job
                     \XF::app()->jobManager()->enqueue('USIPS\NCMEC:AssociateAttachmentData', [

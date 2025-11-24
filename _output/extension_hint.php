@@ -41,8 +41,8 @@ namespace USIPS\NCMEC\XF\Pub\Controller
 
 namespace USIPS\NCMEC\XF\Repository
 {
-	class XFCP_ChangeLog extends \XF\Repository\ChangeLog {}
-	class XFCP_Ip extends \XF\Repository\Ip {}
+	class XFCP_ChangeLog extends \XF\Repository\ChangeLogRepository {}
+	class XFCP_Ip extends \XF\Repository\IpRepository {}
 }
 
 namespace USIPS\NCMEC\XF\Service\Report
