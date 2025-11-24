@@ -133,22 +133,26 @@ abstract class AbstractFlagger extends AbstractService
                 continue;
             }
 
+            // Use specific deleters for Post and Thread to handle First Post logic correctly
+            if ($entity instanceof \XF\Entity\Post)
+            {
+                /** @var \XF\Service\Post\Deleter $deleter */
+                $deleter = $this->service('XF:Post\Deleter', $entity);
+                $deleter->delete('soft', $reason);
+                continue;
+            }
+
+            if ($entity instanceof \XF\Entity\Thread)
+            {
+                /** @var \XF\Service\Thread\Deleter $deleter */
+                $deleter = $this->service('XF:Thread\Deleter', $entity);
+                $deleter->delete('soft', $reason);
+                continue;
+            }
+
             if (method_exists($entity, 'softDelete'))
             {
                 $entity->softDelete($reason, $user);
-
-                // If this is a First Post and it was in the approval queue (moderated),
-                // softDelete() delegated to the Thread and didn't update the Post's state.
-                // We must manually update the post state to 'deleted' to trigger the
-                // removal of the Post's ApprovalQueue record.
-                if ($entity instanceof \XF\Entity\Post
-                    && $entity->isFirstPost()
-                    && $entity->message_state == 'moderated'
-                )
-                {
-                    $entity->message_state = 'deleted';
-                    $entity->save();
-                }
             }
             else
             {

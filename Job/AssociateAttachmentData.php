@@ -17,6 +17,11 @@ class AssociateAttachmentData extends AbstractJob
         $incidentId = $this->data['incident_id'];
         $attachmentDataIds = $this->data['attachment_data_ids'];
 
+        if ($attachmentDataIds instanceof \XF\Mvc\Entity\ArrayCollection)
+        {
+            $attachmentDataIds = $attachmentDataIds->toArray();
+        }
+
         if (!$incidentId || empty($attachmentDataIds))
         {
             return $this->complete();

@@ -86,7 +86,7 @@ class UserController extends BaseUserController
             return $this->redirect(
                 $this->buildLink('tools/run-job', null, [
                     'only' => $uniqueId,
-                    '_xfRedirect' => $this->buildLink('users/batch-update', null, ['success' => true]),
+                    '_xfRedirect' => $this->buildLink('ncmec-incidents/view', $incident),
                 ])
             );
         }

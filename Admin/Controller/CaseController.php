@@ -94,7 +94,13 @@ class CaseController extends AbstractController
         if ($this->isPost())
         {
             $this->saveCaseFromInput($case);
-            return $this->redirect($this->buildLink('ncmec-cases/view', $case));
+
+            if ($this->filter('exit', 'bool'))
+            {
+                return $this->redirect($this->buildLink('ncmec-cases/view', $case));
+            }
+
+            return $this->redirect($this->buildLink('ncmec-cases/edit', $case));
         }
 
         // Calculate incident date time range from incidents

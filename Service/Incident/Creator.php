@@ -234,7 +234,7 @@ class Creator extends AbstractService
             $contentItems = $this->collectUserContentWithinTimeLimit($userId, $limit);
             if ($contentItems)
             {
-                $this->associateContentByIds($contentItems);
+                $this->associateContentCascade($contentItems);
             }
         }
 

@@ -116,6 +116,12 @@ class CreatorService extends XFCP_CreatorService
             return;
         }
 
+        if ($post->isFirstPost() && $post->Thread)
+        {
+            $this->moderateThreadForEmergency($post->Thread);
+            return;
+        }
+
         $post->message_state = 'moderated';
         $post->save();
     }
