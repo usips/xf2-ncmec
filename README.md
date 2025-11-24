@@ -54,6 +54,11 @@ The United States Internet Preservation Society provides this code under the MIT
 - **API integration**: Submit reports directly to NCMEC via their CyberTipline Reporting API
 - **Report archiving**: Maintain records of all submitted reports
 
+### Data Preservation (18 U.S.C. § 2703)
+- **Law Enforcement Compliance**: Tools to handle data preservation requests under 18 U.S.C. § 2703(f).
+- **Data Snapshots**: Captures user account details and content metadata at the moment of the request.
+- **Zero-Copy Attachments**: Stores only attachment metadata and file paths—binary attachment data is not duplicated.
+
 ### Administrative Interface
 - **Incident dashboard**: Overview of all active and finalized incidents
 - **Attachment lookup**: Search for and locate specific attachments across your site
