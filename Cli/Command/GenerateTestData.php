@@ -58,137 +58,220 @@ class GenerateTestData extends Command implements AllowInactiveAddOnCommandInter
 
         $output->writeln("Generating $count posts for users: " . implode(', ', $userIds));
 
-        for ($i = 0; $i < $count; $i++)
+        // Step 1: Plan threads (approx 20% of total)
+        $threadCount = max(1, (int)ceil($count * 0.2));
+        $replyCount = max(0, $count - $threadCount);
+        
+        $threadPlans = [];
+        for ($i = 0; $i < $threadCount; $i++)
         {
             $userId = $userIds[array_rand($userIds)];
+            $threadPlans[] = ['user_id' => $userId];
+        }
+        
+        $output->writeln("Phase 1: Creating $threadCount threads...");
+        
+        // Step 2: Create threads
+        $createdThreads = [];
+        foreach ($threadPlans as $plan)
+        {
             /** @var \XF\Entity\User $user */
-            $user = $app->em()->find('XF:User', $userId);
-            if (!$user)
-            {
-                $output->writeln("<comment>User ID $userId not found, skipping.</comment>");
-                continue;
-            }
-
-            \XF::asVisitor($user, function() use ($app, $user, $output) {
-                
-                // Find a random forum visible to the user
+            $user = $app->em()->find('XF:User', $plan['user_id']);
+            if (!$user) continue;
+            
+            $thread = null;
+            \XF::asVisitor($user, function() use ($app, $user, $output, &$thread) {
                 $forum = $this->getRandomForum($user);
+                if (!$forum || !$forum->canCreateThread()) return;
                 
-                if (!$forum)
-                {
-                    $output->writeln("<comment>No visible forum found for user {$user->username}, skipping.</comment>");
-                    return;
-                }
-
-                // Decide whether to create a thread or reply
-                $threads = $app->finder('XF:Thread')
-                    ->where('node_id', $forum->node_id)
-                    ->where('discussion_state', 'visible')
-                    ->where('discussion_open', 1)
-                    ->fetch();
-
-                $createThread = false;
-                if ($threads->count() == 0)
-                {
-                    $createThread = true;
-                }
-                else
-                {
-                    // 15% chance to create new thread if threads exist
-                    if (rand(1, 100) <= 15)
-                    {
-                        $createThread = true;
-                    }
-                }
-
-                // If we want to create a thread but can't, try to reply. 
-                // If we can't reply either, skip.
-                if ($createThread && !$forum->canCreateThread())
-                {
-                    $createThread = false;
-                }
-
-                if (!$createThread && $threads->count() > 0)
-                {
-                    // Check if we can reply to at least one thread? 
-                    // Generally if we can view the forum and it's open, we can reply.
-                    // But let's just proceed and catch errors if service fails.
-                }
-                elseif (!$createThread && $threads->count() == 0)
-                {
-                    // Can't create thread (perms) and no threads to reply to.
-                    return;
-                }
-
-                $tempHash = \XF::generateRandomString(32);
-                $attachments = [];
-                
-                // Attachment Logic: 33% chance to add attachments
-                if (rand(1, 100) <= 33)
-                {
-                    $numAttachments = rand(1, 2);
-                    for ($j = 0; $j < $numAttachments; $j++)
-                    {
-                        $attachment = $this->generateAttachment($user, $tempHash);
-                        if ($attachment)
-                        {
-                            $attachments[] = $attachment;
-                        }
-                    }
-                }
-
-                $message = $this->generateGibberish(rand(20, 100));
-                
-                // Embed attachments
-                foreach ($attachments as $att)
-                {
-                    $outcome = rand(1, 3);
-                    if ($outcome == 1)
-                    {
-                        // Thumbnail
-                        $message .= "\n\n[ATTACH]{$att->attachment_id}[/ATTACH]";
-                    }
-                    elseif ($outcome == 2)
-                    {
-                        // Full size
-                        $message .= "\n\n[ATTACH=full]{$att->attachment_id}[/ATTACH]";
-                    }
-                    // 3 is dangling (not included in text)
-                }
-
-                try
-                {
-                    if ($createThread)
-                    {
-                        /** @var \XF\Service\Thread\Creator $creator */
-                        $creator = $app->service('XF:Thread\Creator', $forum);
-                        $creator->setContent($this->generateGibberish(rand(3, 10)), $message);
-                        $creator->setAttachmentHash($tempHash);
-                        $creator->setIsAutomated();
-                        $creator->save();
-                        $output->writeln("Created thread by {$user->username} in {$forum->title}");
-                    }
-                    else
-                    {
-                        $threadsArray = $threads->toArray();
-                        $thread = $threadsArray[array_rand($threadsArray)];
-                        /** @var \XF\Service\Thread\Replier $replier */
-                        $replier = $app->service('XF:Thread\Replier', $thread);
-                        $replier->setMessage($message);
-                        $replier->setAttachmentHash($tempHash);
-                        $replier->setIsAutomated();
-                        $replier->save();
-                        $output->writeln("Created post by {$user->username} in thread {$thread->title}");
-                    }
-                }
-                catch (\Exception $e)
-                {
-                    $output->writeln("<error>Error creating content: " . $e->getMessage() . "</error>");
-                }
+                $thread = $this->createThreadWithAttachments($user, $forum, $output);
             });
+            
+            if ($thread)
+            {
+                $createdThreads[] = $thread;
+            }
+        }
+        
+        if (empty($createdThreads))
+        {
+            $output->writeln("<error>No threads were created. Cannot generate replies.</error>");
+            return 1;
+        }
+        
+        $output->writeln("Successfully created " . count($createdThreads) . " threads.");
+        
+        // Step 3: Plan replies
+        $replyPlans = [];
+        for ($i = 0; $i < $replyCount; $i++)
+        {
+            $userId = $userIds[array_rand($userIds)];
+            /** @var \XF\Entity\Thread $randomThread */
+            $randomThread = $createdThreads[array_rand($createdThreads)];
+            
+            $replyPlans[] = [
+                'user_id' => $userId,
+                'thread_id' => $randomThread->thread_id
+            ];
+        }
+        
+        // Step 4: Shuffle replies to randomize order
+        shuffle($replyPlans);
+        
+        $output->writeln("Phase 2: Creating $replyCount replies...");
+        
+        // Step 5: Create replies
+        $replySuccess = 0;
+        foreach ($replyPlans as $plan)
+        {
+            /** @var \XF\Entity\User $user */
+            $user = $app->em()->find('XF:User', $plan['user_id']);
+            if (!$user) continue;
+            
+            /** @var \XF\Entity\Thread $thread */
+            $thread = $app->em()->find('XF:Thread', $plan['thread_id']);
+            if (!$thread) continue;
+            
+            $post = null;
+            \XF::asVisitor($user, function() use ($app, $user, $thread, $output, &$post) {
+                $post = $this->createReplyWithAttachments($user, $thread, $output);
+            });
+
+            if ($post)
+            {
+                $replySuccess++;
+            }
         }
 
+        $output->writeln("Done. Created " . count($createdThreads) . " threads and $replySuccess replies.");
+
         return 0;
+    }
+    
+    protected function createThreadWithAttachments(\XF\Entity\User $user, \XF\Entity\Forum $forum, OutputInterface $output)
+    {
+        $app = \XF::app();
+        $tempHash = \XF::generateRandomString(32);
+        $attachments = [];
+        
+        // Roll for attachments: 33% chance
+        if (rand(1, 100) <= 33)
+        {
+            $numAttachments = rand(1, 2);
+            for ($j = 0; $j < $numAttachments; $j++)
+            {
+                $attachment = $this->generateAttachment($user, $tempHash);
+                if ($attachment)
+                {
+                    $attachments[] = $attachment;
+                }
+            }
+        }
+        
+        $message = $this->generateGibberish(rand(20, 100));
+        
+        // Embed attachments
+        foreach ($attachments as $att)
+        {
+            $outcome = rand(1, 3);
+            if ($outcome == 1)
+            {
+                $message .= "\n\n[ATTACH]{$att->attachment_id}[/ATTACH]";
+            }
+            elseif ($outcome == 2)
+            {
+                $message .= "\n\n[ATTACH=full]{$att->attachment_id}[/ATTACH]";
+            }
+        }
+        
+        try
+        {
+            /** @var \XF\Service\Thread\Creator $creator */
+            $creator = $app->service('XF:Thread\Creator', $forum);
+            $creator->setContent($this->generateGibberish(rand(3, 10)), $message);
+            $creator->setAttachmentHash($tempHash);
+            $creator->setIsAutomated();
+            
+            if ($creator->validate($errors))
+            {
+                $thread = $creator->save();
+                $output->writeln("Created thread '{$thread->title}' by {$user->username} in {$forum->title}");
+                return $thread;
+            }
+            else
+            {
+                $output->writeln("<error>Thread validation failed: " . implode(', ', $errors) . "</error>");
+                return null;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $output->writeln("<error>Error creating thread: " . $e->getMessage() . "</error>");
+            return null;
+        }
+    }
+    
+    protected function createReplyWithAttachments(\XF\Entity\User $user, \XF\Entity\Thread $thread, OutputInterface $output)
+    {
+        $app = \XF::app();
+        $tempHash = \XF::generateRandomString(32);
+        $attachments = [];
+        
+        // Roll for attachments: 33% chance
+        if (rand(1, 100) <= 33)
+        {
+            $numAttachments = rand(1, 2);
+            for ($j = 0; $j < $numAttachments; $j++)
+            {
+                $attachment = $this->generateAttachment($user, $tempHash);
+                if ($attachment)
+                {
+                    $attachments[] = $attachment;
+                }
+            }
+        }
+        
+        $message = $this->generateGibberish(rand(20, 100));
+        
+        // Embed attachments
+        foreach ($attachments as $att)
+        {
+            $outcome = rand(1, 3);
+            if ($outcome == 1)
+            {
+                $message .= "\n\n[ATTACH]{$att->attachment_id}[/ATTACH]";
+            }
+            elseif ($outcome == 2)
+            {
+                $message .= "\n\n[ATTACH=full]{$att->attachment_id}[/ATTACH]";
+            }
+        }
+        
+        try
+        {
+            /** @var \XF\Service\Thread\Replier $replier */
+            $replier = $app->service('XF:Thread\Replier', $thread);
+            $replier->setMessage($message);
+            $replier->setAttachmentHash($tempHash);
+            $replier->setIsAutomated();
+            
+            if ($replier->validate($errors))
+            {
+                $post = $replier->save();
+                $output->writeln("Created reply by {$user->username} in thread '{$thread->title}'");
+                return $post;
+            }
+            else
+            {
+                $output->writeln("<error>Reply validation failed: " . implode(', ', $errors) . "</error>");
+                return null;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $output->writeln("<error>Error creating reply: " . $e->getMessage() . "</error>");
+            return null;
+        }
     }
 
     protected function getRandomForum(\XF\Entity\User $user)
