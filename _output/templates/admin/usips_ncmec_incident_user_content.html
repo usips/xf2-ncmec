@@ -44,6 +44,46 @@
 		</div>
 	</xf:form>
 
+	<xf:if is="$contentData">
+		<div class="block">
+			<div class="block-container">
+				<h2 class="block-header">
+					{{ phrase('usips_ncmec_associated_content') }}
+				</h2>
+				<div class="block-body">
+					<xf:datalist class="dataList">
+						<xf:datarow rowtype="header">
+							<xf:cell>{{ phrase('title') }}</xf:cell>
+							<xf:cell></xf:cell>
+							<xf:cell></xf:cell>
+						</xf:datarow>
+						<xf:foreach loop="$contentData" value="$data">
+							<xf:datarow>
+								<xf:cell class="dataList-cell--link">
+									<xf:if is="method_exists($data.content, 'getContentUrl')">
+										<a href="{{ $data.content.getContentUrl(true) }}" data-xf-init="preview-tooltip"
+											data-preview-url="{{ link('ncmec-incidents/content/preview', $data.incident_content) }}">{$data.title}</a>
+										<xf:else />
+										{$data.title}
+									</xf:if>
+								</xf:cell>
+								<xf:action href="{{ $data.content.getContentUrl(true) }}">{{ phrase('view_content') }}
+								</xf:action>
+								<xf:if is="!$incident.finalized_on">
+									<xf:delete href="{{ link('ncmec-incidents/content/delete', $data.incident_content) }}"
+										tooltip="{{ phrase('usips_ncmec_disassociate') }}" />
+								</xf:if>
+							</xf:datarow>
+						</xf:foreach>
+					</xf:datalist>
+				</div>
+				<div class="block-footer">
+					<span class="block-footer-counter">{{ display_totals($contentData) }}</span>
+				</div>
+			</div>
+		</div>
+	</xf:if>
+
 	<xf:form action="{{ link('ncmec-incidents/user/update-attachments', $incidentUser) }}" ajax="true" class="block">
 		<div class="block-container">
 			<h2 class="block-header">{{ phrase('usips_ncmec_attachments') }}</h2>

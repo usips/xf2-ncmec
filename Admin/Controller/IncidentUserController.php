@@ -38,6 +38,35 @@ class IncidentUserController extends AbstractController
         $associatedContent = $selector->getAssociatedContent();
         $associatedAttachments = $selector->getAssociatedAttachments();
 
+        // Prepare display data for associated content
+        $contentData = [];
+        foreach ($associatedContent as $incidentContent)
+        {
+            $content = $incidentContent->getContent();
+            if ($content)
+            {
+                $contentTitle = '';
+                if (method_exists($content, 'getContentTitle'))
+                {
+                    $contentTitle = $content->getContentTitle();
+                }
+                else
+                {
+                    // Fallback for content without getContentTitle
+                    $contentTitle = \XF::phrase('content_x_y', [
+                        'type' => $incidentContent->content_type,
+                        'id' => $incidentContent->content_id
+                    ]);
+                }
+
+                $contentData[] = [
+                    'incident_content' => $incidentContent,
+                    'content' => $content,
+                    'title' => $contentTitle,
+                ];
+            }
+        }
+
         // Get available content within time limit (will include associated content)
         $availableContent = $selector->getAvailableContent($timeLimit, $associatedContent);
         
@@ -96,6 +125,7 @@ class IncidentUserController extends AbstractController
             'availableContent' => $availableContent,
             'availableAttachments' => $availableAttachments,
             'associatedContent' => $associatedContent,
+            'contentData' => $contentData,
             'associatedAttachmentIds' => $associatedAttachmentIds,
         ];
 
