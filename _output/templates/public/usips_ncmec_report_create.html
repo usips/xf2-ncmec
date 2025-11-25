@@ -15,6 +15,9 @@
 					</xf:dependent>
 				</xf:option>
 				<xf:option value="emergency" label="{{ phrase('usips_ncmec_report_type_emergency') }}" />
+				<xf:if is="$xf.visitor.is_moderator">
+					<xf:option value="flag_as_csam" label="{{ phrase('report_state.flag_as_csam') }}" />
+				</xf:if>
 			</xf:radiorow>
 		</div>
 		<xf:submitrow submit="{{ phrase('report_verb') }}" />
