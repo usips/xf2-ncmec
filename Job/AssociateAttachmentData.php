@@ -49,7 +49,9 @@ class AssociateAttachmentData extends AbstractJob
             if ($attachments->count())
             {
                 $creator->associateAttachmentUsers($attachments);
-                $creator->associateContent($attachments);
+                $associatedItems = $creator->associateContent($attachments);
+                $creator->closeReportsForContent($associatedItems);
+                $creator->deleteContent($associatedItems);
             }
         } catch (\Exception $e) {
             // Log the error but don't fail the job

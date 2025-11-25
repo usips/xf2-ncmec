@@ -33,10 +33,10 @@ class Deleter extends AbstractService
 
         try
         {
-            // Prevent deletion when the incident is tied to a report
-            if ($this->incident->case_id)
+            // Prevent deletion when the incident is tied to a FINALIZED report/case
+            if ($this->incident->isFinalized())
             {
-                throw new PrintableException('Cannot delete incident because associated reports and logs must be retained.');
+                throw new PrintableException(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
             }
 
             // Get user IDs before deleting associations

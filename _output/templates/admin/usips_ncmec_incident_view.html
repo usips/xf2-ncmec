@@ -11,13 +11,13 @@
             {{ phrase('usips_ncmec_assign_case') }}
         </xf:button>
     </xf:if>
-    <xf:if is="!$incident.finalized_on">
+    <xf:if is="!$incident.isFinalized()">
         <xf:button href="{{ link('ncmec-incidents/delete', $incident) }}" icon="delete" overlay="true" />
     </xf:if>
 </xf:pageaction>
 
 <xf:set var="$caseEditable"
-    value="{{ !$incident.finalized_on && (!$incident.case_id || ($incident.Case && $incident.Case.canEdit())) }}" />
+    value="{{ !$incident.isFinalized() && (!$incident.case_id || ($incident.Case && $incident.Case.canEdit())) }}" />
 
 <xf:form action="{{ link('ncmec-incidents/update', $incident) }}" ajax="true" class="block">
 
@@ -26,7 +26,7 @@
             <xf:textboxrow name="title" value="{$incident.title}" label="{{ phrase('title') }}" />
 
             <xf:formrow label="{{ phrase('usips_ncmec_incident_status') }}">
-                <xf:if is="$incident.finalized_on">
+                <xf:if is="$incident.isFinalized()">
                     {{ phrase('usips_ncmec_finalized') }}
                     <xf:else />
                     {{ phrase('usips_ncmec_draft') }}
@@ -120,7 +120,7 @@
                             </xf:cell>
                             <xf:action href="{{ $data.content.getContentUrl(true) }}">{{ phrase('view_content') }}
                             </xf:action>
-                            <xf:if is="!$incident.finalized_on">
+                            <xf:if is="!$incident.isFinalized()">
                                 <xf:delete href="{{ link('ncmec-incidents/content/delete', $data.incident_content) }}"
                                     tooltip="{{ phrase('usips_ncmec_disassociate') }}" />
                             </xf:if>

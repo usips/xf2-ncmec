@@ -20,6 +20,9 @@ abstract class AbstractFlagger extends AbstractService
     /** @var User|null */
     protected $contentUser;
 
+    /** @var Creator|null */
+    protected $creator;
+
     public function __construct(\XF\App $app)
     {
         parent::__construct($app);
@@ -48,6 +51,7 @@ abstract class AbstractFlagger extends AbstractService
 
         /** @var Creator $creator */
         $creator = $this->service(Creator::class);
+        $this->creator = $creator;
 
         $incident = $this->findExistingIncident($actor->user_id);
         if ($incident)
@@ -117,56 +121,9 @@ abstract class AbstractFlagger extends AbstractService
 
     protected function deleteContent(array $contentItems): void
     {
-        $reason = 'Flagged as CSAM';
-        $user = \XF::visitor();
-
-        foreach ($contentItems as $item)
+        if ($this->creator)
         {
-            if (empty($item['content_type']) || empty($item['content_id']))
-            {
-                continue;
-            }
-
-            $entity = $this->app->findByContentType($item['content_type'], $item['content_id']);
-            if (!$entity)
-            {
-                continue;
-            }
-
-            // Use specific deleters for Post and Thread to handle First Post logic correctly
-            if ($entity instanceof \XF\Entity\Post)
-            {
-                /** @var \XF\Service\Post\Deleter $deleter */
-                $deleter = $this->service('XF:Post\Deleter', $entity);
-                $deleter->delete('soft', $reason);
-                continue;
-            }
-
-            if ($entity instanceof \XF\Entity\Thread)
-            {
-                /** @var \XF\Service\Thread\Deleter $deleter */
-                $deleter = $this->service('XF:Thread\Deleter', $entity);
-                $deleter->delete('soft', $reason);
-                continue;
-            }
-
-            if (method_exists($entity, 'softDelete'))
-            {
-                $entity->softDelete($reason, $user);
-            }
-            else
-            {
-                if ($entity->isValidColumn('message_state'))
-                {
-                    $entity->message_state = 'deleted';
-                    $entity->save();
-                }
-                elseif ($entity->isValidColumn('discussion_state'))
-                {
-                    $entity->discussion_state = 'deleted';
-                    $entity->save();
-                }
-            }
+            $this->creator->deleteContent($contentItems);
         }
     }
 
@@ -345,99 +302,10 @@ abstract class AbstractFlagger extends AbstractService
 
     protected function closeReportsForContent(array $contentItems, Incident $incident, array $processed = []): void
     {
-        foreach ($contentItems as $item)
+        if ($this->creator)
         {
-            if (empty($item['content_type']) || empty($item['content_id']))
-            {
-                continue;
-            }
-
-            $this->closeReportsByContentRef($item['content_type'], $item['content_id'], $incident, $processed);
-
-            if ($item['content_type'] !== 'thread')
-            {
-                continue;
-            }
-
-            $thread = $this->em()->find('XF:Thread', (int) $item['content_id']);
-            if (!$thread instanceof Thread || !$thread->first_post_id)
-            {
-                continue;
-            }
-
-            $firstPost = $thread->FirstPost;
-            if (!$firstPost instanceof Post)
-            {
-                $firstPost = $this->em()->find('XF:Post', $thread->first_post_id);
-            }
-
-            if (!$firstPost instanceof Post)
-            {
-                continue;
-            }
-
-            $threadOwnerId = (int) ($item['user_id'] ?? 0);
-            if ($threadOwnerId && $firstPost->user_id !== $threadOwnerId)
-            {
-                continue;
-            }
-
-            $this->closeReportsByContentRef('post', $firstPost->post_id, $incident, $processed);
+            $this->creator->setIncident($incident);
+            $this->creator->closeReportsForContent($contentItems, $processed);
         }
-    }
-
-    protected function closeReportsByContentRef(string $contentType, int $contentId, Incident $incident, array &$processed): void
-    {
-        $reports = $this->finder('XF:Report')
-            ->where('content_type', $contentType)
-            ->where('content_id', $contentId)
-            ->where('report_state', ['open', 'assigned'])
-            ->fetch();
-
-        /** @var Report $report */
-        foreach ($reports as $report)
-        {
-            if (isset($processed[$report->report_id]))
-            {
-                continue;
-            }
-
-            $this->closeReport($report, $incident);
-            $processed[$report->report_id] = true;
-        }
-    }
-
-    protected function closeReport(Report $report, Incident $incident): void
-    {
-        $commentMessage = $this->buildIncidentReferenceMessage($incident);
-
-        try
-        {
-            /** @var CommenterService $commenter */
-            $commenter = $this->service(CommenterService::class, $report);
-            $commenter->setMessage($commentMessage);
-            $commenter->setReportState('resolved');
-
-            if (!$commenter->validate($errors))
-            {
-                \XF::logError('Failed to close report #' . $report->report_id . ' while flagging CSAM: ' . implode('; ', $errors));
-                return;
-            }
-
-            $commenter->save();
-            $commenter->sendNotifications();
-        }
-        catch (\Throwable $e)
-        {
-            \XF::logException($e, false, 'Failed to close report while flagging CSAM: ');
-        }
-    }
-
-    protected function buildIncidentReferenceMessage(Incident $incident): string
-    {
-        $url = $this->app->router('admin')->buildLink('canonical:ncmec-incidents/view', $incident);
-        $title = \XF::escapeString($incident->title);
-
-        return sprintf('[B]Flagged as CSAM[/B] in [url="%s"]%s[/url].', $url, $title);
     }
 }

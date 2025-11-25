@@ -54,7 +54,7 @@ class Setup extends AbstractSetup
         $this->schemaManager()->createTable('xf_usips_ncmec_incident', function(Create $table)
         {
             $table->addColumn('incident_id', 'int')->autoIncrement();
-            $table->addColumn('case_id', 'int');
+            $table->addColumn('case_id', 'int')->nullable()->setDefault(null);
             $table->addColumn('title', 'varchar', 255);
             $table->addColumn('additional_info', 'text');
             $table->addColumn('created_date', 'int');

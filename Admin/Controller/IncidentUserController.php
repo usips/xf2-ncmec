@@ -249,11 +249,16 @@ class IncidentUserController extends AbstractController
         /** @var \USIPS\NCMEC\Service\Incident\AttachmentManager $attachmentManager */
         $attachmentManager = $this->service('USIPS\\NCMEC:Incident\\AttachmentManager');
 
+        /** @var \USIPS\NCMEC\Service\Incident\Creator $creator */
+        $creator = $this->service('USIPS\\NCMEC:Incident\\Creator');
+        $creator->setIncident($incident);
+
         foreach ($dataIdsToRemove as $dataId)
         {
             $attachmentManager->removeAttachmentFromIncident($incident->incident_id, $dataId);
         }
 
+        $attachmentsToAdd = [];
         foreach ($dataIdsToAdd as $dataId)
         {
             $attachment = $attachmentsByDataId[$dataId];
@@ -265,6 +270,15 @@ class IncidentUserController extends AbstractController
                 $data->user_id,
                 $data->User ? $data->User->username : $user->username
             );
+
+            $attachmentsToAdd[] = $attachment;
+        }
+
+        if ($attachmentsToAdd)
+        {
+            $associatedItems = $creator->associateContent($attachmentsToAdd);
+            $creator->closeReportsForContent($associatedItems);
+            $creator->deleteContent($associatedItems);
         }
 
         return $this->redirect(

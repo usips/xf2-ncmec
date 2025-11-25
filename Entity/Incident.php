@@ -34,7 +34,7 @@ class Incident extends Entity
         $structure->primaryKey = 'incident_id';
         $structure->columns = [
             'incident_id' => ['type' => self::UINT, 'autoIncrement' => true],
-            'case_id' => ['type' => self::UINT, 'default' => 0],
+            'case_id' => ['type' => self::UINT, 'default' => null, 'nullable' => true],
             'title' => ['type' => self::STR, 'maxLength' => 255],
             'additional_info' => ['type' => self::STR, 'default' => ''],
             'created_date' => ['type' => self::UINT, 'default' => \XF::$time],
@@ -78,7 +78,7 @@ class Incident extends Entity
 
     protected function _preSave()
     {
-        if ($this->isUpdate() && $this->getExistingValue('finalized_on'))
+        if ($this->isUpdate() && $this->isFinalized() && $this->isChanged('finalized_on') === false)
         {
             $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
         }
@@ -86,10 +86,19 @@ class Incident extends Entity
 
     protected function _preDelete()
     {
-        if ($this->finalized_on)
+        if ($this->isFinalized())
         {
             $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
         }
+    }
+
+    public function isFinalized()
+    {
+        if ($this->case_id && $this->Case)
+        {
+            return (bool) $this->Case->finalized_on;
+        }
+        return false;
     }
 
     public static function getWithEverything()

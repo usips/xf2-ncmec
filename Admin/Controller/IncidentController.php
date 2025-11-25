@@ -253,7 +253,7 @@ class IncidentController extends AbstractController
         if ($this->isPost())
         {
             // Check if incident is finalized
-            if ($incident->finalized_on)
+            if ($incident->isFinalized())
             {
                 return $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
             }
@@ -392,7 +392,7 @@ class IncidentController extends AbstractController
     {
         $incident = $this->assertIncidentExists($params->incident_id);
 
-        if ($incident->finalized_on)
+        if ($incident->isFinalized())
         {
             return $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
         }

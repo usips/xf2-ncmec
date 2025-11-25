@@ -5,9 +5,13 @@ namespace USIPS\NCMEC\Service\Incident;
 use USIPS\NCMEC\Entity\Incident;
 use USIPS\NCMEC\Util\TimeLimit;
 use XF\Entity\Attachment;
+use XF\Entity\Post;
+use XF\Entity\Report;
+use XF\Entity\Thread;
 use XF\Entity\User;
 use XF\Mvc\Entity\Entity;
 use XF\Service\AbstractService;
+use XF\Service\Report\CommenterService;
 use XF\Util\Str;
 
 class Creator extends AbstractService
@@ -239,6 +243,8 @@ class Creator extends AbstractService
             if ($contentItems)
             {
                 $this->associateContentCascade($contentItems);
+                $this->closeReportsForContent($contentItems);
+                $this->deleteContent($contentItems);
             }
         }
 
@@ -357,6 +363,8 @@ class Creator extends AbstractService
             $incidentContent->username = \XF\Util\Str::substr($content->User->username, 0, 50);
             $incidentContent->save();
         }
+
+        return array_values($contentKeys);
     }
 
     /**
@@ -846,5 +854,158 @@ class Creator extends AbstractService
         ];
 
         return $dateFields[$contentType] ?? null;
+    }
+
+    public function deleteContent(array $contentItems): void
+    {
+        $reason = 'Flagged as CSAM';
+        $user = \XF::visitor();
+
+        foreach ($contentItems as $item)
+        {
+            if (empty($item['content_type']) || empty($item['content_id']))
+            {
+                continue;
+            }
+
+            $entity = $this->app->findByContentType($item['content_type'], $item['content_id']);
+            if (!$entity)
+            {
+                continue;
+            }
+
+            // Use specific deleters for Post and Thread to handle First Post logic correctly
+            if ($entity instanceof \XF\Entity\Post)
+            {
+                /** @var \XF\Service\Post\Deleter $deleter */
+                $deleter = $this->service('XF:Post\Deleter', $entity);
+                $deleter->delete('soft', $reason);
+                continue;
+            }
+
+            if ($entity instanceof \XF\Entity\Thread)
+            {
+                /** @var \XF\Service\Thread\Deleter $deleter */
+                $deleter = $this->service('XF:Thread\Deleter', $entity);
+                $deleter->delete('soft', $reason);
+                continue;
+            }
+
+            if (method_exists($entity, 'softDelete'))
+            {
+                $entity->softDelete($reason, $user);
+            }
+            else
+            {
+                if ($entity->isValidColumn('message_state'))
+                {
+                    $entity->message_state = 'deleted';
+                    $entity->save();
+                }
+                elseif ($entity->isValidColumn('discussion_state'))
+                {
+                    $entity->discussion_state = 'deleted';
+                    $entity->save();
+                }
+            }
+        }
+    }
+
+    public function closeReportsForContent(array $contentItems, array $processed = []): void
+    {
+        foreach ($contentItems as $item)
+        {
+            if (empty($item['content_type']) || empty($item['content_id']))
+            {
+                continue;
+            }
+
+            $this->closeReportsByContentRef($item['content_type'], $item['content_id'], $processed);
+
+            if ($item['content_type'] !== 'thread')
+            {
+                continue;
+            }
+
+            $thread = $this->em()->find('XF:Thread', (int) $item['content_id']);
+            if (!$thread instanceof Thread || !$thread->first_post_id)
+            {
+                continue;
+            }
+
+            $firstPost = $thread->FirstPost;
+            if (!$firstPost instanceof Post)
+            {
+                $firstPost = $this->em()->find('XF:Post', $thread->first_post_id);
+            }
+
+            if (!$firstPost instanceof Post)
+            {
+                continue;
+            }
+
+            $threadOwnerId = (int) ($item['user_id'] ?? 0);
+            if ($threadOwnerId && $firstPost->user_id !== $threadOwnerId)
+            {
+                continue;
+            }
+
+            $this->closeReportsByContentRef('post', $firstPost->post_id, $processed);
+        }
+    }
+
+    protected function closeReportsByContentRef(string $contentType, int $contentId, array &$processed): void
+    {
+        $reports = $this->finder('XF:Report')
+            ->where('content_type', $contentType)
+            ->where('content_id', $contentId)
+            ->where('report_state', ['open', 'assigned'])
+            ->fetch();
+
+        /** @var Report $report */
+        foreach ($reports as $report)
+        {
+            if (isset($processed[$report->report_id]))
+            {
+                continue;
+            }
+
+            $this->closeReport($report);
+            $processed[$report->report_id] = true;
+        }
+    }
+
+    protected function closeReport(Report $report): void
+    {
+        $commentMessage = $this->buildIncidentReferenceMessage();
+
+        try
+        {
+            /** @var CommenterService $commenter */
+            $commenter = $this->service(CommenterService::class, $report);
+            $commenter->setMessage($commentMessage);
+            $commenter->setReportState('resolved');
+
+            if (!$commenter->validate($errors))
+            {
+                \XF::logError('Failed to close report #' . $report->report_id . ' while flagging CSAM: ' . implode('; ', $errors));
+                return;
+            }
+
+            $commenter->save();
+            $commenter->sendNotifications();
+        }
+        catch (\Throwable $e)
+        {
+            \XF::logException($e, false, 'Failed to close report while flagging CSAM: ');
+        }
+    }
+
+    protected function buildIncidentReferenceMessage(): string
+    {
+        $url = $this->app->router('admin')->buildLink('canonical:ncmec-incidents/view', $this->incident);
+        $title = \XF::escapeString($this->incident->title);
+
+        return sprintf('[B]Flagged as CSAM[/B] in [url="%s"]%s[/url].', $url, $title);
     }
 }
