@@ -472,6 +472,16 @@ class CaseController extends AbstractController
                     return $this->error(implode("\n", $errors));
                 }
 
+                // Check if job is already running
+                $existingJob = $this->app->jobManager()->getUniqueJob('usipsNcmecFinalize' . $case->case_id);
+                if ($existingJob)
+                {
+                     return $this->redirect($this->buildLink('tools/run-job', null, [
+                        'only_id' => $existingJob['job_id'],
+                        'redirect' => $this->buildLink('ncmec')
+                    ]));
+                }
+
                 // If this is a resubmission (finalized but not submitted), clean up first
                 if ($case->finalized_on && !$case->submitted_on)
                 {

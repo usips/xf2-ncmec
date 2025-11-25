@@ -244,7 +244,7 @@ class Submitter extends AbstractService
             try
             {
                 $entity = $content->getContent();
-                
+
                 if ($entity)
                 {
                     // Direct entity deletion:
@@ -283,16 +283,55 @@ class Submitter extends AbstractService
         {
             $response = $this->apiClient->finishReport($this->report->ncmec_report_id);
             
-            if ($response && (string)$response->responseCode === '0')
+            if ($response)
             {
+                $this->verifySubmittedFiles($response);
+                
                 $this->report->submitted_on = \XF::$time;
                 $this->report->save();
             }
             else
             {
-                $error = $response ? (string)$response->responseDescription : 'Unknown error';
-                throw new \Exception("Failed to finish report: " . $error);
+                throw new \Exception("Failed to finish report: No response from NCMEC");
             }
+        }
+    }
+
+    protected function verifySubmittedFiles(\SimpleXMLElement $xml)
+    {
+        $submittedFileIds = [];
+        if (isset($xml->files) && isset($xml->files->fileId))
+        {
+            foreach ($xml->files->fileId as $fileId)
+            {
+                $submittedFileIds[] = (string)$fileId;
+            }
+        }
+        
+        // Get local files
+        $reportFiles = $this->finder('USIPS\NCMEC:ReportFile')
+            ->where('report_id', $this->report->report_id)
+            ->where('ncmec_file_id', '!=', '')
+            ->fetch();
+            
+        $localFileIds = [];
+        foreach ($reportFiles as $rf)
+        {
+            $localFileIds[] = (string)$rf->ncmec_file_id;
+        }
+        
+        // Check for missing files
+        $missing = array_diff($localFileIds, $submittedFileIds);
+        if (!empty($missing))
+        {
+            \XF::logError("NCMEC Report #{$this->report->report_id} finished but NCMEC response is missing file IDs: " . implode(', ', $missing));
+        }
+        
+        // Check for extra files (unexpected)
+        $extra = array_diff($submittedFileIds, $localFileIds);
+        if (!empty($extra))
+        {
+             \XF::logError("NCMEC Report #{$this->report->report_id} finished but NCMEC response contains unexpected file IDs: " . implode(', ', $extra));
         }
     }
 
@@ -430,43 +469,112 @@ class Submitter extends AbstractService
         $incidents = $this->finder('USIPS\NCMEC:Incident')
             ->where('case_id', $this->case->case_id)
             ->fetch();
-            
-        foreach ($incidents as $incident)
+
+        if (!$incidents->count())
         {
-            // Get content URLs
-            $contentItems = $this->finder('USIPS\NCMEC:IncidentContent')
-                ->where('incident_id', $incident->incident_id)
+            return;
+        }
+
+        $incidentIds = $incidents->keys();
+        $processedUrls = [];
+
+        // --- Content Items ---
+        $contentItems = $this->finder('USIPS\NCMEC:IncidentContent')
+            ->where('incident_id', $incidentIds)
+            ->fetch();
+
+        // Optimization: Pre-load content entities to avoid N+1
+        $idsByType = [];
+        foreach ($contentItems as $item)
+        {
+            $idsByType[$item->content_type][] = $item->content_id;
+        }
+
+        $loadedContent = [];
+
+        // Handle Posts specifically with Thread eager loading
+        if (isset($idsByType['post']))
+        {
+            $posts = $this->finder('XF:Post')
+                ->where('post_id', $idsByType['post'])
+                ->with('Thread')
                 ->fetch();
-                
-            foreach ($contentItems as $contentItem)
+            foreach ($posts as $post)
+            {
+                $loadedContent['post'][$post->post_id] = $post;
+            }
+            unset($idsByType['post']);
+        }
+
+        // Handle other types generically
+        foreach ($idsByType as $type => $ids)
+        {
+            $entityName = $this->app->getContentTypeField($type, 'entity');
+            if ($entityName)
+            {
+                $entities = $this->finder($entityName)
+                    ->where($this->em()->getEntityStructure($entityName)->primaryKey, $ids)
+                    ->fetch();
+                foreach ($entities as $id => $entity)
+                {
+                    $loadedContent[$type][$id] = $entity;
+                }
+            }
+        }
+
+        foreach ($contentItems as $contentItem)
+        {
+            $entity = $loadedContent[$contentItem->content_type][$contentItem->content_id] ?? null;
+
+            // Fallback if not bulk loaded
+            if (!$entity)
             {
                 $entity = $contentItem->getContent();
-                if ($entity && method_exists($entity, 'getContentUrl'))
+            }
+
+            if ($entity && method_exists($entity, 'getContentUrl'))
+            {
+                $url = null;
+                if ($entity instanceof \XF\Entity\Post && $entity->Thread)
+                {
+                    $url = $this->app->router('public')->buildLink('canonical:threads/post', $entity->Thread, ['post_id' => $entity->post_id]);
+                }
+                else
+                {
+                    $url = $entity->getContentUrl(true);
+                }
+
+                if ($url && !isset($processedUrls[$url]))
                 {
                     $internetDetails = $xml->addChild('internetDetails');
                     $webPage = $internetDetails->addChild('webPageIncident');
-                    $webPage->addChild('url', htmlspecialchars($entity->getContentUrl(true)));
-                    
+                    $webPage->addChild('url', htmlspecialchars($url));
+                    $processedUrls[$url] = true;
+
                     // Note: uploadDateTime is not allowed in webPageIncident per XSD
                 }
             }
-            
-            // Get user profile URLs
-            $userItems = $this->finder('USIPS\NCMEC:IncidentUser')
-                ->where('incident_id', $incident->incident_id)
-                ->with('User', true)
-                ->fetch();
-                
-            foreach ($userItems as $userItem)
+        }
+
+        // --- User Items ---
+        $userItems = $this->finder('USIPS\NCMEC:IncidentUser')
+            ->where('incident_id', $incidentIds)
+            ->with('User', true)
+            ->fetch();
+
+        foreach ($userItems as $userItem)
+        {
+            if ($userItem->User)
             {
-                if ($userItem->User)
+                $router = $this->app->router('public');
+                $profileUrl = $router->buildLink('canonical:members', $userItem->User);
+
+                if ($profileUrl && !isset($processedUrls[$profileUrl]))
                 {
                     $internetDetails = $xml->addChild('internetDetails');
                     $webPage = $internetDetails->addChild('webPageIncident');
-                    
-                    $router = $this->app->router('public');
-                    $profileUrl = $router->buildLink('canonical:members', $userItem->User);
                     $webPage->addChild('url', htmlspecialchars($profileUrl));
+                    $processedUrls[$profileUrl] = true;
                 }
             }
         }

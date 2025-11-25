@@ -158,14 +158,16 @@ class FinalizeCase extends AbstractJob
                 case 'files':
                     // Process one file at a time to avoid timeouts
                     $db = $this->app->db();
+                    $lastDataId = $this->data['last_data_id'] ?? 0;
                     
                     $fileQuery = "
                         SELECT iad.data_id, iad.incident_id
                         FROM xf_usips_ncmec_incident_attachment_data AS iad
                         INNER JOIN xf_usips_ncmec_incident AS i ON (iad.incident_id = i.incident_id)
                         WHERE i.case_id = ? 
+                        AND iad.data_id > ?
                     ";
-                    $fileParams = [$case->case_id];
+                    $fileParams = [$case->case_id, $lastDataId];
                     
                     if (!$isSingleReport)
                     {
@@ -173,14 +175,14 @@ class FinalizeCase extends AbstractJob
                         $fileParams[] = $userId;
                     }
                     
-                    $fileQuery .= " LIMIT 1";
+                    $fileQuery .= " ORDER BY iad.data_id ASC LIMIT 1";
                     
                     $row = $db->fetchRow($fileQuery, $fileParams);
 
                     if ($row)
                     {
                         $nextAttachmentId = $row['data_id'];
-                        $incidentId = $row['incident_id'];
+                        $this->data['last_data_id'] = $nextAttachmentId;
 
                         /** @var \XF\Entity\AttachmentData $attachmentData */
                         $attachmentData = $this->app->em()->find('XF:AttachmentData', $nextAttachmentId);
@@ -190,15 +192,13 @@ class FinalizeCase extends AbstractJob
                             $submitter->processAttachment($attachmentData);
                         }
                         
-                        // Delete the incident attachment record to move forward
-                        $db->delete('xf_usips_ncmec_incident_attachment_data', 'incident_id = ? AND data_id = ?', [$incidentId, $nextAttachmentId]);
-                        
                         // Stay in 'files' state to process next file
                     }
                     else
                     {
-                        // No more files
+                        // No more files for this user
                         $this->data['state'] = 'finish';
+                        $this->data['last_data_id'] = 0; // Reset for next user
                     }
                     break;
 
@@ -208,6 +208,7 @@ class FinalizeCase extends AbstractJob
                     // Move to next user (or finish if single report)
                     $this->data['current_user_index']++;
                     $this->data['state'] = 'init';
+                    $this->data['last_data_id'] = 0;
                     break;
 
                 case 'content':
@@ -244,6 +245,7 @@ class FinalizeCase extends AbstractJob
             // Move to next user on error to avoid infinite loop
             $this->data['current_user_index']++;
             $this->data['state'] = ($this->data['phase'] === 'submit') ? 'init' : 'content';
+            $this->data['last_data_id'] = 0;
         }
 
         if (microtime(true) - $startTime > $maxRunTime)

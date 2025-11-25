@@ -219,10 +219,15 @@ class IncidentController extends AbstractController
                     }
 
                     // Enqueue AssociateAttachmentData job
-                    \XF::app()->jobManager()->enqueue('USIPS\NCMEC:AssociateAttachmentData', [
+                    $jobId = \XF::app()->jobManager()->enqueue('USIPS\NCMEC:AssociateAttachmentData', [
                         'incident_id' => $incident->incident_id,
                         'attachment_data_ids' => $dataIds
                     ]);
+
+                    return $this->redirect($this->buildLink('tools/run-job', null, [
+                        'only_id' => $jobId,
+                        '_xfRedirect' => $this->buildLink('ncmec-incidents/view', $incident)
+                    ]));
                 }
 
                 return $this->redirect($this->buildLink('ncmec-incidents/view', $incident));
