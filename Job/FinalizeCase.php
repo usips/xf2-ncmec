@@ -11,8 +11,13 @@ class FinalizeCase extends AbstractJob
         'case_id' => 0,
         'user_ids' => [],
         'current_user_index' => 0,
-        'state' => 'init', // init, ban, report, files, content, finish
+        'state' => 'init', // init, ban, report, files, export_user, export_content_init, export_content_loop, finish, content
         'phase' => 'submit', // submit, cleanup
+        'content_types' => [],
+        'content_type_index' => 0,
+        'last_data_id' => 0,
+        'total_files' => 0,
+        'processed_files' => 0
     ];
 
     public function run($maxRunTime)
@@ -152,6 +157,26 @@ class FinalizeCase extends AbstractJob
 
                 case 'report':
                     $submitter->ensureReportOpened();
+
+                    // Calculate file counts for progress tracking
+                    $db = $this->app->db();
+                    $countQuery = "
+                        SELECT COUNT(*)
+                        FROM xf_usips_ncmec_incident_attachment_data AS iad
+                        INNER JOIN xf_usips_ncmec_incident AS i ON (iad.incident_id = i.incident_id)
+                        WHERE i.case_id = ?
+                    ";
+                    $countParams = [$case->case_id];
+                    
+                    if (!$isSingleReport)
+                    {
+                        $countQuery .= " AND iad.user_id = ?";
+                        $countParams[] = $userId;
+                    }
+                    
+                    $this->data['total_files'] = $db->fetchOne($countQuery, $countParams);
+                    $this->data['processed_files'] = 0;
+
                     $this->data['state'] = 'files';
                     break;
 
@@ -192,13 +217,43 @@ class FinalizeCase extends AbstractJob
                             $submitter->processAttachment($attachmentData);
                         }
                         
+                        $this->data['processed_files']++;
+                        
                         // Stay in 'files' state to process next file
                     }
                     else
                     {
                         // No more files for this user
-                        $this->data['state'] = 'finish';
+                        $this->data['state'] = 'export_user';
                         $this->data['last_data_id'] = 0; // Reset for next user
+                    }
+                    break;
+
+                case 'export_user':
+                    $submitter->exportUserData();
+                    $this->data['state'] = 'export_content_init';
+                    break;
+
+                case 'export_content_init':
+                    $this->data['content_types'] = $submitter->getContentTypesToExport();
+                    $this->data['content_type_index'] = 0;
+                    $this->data['state'] = 'export_content_loop';
+                    break;
+
+                case 'export_content_loop':
+                    if (!isset($this->data['content_types'][$this->data['content_type_index']]))
+                    {
+                        // Done with all content types
+                        $this->data['state'] = 'finish';
+                        $this->data['content_types'] = [];
+                        $this->data['content_type_index'] = 0;
+                    }
+                    else
+                    {
+                        $contentType = $this->data['content_types'][$this->data['content_type_index']];
+                        $submitter->exportContentType($contentType);
+                        $this->data['content_type_index']++;
+                        // Stay in loop
                     }
                     break;
 
@@ -212,11 +267,18 @@ class FinalizeCase extends AbstractJob
                     break;
 
                 case 'content':
-                    $submitter->deleteContent();
+                    $remainingTime = $maxRunTime - (microtime(true) - $startTime);
+                    if ($remainingTime < 1) $remainingTime = 1;
+
+                    $done = $submitter->deleteContent($remainingTime);
                     
-                    // Move to next user
-                    $this->data['current_user_index']++;
-                    $this->data['state'] = 'content';
+                    if ($done)
+                    {
+                        // Move to next user
+                        $this->data['current_user_index']++;
+                        $this->data['state'] = 'content';
+                    }
+                    // Else stay in 'content' state and resume
                     break;
             }
         }
@@ -282,7 +344,22 @@ class FinalizeCase extends AbstractJob
         $current = $this->data['current_user_index'] + 1;
         $state = $this->data['state'];
         $phase = $this->data['phase'] ?? 'submit';
-        return sprintf('Finalizing NCMEC Case... User %d / %d (%s - %s)', $current, $total, $phase, $state);
+
+        $detail = '';
+        if ($state === 'files' && !empty($this->data['total_files']))
+        {
+            $detail = sprintf(' - %d/%d', $this->data['processed_files'], $this->data['total_files']);
+        }
+        else if ($state === 'export_content_loop' && !empty($this->data['content_types']))
+        {
+             $type = $this->data['content_types'][$this->data['content_type_index']] ?? '';
+             if ($type)
+             {
+                 $detail = sprintf(' - %s', $type);
+             }
+        }
+
+        return sprintf('Finalizing NCMEC Case... User %d / %d (%s - %s%s)', $current, $total, $phase, $state, $detail);
     }
 
     public function canCancel()

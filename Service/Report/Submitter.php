@@ -192,7 +192,7 @@ class Submitter extends AbstractService
                     $reportFile->save();
 
                     // Submit File Details
-                    $detailsXml = $this->buildFileDetailsXml($reportFile);
+                    $detailsXml = $this->buildFileDetailsXml($reportFile, 'Reported');
                     $this->apiClient->submitFileDetails($detailsXml);
 
                     // Delete Data - This is the critical step requested
@@ -222,53 +222,378 @@ class Submitter extends AbstractService
         }
     }
 
-    public function deleteContent()
+    public function exportData()
     {
-        // Delete Incident Content (Posts, Threads, etc)
-        // Entity deletion methods handle all cleanup including attachments
-        
+        $this->ensureReportOpened();
+        $reportId = $this->report->report_id;
+
+        // 1. Export User Data (Users, IPs, Changelogs)
+        $this->exportUserData($reportId);
+
+        // 2. Export Content (Posts, Threads, etc)
+        $this->exportAllContent($reportId);
+    }
+
+    public function exportUserData(int $reportId = null)
+    {
+        if ($reportId === null)
+        {
+            $this->ensureReportOpened();
+            $reportId = $this->report->report_id;
+        }
+
+        $users = [];
+        foreach ($this->subjects as $subject)
+        {
+            // User Data
+            $userData = $subject->toArray();
+            if ($subject->Profile)
+            {
+                $userData['Profile'] = $subject->Profile->toArray();
+            }
+            if ($subject->Option)
+            {
+                $userData['Option'] = $subject->Option->toArray();
+            }
+            if ($subject->Privacy)
+            {
+                $userData['Privacy'] = $subject->Privacy->toArray();
+            }
+            $users[] = $userData;
+        }
+        $this->saveAndUploadJson($reportId, 'users.json', $users);
+
+        // Export IPs and Changelogs via streaming
         $userIds = [];
         foreach ($this->subjects as $subject)
         {
             $userIds[] = $subject->user_id;
         }
 
-        $incidentContents = $this->finder('USIPS\NCMEC:IncidentContent')
-            ->where('user_id', $userIds)
-            ->with('Incident', true)
-            ->where('Incident.case_id', $this->case->case_id)
-            ->fetch();
+        $this->exportStreamedData($reportId, 'ips.json', 'XF:Ip', [
+            'user_id' => $userIds
+        ], 'log_date');
 
-        foreach ($incidentContents as $content)
+        // Changelogs need slightly different handling because content_id is the user_id
+        // and content_type is fixed.
+        // We can pass array for content_id
+        $this->exportStreamedData($reportId, 'changelogs.json', 'XF:ChangeLog', [
+            'content_type' => 'user',
+            'content_id' => $userIds
+        ], 'edit_date');
+    }
+
+    protected function exportStreamedData(int $reportId, string $filename, string $finderName, array $conditions, string $orderField)
+    {
+        $tempFile = \XF\Util\File::getTempFile();
+        $handle = fopen($tempFile, 'w');
+        fwrite($handle, "[\n");
+        
+        $first = true;
+        $page = 1;
+        $perPage = 1000;
+
+        while (true)
         {
-            try
+            $finder = $this->finder($finderName);
+            foreach ($conditions as $field => $value)
             {
-                $entity = $content->getContent();
+                $finder->where($field, $value);
+            }
+            $finder->order($orderField, 'DESC')
+                   ->limitByPage($page, $perPage);
+            
+            $results = $finder->fetch();
 
-                if ($entity)
+            if (!$results->count())
+            {
+                break;
+            }
+
+            foreach ($results as $result)
+            {
+                if (!$first)
                 {
-                    // Direct entity deletion:
-                    // - Posts: _postDelete() removes attachments, updates thread
-                    // - Threads: _postDelete() removes all posts and their attachments
-                    // - ProfilePosts: _postDelete() removes attachments
-                    // First posts automatically trigger thread deletion via isFirstPost() check
-                    if ($entity instanceof \XF\Entity\Post && $entity->isFirstPost() && $entity->Thread)
-                    {
-                        $entity->Thread->delete();
-                    }
-                    else
-                    {
-                        $entity->delete();
-                    }
+                    fwrite($handle, ",\n");
+                }
+                
+                $data = $result->toArray();
+                
+                // Special handling for IPs to make them readable
+                if ($result instanceof \XF\Entity\Ip)
+                {
+                    $data['ip_address'] = \XF\Util\Ip::binaryToString($result->ip);
                 }
 
-                // Delete the incident content record
-                $content->delete();
+                fwrite($handle, json_encode($data, JSON_PRETTY_PRINT));
+                $first = false;
             }
-            catch (\Exception $e)
+            
+            $this->app->em()->clearEntityCache();
+            $page++;
+        }
+        
+        fwrite($handle, "\n]");
+        fclose($handle);
+
+        // Save to internal storage
+        $fs = \XF::app()->fs();
+        $abstractPath = "internal-data://ncmec/report_{$reportId}/{$filename}";
+        
+        $readHandle = fopen($tempFile, 'r');
+        $fs->putStream($abstractPath, $readHandle);
+        if (is_resource($readHandle)) fclose($readHandle);
+
+        // Upload to NCMEC
+        try
+        {
+            $this->uploadSupplementalFile($tempFile, $filename);
+        }
+        finally
+        {
+            @unlink($tempFile);
+        }
+    }
+
+    public function getContentTypesToExport()
+    {
+        $userIds = [];
+        foreach ($this->subjects as $subject)
+        {
+            $userIds[] = $subject->user_id;
+        }
+
+        $db = $this->app->db();
+        return $db->fetchAllColumn("
+            SELECT DISTINCT content_type 
+            FROM xf_usips_ncmec_incident_content AS ic
+            INNER JOIN xf_usips_ncmec_incident AS i ON (ic.incident_id = i.incident_id)
+            WHERE i.case_id = ? AND ic.user_id IN (" . $db->quote($userIds) . ")
+        ", [$this->case->case_id]);
+    }
+
+    public function exportContentType(string $type, int $reportId = null)
+    {
+        if ($reportId === null)
+        {
+            $this->ensureReportOpened();
+            $reportId = $this->report->report_id;
+        }
+
+        $userIds = [];
+        foreach ($this->subjects as $subject)
+        {
+            $userIds[] = $subject->user_id;
+        }
+
+        $filename = $type . 's.json';
+        
+        // We need to stream this to avoid memory issues
+        $tempFile = \XF\Util\File::getTempFile();
+        $handle = fopen($tempFile, 'w');
+        fwrite($handle, "[\n");
+        
+        $first = true;
+        $page = 1;
+        $perPage = 1000;
+
+        while (true)
+        {
+            $incidentContents = $this->finder('USIPS\NCMEC:IncidentContent')
+                ->where('user_id', $userIds)
+                ->where('content_type', $type)
+                ->with('Incident', true)
+                ->where('Incident.case_id', $this->case->case_id)
+                ->limitByPage($page, $perPage)
+                ->fetch();
+
+            if (!$incidentContents->count())
             {
-                // Log error but continue processing other content
-                \XF::logException($e, false, "Failed to delete content entity or incident record for ID {$content->incident_content_id}: ");
+                break;
+            }
+
+            foreach ($incidentContents as $content)
+            {
+                $entity = $content->getContent();
+                if ($entity)
+                {
+                    if (!$first)
+                    {
+                        fwrite($handle, ",\n");
+                    }
+                    fwrite($handle, json_encode($entity->toArray(), JSON_PRETTY_PRINT));
+                    $first = false;
+                }
+            }
+            
+            $this->app->em()->clearEntityCache(); // Clear cache to free memory
+            $page++;
+        }
+        
+        fwrite($handle, "\n]");
+        fclose($handle);
+
+        // Save to internal storage
+        $fs = \XF::app()->fs();
+        $abstractPath = "internal-data://ncmec/report_{$reportId}/{$filename}";
+        
+        $readHandle = fopen($tempFile, 'r');
+        $fs->putStream($abstractPath, $readHandle);
+        if (is_resource($readHandle)) fclose($readHandle);
+
+        // Upload to NCMEC
+        try
+        {
+            $this->uploadSupplementalFile($tempFile, $filename);
+        }
+        finally
+        {
+            @unlink($tempFile);
+        }
+    }
+
+    protected function exportAllContent(int $reportId)
+    {
+        $contentTypes = $this->getContentTypesToExport();
+        foreach ($contentTypes as $type)
+        {
+            $this->exportContentType($type, $reportId);
+        }
+    }
+
+    protected function saveAndUploadJson(int $reportId, string $filename, array $data)
+    {
+        if (empty($data))
+        {
+            return;
+        }
+
+        $json = json_encode($data, JSON_PRETTY_PRINT);
+        
+        // Save to internal storage
+        $fs = \XF::app()->fs();
+        $abstractPath = "internal-data://ncmec/report_{$reportId}/{$filename}";
+        $fs->put($abstractPath, $json);
+
+        // Create temp file for NCMEC upload
+        $tempFile = \XF\Util\File::getTempFile();
+        file_put_contents($tempFile, $json);
+
+        try
+        {
+            $this->uploadSupplementalFile($tempFile, $filename);
+        }
+        finally
+        {
+            @unlink($tempFile);
+        }
+    }
+
+    public function deleteContent($maxRunTime = null)
+    {
+        $startTime = microtime(true);
+
+        $userIds = [];
+        foreach ($this->subjects as $subject)
+        {
+            $userIds[] = $subject->user_id;
+        }
+
+        // We need to loop until done or timeout
+        // Since we are deleting, the list shrinks. We can just keep fetching the first batch.
+        
+        while (true)
+        {
+            $incidentContents = $this->finder('USIPS\NCMEC:IncidentContent')
+                ->where('user_id', $userIds)
+                ->with('Incident', true)
+                ->where('Incident.case_id', $this->case->case_id)
+                ->limit(100) // Batch size
+                ->fetch();
+
+            if (!$incidentContents->count())
+            {
+                return true; // Done
+            }
+
+            foreach ($incidentContents as $content)
+            {
+                try
+                {
+                    $entity = $content->getContent();
+
+                    if ($entity)
+                    {
+                        // Direct entity deletion:
+                        // - Posts: _postDelete() removes attachments, updates thread
+                        // - Threads: _postDelete() removes all posts and their attachments
+                        // - ProfilePosts: _postDelete() removes attachments
+                        // First posts automatically trigger thread deletion via isFirstPost() check
+                        if ($entity instanceof \XF\Entity\Post && $entity->isFirstPost() && $entity->Thread)
+                        {
+                            $entity->Thread->delete();
+                        }
+                        else
+                        {
+                            $entity->delete();
+                        }
+                    }
+
+                    // Delete the incident content record
+                    $content->delete();
+                }
+                catch (\Exception $e)
+                {
+                    // Log error but continue processing other content
+                    \XF::logException($e, false, "Failed to delete content entity or incident record for ID {$content->incident_content_id}: ");
+                }
+            }
+            
+            $this->app->em()->clearEntityCache();
+
+            if ($maxRunTime && (microtime(true) - $startTime > $maxRunTime))
+            {
+                return false; // Not done
+            }
+        }
+    }
+
+    protected function uploadSupplementalFile(string $filePath, string $filename)
+    {
+        // Check if already processed for this report
+        $reportFile = $this->finder('USIPS\NCMEC:ReportFile')
+            ->where('report_id', $this->report->report_id)
+            ->where('original_file_name', $filename)
+            ->fetchOne();
+
+        if (!$reportFile)
+        {
+            $reportFile = $this->em()->create('USIPS\NCMEC:ReportFile');
+            $reportFile->report_id = $this->report->report_id;
+            $reportFile->case_id = $this->case->case_id;
+            $reportFile->ncmec_report_id = $this->report->ncmec_report_id;
+            $reportFile->original_file_name = $filename;
+            $reportFile->save();
+        }
+
+        if (!$reportFile->ncmec_file_id)
+        {
+            $response = $this->apiClient->uploadFile($this->report->ncmec_report_id, $filePath);
+
+            if ($response && (string)$response->responseCode === '0')
+            {
+                $reportFile->ncmec_file_id = (string)$response->fileId;
+                $reportFile->save();
+
+                // Submit File Details
+                $detailsXml = $this->buildFileDetailsXml($reportFile, 'Supplemental Reported');
+                $this->apiClient->submitFileDetails($detailsXml);
+            }
+            else
+            {
+                $error = $response ? (string)$response->responseDescription : 'Unknown upload error';
+                \XF::logError("NCMEC Supplemental Upload Failed for {$filename}: $error");
+                // We don't throw here to allow deletion to proceed, but we log it.
             }
         }
     }
@@ -1123,13 +1448,14 @@ class Submitter extends AbstractService
         return $xsdContent ?: null;
     }
 
-    protected function buildFileDetailsXml(ReportFile $reportFile): string
+    protected function buildFileDetailsXml(ReportFile $reportFile, string $fileRelevance = 'Reported'): string
     {
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><fileDetails xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://report.cybertip.org/ispws/xsd"></fileDetails>');
         
         $xml->addChild('reportId', $reportFile->ncmec_report_id);
         $xml->addChild('fileId', $reportFile->ncmec_file_id);
         $xml->addChild('originalFileName', htmlspecialchars($reportFile->original_file_name));
+        $xml->addChild('fileRelevance', htmlspecialchars($fileRelevance));
         
         if ($reportFile->ip_capture_event)
         {
