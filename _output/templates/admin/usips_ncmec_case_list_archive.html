@@ -3,7 +3,7 @@
 <xf:form action="{{ link('ncmec-cases') }}" class="block">
     <div class="block-container">
         <div class="block-body">
-            <xf:if contentcheck="true">
+            <xf:if is="$cases is not empty">
                 <div class="block-filterBar">
                     <div class="filterBar">
                         <xf:macro template="filter_macros" name="quick_filter" arg-key="cases"

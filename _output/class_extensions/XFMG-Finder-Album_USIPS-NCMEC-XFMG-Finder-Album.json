@@ -1,0 +1,6 @@
+{
+    "from_class": "XFMG\\Finder\\Album",
+    "to_class": "USIPS\\NCMEC\\XFMG\\Finder\\Album",
+    "execute_order": 10,
+    "active": true
+}

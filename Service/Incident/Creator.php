@@ -858,57 +858,9 @@ class Creator extends AbstractService
 
     public function deleteContent(array $contentItems): void
     {
-        $reason = 'Flagged as CSAM';
-        $user = \XF::visitor();
-
-        foreach ($contentItems as $item)
-        {
-            if (empty($item['content_type']) || empty($item['content_id']))
-            {
-                continue;
-            }
-
-            $entity = $this->app->findByContentType($item['content_type'], $item['content_id']);
-            if (!$entity)
-            {
-                continue;
-            }
-
-            // Use specific deleters for Post and Thread to handle First Post logic correctly
-            if ($entity instanceof \XF\Entity\Post)
-            {
-                /** @var \XF\Service\Post\Deleter $deleter */
-                $deleter = $this->service('XF:Post\Deleter', $entity);
-                $deleter->delete('soft', $reason);
-                continue;
-            }
-
-            if ($entity instanceof \XF\Entity\Thread)
-            {
-                /** @var \XF\Service\Thread\Deleter $deleter */
-                $deleter = $this->service('XF:Thread\Deleter', $entity);
-                $deleter->delete('soft', $reason);
-                continue;
-            }
-
-            if (method_exists($entity, 'softDelete'))
-            {
-                $entity->softDelete($reason, $user);
-            }
-            else
-            {
-                if ($entity->isValidColumn('message_state'))
-                {
-                    $entity->message_state = 'deleted';
-                    $entity->save();
-                }
-                elseif ($entity->isValidColumn('discussion_state'))
-                {
-                    $entity->discussion_state = 'deleted';
-                    $entity->save();
-                }
-            }
-        }
+        // Content is no longer deleted, but hidden via Finder filtering.
+        // We keep this method stub for compatibility with existing calls.
+        return;
     }
 
     public function closeReportsForContent(array $contentItems, array $processed = []): void

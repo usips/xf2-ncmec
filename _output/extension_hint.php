@@ -8,6 +8,18 @@
  * @noinspection PhpMultipleClassesDeclarationsInOneFile
  */
 
+namespace USIPS\NCMEC\XFMG\Finder
+{
+	class XFCP_Album extends \XFMG\Finder\Album {}
+	class XFCP_Comment extends \XFMG\Finder\Comment {}
+	class XFCP_MediaItem extends \XFMG\Finder\MediaItem {}
+}
+
+namespace USIPS\NCMEC\XFRM\Finder
+{
+	class XFCP_ResourceUpdate extends \XFRM\Finder\ResourceUpdate {}
+}
+
 namespace USIPS\NCMEC\XF\Admin\Controller
 {
 	class XFCP_UserController extends \XF\Admin\Controller\UserController {}
@@ -34,6 +46,12 @@ namespace USIPS\NCMEC\XF\Entity
 	class XFCP_User extends \XF\Entity\User {}
 }
 
+namespace USIPS\NCMEC\XF\Finder
+{
+	class XFCP_Post extends \XF\Finder\Post {}
+	class XFCP_Thread extends \XF\Finder\Thread {}
+}
+
 namespace USIPS\NCMEC\XF\Pub\Controller
 {
 	class XFCP_ReportController extends \XF\Pub\Controller\ReportController {}
@@ -42,7 +60,9 @@ namespace USIPS\NCMEC\XF\Pub\Controller
 namespace USIPS\NCMEC\XF\Repository
 {
 	class XFCP_ChangeLog extends \XF\Repository\ChangeLogRepository {}
+	class XFCP_ConversationMessage extends \XF\Repository\ConversationMessage {}
 	class XFCP_Ip extends \XF\Repository\IpRepository {}
+	class XFCP_ProfilePost extends \XF\Repository\ProfilePost {}
 }
 
 namespace USIPS\NCMEC\XF\Service\Report

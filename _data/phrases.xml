@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <phrases>
-  <phrase title="admin_navigation.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_api_log" version_id="0" version_string="1.0.0"><![CDATA[API logs]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_attachment_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>
   <phrase title="admin_navigation.usips_ncmec_attachments" version_id="0" version_string="1.0.0"><![CDATA[Attachments]]></phrase>
@@ -58,13 +57,16 @@
   <phrase title="usips_ncmec_associating_user_with_incident" version_id="0" version_string="1.0.0"><![CDATA[Associating users with incident]]></phrase>
   <phrase title="usips_ncmec_attachments" version_id="0" version_string="1.0.0"><![CDATA[Attachments]]></phrase>
   <phrase title="usips_ncmec_cannot_delete_preservation_required" version_id="0" version_string="1.0.0"><![CDATA[Preservation of this entity is required persuant to 18 U.S.C. § 2258A(h)(1) and 18 U.S. Code § 2703.]]></phrase>
+  <phrase title="usips_ncmec_cannot_edit_finished_report" version_id="0" version_string="1.0.0"><![CDATA[You cannot edit a submitted report.]]></phrase>
   <phrase title="usips_ncmec_case" version_id="0" version_string="1.0.0"><![CDATA[Case]]></phrase>
   <phrase title="usips_ncmec_case_created_on_x" version_id="0" version_string="1.0.0"><![CDATA[Case created on {datetime}]]></phrase>
   <phrase title="usips_ncmec_case_delete_warning_incidents_unassigned" version_id="0" version_string="1.0.0"><![CDATA[Incidents assigned to this case will be unassigned but will not be deleted.]]></phrase>
   <phrase title="usips_ncmec_case_details" version_id="0" version_string="1.0.0"><![CDATA[Case details]]></phrase>
   <phrase title="usips_ncmec_case_finalized" version_id="0" version_string="1.0.0"><![CDATA[Finalized]]></phrase>
+  <phrase title="usips_ncmec_case_finalized_cannot_delete" version_id="0" version_string="1.0.0"><![CDATA[This case has been finalized and cannot be deleted.]]></phrase>
   <phrase title="usips_ncmec_case_finalized_cannot_edit" version_id="0" version_string="1.0.0"><![CDATA[Case is finalized and cannot be edited]]></phrase>
   <phrase title="usips_ncmec_case_finalized_desc" version_id="0" version_string="1.0.0"><![CDATA[Case is finalized and can be submitted to NCMEC. No further modifications are permitted.]]></phrase>
+  <phrase title="usips_ncmec_case_has_reports_cannot_delete" version_id="0" version_string="1.0.0"><![CDATA[This case has reports associated with it and cannot be deleted.]]></phrase>
   <phrase title="usips_ncmec_case_resubmit" version_id="0" version_string="1.0.0"><![CDATA[Resubmit case]]></phrase>
   <phrase title="usips_ncmec_case_resubmit_message" version_id="0" version_string="1.0.0"><![CDATA[This case failed to submit. Click below to retry submission.]]></phrase>
   <phrase title="usips_ncmec_case_statistics" version_id="0" version_string="1.0.0"><![CDATA[Case statistics]]></phrase>
@@ -75,6 +77,7 @@
   <phrase title="usips_ncmec_child_victim" version_id="0" version_string="1.0.0"><![CDATA[Child victim]]></phrase>
   <phrase title="usips_ncmec_configure_api" version_id="0" version_string="1.0.0"><![CDATA[Configure API]]></phrase>
   <phrase title="usips_ncmec_confirm_associating_x_users" version_id="0" version_string="1.0.0"><![CDATA[Confirm associating these {total} users with an NCMEC Incident]]></phrase>
+  <phrase title="usips_ncmec_confirm_delete_incident" version_id="0" version_string="1.0.0"><![CDATA[Are you sure you want to delete the incident "{title}"? This action cannot be undone.]]></phrase>
   <phrase title="usips_ncmec_confirm_finalize_permanent" version_id="0" version_string="1.0.0"><![CDATA[This action is permanent.]]></phrase>
   <phrase title="usips_ncmec_confirm_incident_deletion" version_id="0" version_string="1.0.0"><![CDATA[Confirm deletion of draft incident]]></phrase>
   <phrase title="usips_ncmec_connection_error_x" version_id="0" version_string="1.0.0"><![CDATA[Connection error: {error}]]></phrase>
@@ -166,6 +169,8 @@ internal_data/attachments/8112/8112987-6d3b1c717417cb17a5bce52b21307a14.data
   <phrase title="usips_ncmec_please_confirm_that_you_want_to_unassign_incident_from_case" version_id="0" version_string="1.0.0"><![CDATA[Please confirm that you want to unassign this incident from this case.]]></phrase>
   <phrase title="usips_ncmec_quick_actions" version_id="0" version_string="1.0.0"><![CDATA[Immediate Response]]></phrase>
   <phrase title="usips_ncmec_receipts" version_id="0" version_string="1.0.0"><![CDATA[Receipts]]></phrase>
+  <phrase title="usips_ncmec_remove_content_confirm" version_id="0" version_string="1.0.0"><![CDATA[Are you sure you want to remove "{title}" from this incident?]]></phrase>
+  <phrase title="usips_ncmec_remove_content_from_incident" version_id="0" version_string="1.0.0"><![CDATA[Remove content from incident]]></phrase>
   <phrase title="usips_ncmec_remove_user" version_id="0" version_string="1.0.0"><![CDATA[Remove user]]></phrase>
   <phrase title="usips_ncmec_remove_user_from_incident" version_id="0" version_string="1.0.0"><![CDATA[Remove user from incident]]></phrase>
   <phrase title="usips_ncmec_remove_user_from_incident_confirm" version_id="0" version_string="1.0.0"><![CDATA[Please confirm removing {user} and all associated content and uploads from "{incident}".]]></phrase>
@@ -200,6 +205,7 @@ See: <a href="https://exttest.cybertip.org/ispws/documentation/index.html#xml-re
   <phrase title="usips_ncmec_unassign" version_id="0" version_string="1.0.0"><![CDATA[Unassign]]></phrase>
   <phrase title="usips_ncmec_unassign_incident_from_case" version_id="0" version_string="1.0.0"><![CDATA[Unassign incident from case]]></phrase>
   <phrase title="usips_ncmec_unique_users" version_id="0" version_string="1.0.0"><![CDATA[Unique users]]></phrase>
+  <phrase title="usips_ncmec_use_default_timespan" version_id="0" version_string="1.0.0"><![CDATA[Use default ({duration})]]></phrase>
   <phrase title="usips_ncmec_view_case" version_id="0" version_string="1.0.0"><![CDATA[View case]]></phrase>
   <phrase title="usips_ncmec_x_created_emregency_report_y" version_id="0" version_string="1.0.0"><![CDATA[{name} created an <strong>emergency report</strong> concerning {title}.]]></phrase>
   <phrase title="usips_ncmec_you_must_confirm_to_proceed" version_id="0" version_string="1.0.0"><![CDATA[You must confirm your intention to associate users with an incident to proceed.]]></phrase>

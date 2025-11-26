@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <class_extensions>
+  <extension from_class="XFMG\Finder\Album" to_class="USIPS\NCMEC\XFMG\Finder\Album" execute_order="10" active="1"/>
+  <extension from_class="XFMG\Finder\Comment" to_class="USIPS\NCMEC\XFMG\Finder\Comment" execute_order="10" active="1"/>
+  <extension from_class="XFMG\Finder\MediaItem" to_class="USIPS\NCMEC\XFMG\Finder\MediaItem" execute_order="10" active="1"/>
+  <extension from_class="XFRM\Finder\ResourceUpdate" to_class="USIPS\NCMEC\XFRM\Finder\ResourceUpdate" execute_order="10" active="1"/>
   <extension from_class="XF\Admin\Controller\UserController" to_class="USIPS\NCMEC\XF\Admin\Controller\UserController" execute_order="10" active="1"/>
   <extension from_class="XF\ApprovalQueue\PostHandler" to_class="USIPS\NCMEC\XF\ApprovalQueue\PostHandler" execute_order="10" active="1"/>
   <extension from_class="XF\ApprovalQueue\ProfilePostCommentHandler" to_class="USIPS\NCMEC\XF\ApprovalQueue\ProfilePostCommentHandler" execute_order="10" active="1"/>
@@ -10,9 +14,13 @@
   <extension from_class="XF\Entity\Attachment" to_class="USIPS\NCMEC\XF\Entity\Attachment" execute_order="10" active="1"/>
   <extension from_class="XF\Entity\AttachmentData" to_class="USIPS\NCMEC\XF\Entity\AttachmentData" execute_order="10" active="1"/>
   <extension from_class="XF\Entity\User" to_class="USIPS\NCMEC\XF\Entity\User" execute_order="10" active="1"/>
+  <extension from_class="XF\Finder\Post" to_class="USIPS\NCMEC\XF\Finder\Post" execute_order="10" active="1"/>
+  <extension from_class="XF\Finder\Thread" to_class="USIPS\NCMEC\XF\Finder\Thread" execute_order="10" active="1"/>
   <extension from_class="XF\Pub\Controller\ReportController" to_class="USIPS\NCMEC\XF\Pub\Controller\ReportController" execute_order="10" active="1"/>
   <extension from_class="XF\Repository\ChangeLogRepository" to_class="USIPS\NCMEC\XF\Repository\ChangeLog" execute_order="10" active="1"/>
+  <extension from_class="XF\Repository\ConversationMessage" to_class="USIPS\NCMEC\XF\Repository\ConversationMessage" execute_order="10" active="1"/>
   <extension from_class="XF\Repository\IpRepository" to_class="USIPS\NCMEC\XF\Repository\Ip" execute_order="10" active="1"/>
+  <extension from_class="XF\Repository\ProfilePost" to_class="USIPS\NCMEC\XF\Repository\ProfilePost" execute_order="10" active="1"/>
   <extension from_class="XF\Service\Report\CreatorService" to_class="USIPS\NCMEC\XF\Service\Report\CreatorService" execute_order="10" active="1"/>
   <extension from_class="XF\Service\Report\NotifierService" to_class="USIPS\NCMEC\XF\Service\Report\NotifierService" execute_order="10" active="1"/>
 </class_extensions>

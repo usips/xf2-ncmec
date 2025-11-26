@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Finder\\Post",
+    "to_class": "USIPS\\NCMEC\\XF\\Finder\\Post",
+    "execute_order": 10,
+    "active": true
+}

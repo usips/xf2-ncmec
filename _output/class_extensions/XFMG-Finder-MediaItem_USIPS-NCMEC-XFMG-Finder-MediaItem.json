@@ -1,0 +1,6 @@
+{
+    "from_class": "XFMG\\Finder\\MediaItem",
+    "to_class": "USIPS\\NCMEC\\XFMG\\Finder\\MediaItem",
+    "execute_order": 10,
+    "active": true
+}
