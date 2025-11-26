@@ -6,13 +6,6 @@ use XF\Entity\User;
 
 class ProfilePost extends XFCP_ProfilePost
 {
-    public function findProfilePostsForUser(User $user, array $limits = [])
-    {
-        $finder = parent::findProfilePostsForUser($user, $limits);
-        \USIPS\NCMEC\Listener::finderSetup($finder);
-        return $finder;
-    }
-
     public function findProfilePostsOnProfile(User $profileUser, array $limits = [])
     {
         $finder = parent::findProfilePostsOnProfile($profileUser, $limits);
@@ -20,9 +13,9 @@ class ProfilePost extends XFCP_ProfilePost
         return $finder;
     }
 
-    public function findNewestProfilePosts(array $limits = [])
+    public function findNewestProfilePosts($newerThan)
     {
-        $finder = parent::findNewestProfilePosts($limits);
+        $finder = parent::findNewestProfilePosts($newerThan);
         \USIPS\NCMEC\Listener::finderSetup($finder);
         return $finder;
     }

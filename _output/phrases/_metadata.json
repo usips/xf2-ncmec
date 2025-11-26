@@ -1,4 +1,10 @@
 {
+    "admin_navigation.usips_ncmec.txt": {
+        "global_cache": false,
+        "version_id": 0,
+        "version_string": "1.0.0",
+        "hash": "e80026d44ce6324737bfdebe4cf8626d"
+    },
     "admin_navigation.usips_ncmec_api_log.txt": {
         "global_cache": false,
         "version_id": 0,

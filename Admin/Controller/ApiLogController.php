@@ -30,6 +30,7 @@ class ApiLogController extends AbstractController
         $logFinder = $this->finder('USIPS\\NCMEC:ApiLog')
             ->with(['Report', 'Report.Case', 'User'])
             ->order('request_date', 'DESC')
+            ->order('log_id', 'DESC')
             ->limitByPage($page, $perPage);
 
         if ($state === 'receipts')
