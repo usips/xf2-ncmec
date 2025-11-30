@@ -34,7 +34,7 @@ class DisassociateAttachmentData extends AbstractJob
 
         try {
             // Disassociate attachment data
-            $creator->disassociateAttachmentsByDataIds($attachmentDataIds);
+            $creator->disassociateAttachments($attachmentDataIds);
         } catch (\Exception $e) {
             // Log the error but don't fail the job
             \XF::logError('NCMEC DisassociateAttachmentData job failed: ' . $e->getMessage());

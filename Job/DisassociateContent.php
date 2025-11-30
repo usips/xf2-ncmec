@@ -36,46 +36,10 @@ class DisassociateContent extends AbstractJob
         {
             // Normalize content items to array of [type, id] pairs
             $normalizedItems = $this->normalizeContentItems($contentItems);
-            if (!$normalizedItems)
+
+            if ($normalizedItems)
             {
-                return $this->complete();
-            }
-
-            $contentPairs = [];
-
-            foreach ($normalizedItems as $item)
-            {
-                [$contentType, $contentId] = $item;
-                $contentPairs[] = [$contentType, $contentId];
-
-                $incidentContent = $app->finder('USIPS\NCMEC:IncidentContent')
-                    ->where('incident_id', $incidentId)
-                    ->where('content_type', $contentType)
-                    ->where('content_id', $contentId)
-                    ->fetchOne();
-
-                if (!$incidentContent)
-                {
-                    continue;
-                }
-
-                $entity = $incidentContent->getContent();
-                if ($entity)
-                {
-                    try
-                    {
-                        $entity->delete();
-                    }
-                    catch (\Throwable $deleteError)
-                    {
-                        \XF::logException($deleteError, false, 'Failed to delete incident content entity: ');
-                    }
-                }
-            }
-
-            if ($contentPairs)
-            {
-                $creator->disassociateContent($contentPairs);
+                $creator->disassociateContent($normalizedItems);
             }
         }
         catch (\Throwable $e)
