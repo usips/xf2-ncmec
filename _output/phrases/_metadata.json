@@ -839,6 +839,12 @@
         "version_string": "1.0.0",
         "hash": "d3b67e291986342d7860b934dab97c21"
     },
+    "usips_ncmec_live.txt": {
+        "global_cache": false,
+        "version_id": 1,
+        "version_string": "1.0.1",
+        "hash": "955ad3298db330b5ee880c2c9e6f23a0"
+    },
     "usips_ncmec_lookup.txt": {
         "global_cache": false,
         "version_id": 0,

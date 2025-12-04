@@ -147,6 +147,7 @@ See: <a href="https://exttest.cybertip.org/ispws/documentation/index.html#incide
   <phrase title="usips_ncmec_last_name" version_id="0" version_string="1.0.0"><![CDATA[Last name]]></phrase>
   <phrase title="usips_ncmec_last_updated_on" version_id="0" version_string="1.0.0"><![CDATA[Last updated on]]></phrase>
   <phrase title="usips_ncmec_law_enforcement" version_id="0" version_string="1.0.0"><![CDATA[Law enforcement]]></phrase>
+  <phrase title="usips_ncmec_live" version_id="1" version_string="1.0.1"><![CDATA[Live]]></phrase>
   <phrase title="usips_ncmec_lookup" version_id="0" version_string="1.0.0"><![CDATA[Attachment Lookup]]></phrase>
   <phrase title="usips_ncmec_lookup_description" version_id="0" version_string="1.0.0"><![CDATA[https://domain.com/attachments/1762288299348-png.8126290/
 attachments/1762288299348-png.8126290/
