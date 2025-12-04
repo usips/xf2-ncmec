@@ -244,7 +244,7 @@ class Setup extends AbstractSetup
 
     public function upgrade(array $stepParams = [])
     {
-        return $stepParams;
+        //
     }
 
     public function uninstall(array $stepParams = [])
