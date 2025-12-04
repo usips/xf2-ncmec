@@ -108,6 +108,7 @@
   <phrase title="usips_ncmec_env_live" version_id="0" version_string="1.0.0"><![CDATA[Live Environment]]></phrase>
   <phrase title="usips_ncmec_env_test" version_id="0" version_string="1.0.0"><![CDATA[Test Environment]]></phrase>
   <phrase title="usips_ncmec_environment" version_id="0" version_string="1.0.0"><![CDATA[Environment]]></phrase>
+  <phrase title="usips_ncmec_environment_live" version_id="1" version_string="1.0.1"><![CDATA[You are submitting to the <strong>Live Environment</strong>. NCMEC will receive and review this report.]]></phrase>
   <phrase title="usips_ncmec_environment_test" version_id="0" version_string="1.0.0"><![CDATA[You are submitting to the <strong>Test Environment</strong>. Actual reports and material should not be sent to this environment.]]></phrase>
   <phrase title="usips_ncmec_error_incident_type_required" version_id="0" version_string="1.0.0"><![CDATA[Incident type is required before finalizing the case. Please select an incident type.]]></phrase>
   <phrase title="usips_ncmec_error_no_incidents" version_id="0" version_string="1.0.0"><![CDATA[Case must have at least one incident before it can be finalized.]]></phrase>
@@ -198,6 +199,7 @@ See: <a href="https://exttest.cybertip.org/ispws/documentation/index.html#xml-re
   <phrase title="usips_ncmec_save_configuration" version_id="0" version_string="1.0.0"><![CDATA[Save configuration]]></phrase>
   <phrase title="usips_ncmec_select_incidents_for_case" version_id="0" version_string="1.0.0"><![CDATA[Select incidents for case]]></phrase>
   <phrase title="usips_ncmec_start_finalizing" version_id="0" version_string="1.0.0"><![CDATA[Start Finalizing]]></phrase>
+  <phrase title="usips_ncmec_status" version_id="1" version_string="1.0.1"><![CDATA[Status]]></phrase>
   <phrase title="usips_ncmec_step_1_incident_summary" version_id="0" version_string="1.0.0"><![CDATA[Incident Summary]]></phrase>
   <phrase title="usips_ncmec_terms_of_service_link" version_id="0" version_string="1.0.0"><![CDATA[Terms of service link]]></phrase>
   <phrase title="usips_ncmec_test" version_id="0" version_string="1.0.0"><![CDATA[Test]]></phrase>
