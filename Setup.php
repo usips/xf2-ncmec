@@ -23,9 +23,14 @@ class Setup extends AbstractSetup
             $table->addColumn('incident_type', 'varchar', 100)->setDefault('');
             $table->addColumn('report_annotations', 'mediumtext')->nullable();
             $table->addColumn('incident_date_time_desc', 'varchar', 3000)->setDefault('');
+            $table->addColumn('reporter_person_id', 'int')->nullable()->setDefault(0);
+            $table->addColumn('reported_person_id', 'int')->nullable()->setDefault(0);
+            $table->addColumn('reported_additional_info', 'mediumtext')->nullable();
             $table->addColumn('finalized_on', 'int')->nullable()->setDefault(null);
             $table->addColumn('submitted_on', 'int')->nullable()->setDefault(null);
             $table->addPrimaryKey('case_id');
+            $table->addKey(['reporter_person_id']);
+            $table->addKey(['reported_person_id']);
             $table->addKey(['finalized_on']);
             $table->addKey(['submitted_on']);
         });

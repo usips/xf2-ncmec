@@ -470,48 +470,6 @@ class IncidentController extends AbstractController
             return $this->error(\XF::phrase('requested_page_not_found'));
         }
 
-        if ($this->isPost() && $this->filter('assign_action', 'str'))
-        {
-            $assignAction = $this->filter('assign_action', 'str');
-            $caseId = 0;
-            
-            if ($assignAction === 'existing')
-            {
-                $caseId = $this->filter('case_id', 'uint');
-            }
-            
-            $newCaseTitle = $this->filter('new_case_title', 'str');
-
-            if ($caseId)
-            {
-                $case = $this->getAssignableCaseFinder()
-                    ->where('case_id', $caseId)
-                    ->fetchOne();
-
-                if (!$case)
-                {
-                    return $this->error(\XF::phrase('usips_ncmec_invalid_case'));
-                }
-            }
-            else
-            {
-                $case = $this->createCaseRecord($newCaseTitle);
-            }
-
-            foreach ($incidents as $incident)
-            {
-                if ($incident->case_id == $case->case_id)
-                {
-                    continue;
-                }
-
-                $incident->case_id = $case->case_id;
-                $incident->save();
-            }
-
-            return $this->redirect($this->buildLink('ncmec-cases/view', $case));
-        }
-
         $viewParams = [
             'incidentIds' => $incidentIds,
             'incidentCount' => $incidents->count(),
@@ -519,7 +477,7 @@ class IncidentController extends AbstractController
             'defaultTitle' => $this->generateAutoCaseTitle(),
         ];
 
-        return $this->view('USIPS\NCMEC:Incident\AssignCase', 'usips_ncmec_incident_assign_case', $viewParams);
+        return $this->view('USIPS\NCMEC:Incident\AssignCase', 'usips_ncmec_incident_create_case', $viewParams);
     }
 
     public function actionUnassignCase(ParameterBag $params)
