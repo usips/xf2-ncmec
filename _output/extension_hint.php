@@ -44,6 +44,7 @@ namespace USIPS\NCMEC\XF\Entity
 	class XFCP_Attachment extends \XF\Entity\Attachment {}
 	class XFCP_AttachmentData extends \XF\Entity\AttachmentData {}
 	class XFCP_User extends \XF\Entity\User {}
+	class XFCP_UserProfile extends \XF\Entity\UserProfile {}
 }
 
 namespace USIPS\NCMEC\XF\Finder

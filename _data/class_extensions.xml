@@ -14,6 +14,7 @@
   <extension from_class="XF\Entity\Attachment" to_class="USIPS\NCMEC\XF\Entity\Attachment" execute_order="10" active="1"/>
   <extension from_class="XF\Entity\AttachmentData" to_class="USIPS\NCMEC\XF\Entity\AttachmentData" execute_order="10" active="1"/>
   <extension from_class="XF\Entity\User" to_class="USIPS\NCMEC\XF\Entity\User" execute_order="10" active="1"/>
+  <extension from_class="XF\Entity\UserProfile" to_class="USIPS\NCMEC\XF\Entity\UserProfile" execute_order="10" active="1"/>
   <extension from_class="XF\Finder\Post" to_class="USIPS\NCMEC\XF\Finder\Post" execute_order="10" active="1"/>
   <extension from_class="XF\Finder\Thread" to_class="USIPS\NCMEC\XF\Finder\Thread" execute_order="10" active="1"/>
   <extension from_class="XF\Pub\Controller\ReportController" to_class="USIPS\NCMEC\XF\Pub\Controller\ReportController" execute_order="10" active="1"/>

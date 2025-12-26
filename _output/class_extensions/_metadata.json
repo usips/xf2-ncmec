@@ -26,6 +26,9 @@
     "XF-Entity-Attachment_USIPS-NCMEC-XF-Entity-Attachment.json": {
         "hash": "7aa224e80ddc1117bc32795666cbd75d"
     },
+    "XF-Entity-UserProfile_USIPS-NCMEC-XF-Entity-UserProfile.json": {
+        "hash": "d1856526e19d5b48646ca6eacd39b9bb"
+    },
     "XF-Entity-User_USIPS-NCMEC-XF-Entity-User.json": {
         "hash": "33ab91352d36c52a483ec58a03ed1bd7"
     },

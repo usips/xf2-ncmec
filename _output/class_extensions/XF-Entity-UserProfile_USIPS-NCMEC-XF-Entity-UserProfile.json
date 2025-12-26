@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Entity\\UserProfile",
+    "to_class": "USIPS\\NCMEC\\XF\\Entity\\UserProfile",
+    "execute_order": 10,
+    "active": true
+}
