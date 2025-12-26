@@ -2366,5 +2366,9 @@
         <xf:submitrow submit="{{ phrase('save_and_continue') }}" icon="save" />
     </div>
 </xf:form>]]></template>
-  <template type="public" title="usips_ncmec_report_view_attachments" version_id="0" version_string="1.0.0"><![CDATA[<xf:macro id="message_macros::attachments" arg-attachments="{{ $report.Content.Attachments }}" arg-message="{{ $report.Content }}" arg-canView="{{ true }}" />]]></template>
+  <template type="public" title="usips_ncmec_report_view_attachments" version_id="2" version_string="1.1.0"><![CDATA[<xf:if
+    is="$report.Content && $report.Content.hasRelation('Attachments') && $report.Content.Attachments && $report.Content.Attachments|count">
+    <xf:macro template="message_macros" name="attachments" arg-attachments="{{ $report.Content.Attachments }}"
+        arg-message="{{ $report.Content }}" arg-canView="{{ true }}" />
+</xf:if>]]></template>
 </templates>

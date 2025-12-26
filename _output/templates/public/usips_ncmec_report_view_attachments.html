@@ -1,1 +1,5 @@
-<xf:macro id="message_macros::attachments" arg-attachments="{{ $report.Content.Attachments }}" arg-message="{{ $report.Content }}" arg-canView="{{ true }}" />
+<xf:if
+    is="$report.Content && $report.Content.hasRelation('Attachments') && $report.Content.Attachments && $report.Content.Attachments|count">
+    <xf:macro template="message_macros" name="attachments" arg-attachments="{{ $report.Content.Attachments }}"
+        arg-message="{{ $report.Content }}" arg-canView="{{ true }}" />
+</xf:if>
