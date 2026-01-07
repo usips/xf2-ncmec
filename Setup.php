@@ -242,11 +242,6 @@ class Setup extends AbstractSetup
         ");
     }
 
-    public function upgrade(array $stepParams = [])
-    {
-        //
-    }
-
     public function upgrade1010200Step1()
     {
         // Add emergency_report column to XenForo's xf_report table
