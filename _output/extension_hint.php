@@ -43,6 +43,7 @@ namespace USIPS\NCMEC\XF\Entity
 	class XFCP_ApprovalQueue extends \XF\Entity\ApprovalQueue {}
 	class XFCP_Attachment extends \XF\Entity\Attachment {}
 	class XFCP_AttachmentData extends \XF\Entity\AttachmentData {}
+	class XFCP_Report extends \XF\Entity\Report {}
 	class XFCP_User extends \XF\Entity\User {}
 	class XFCP_UserProfile extends \XF\Entity\UserProfile {}
 }

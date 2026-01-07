@@ -32,6 +32,9 @@ class CreatorService extends XFCP_CreatorService
     {
         $this->usipsEmergency = true;
         $this->usipsEmergencyContent = $content;
+        
+        // Set the emergency_report flag immediately so it's saved with the report
+        $this->report->emergency_report = true;
     }
 
     public function save()

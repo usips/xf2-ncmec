@@ -247,6 +247,21 @@ class Setup extends AbstractSetup
         //
     }
 
+    public function upgrade1010200Step1()
+    {
+        // Add emergency_report column to XenForo's xf_report table
+        $sm = $this->schemaManager();
+        
+        if (!$sm->columnExists('xf_report', 'emergency_report'))
+        {
+            $sm->alterTable('xf_report', function(Alter $table)
+            {
+                $table->addColumn('emergency_report', 'tinyint')->unsigned()->setDefault(0)->after('report_state');
+                $table->addKey('emergency_report');
+            });
+        }
+    }
+
     public function uninstall(array $stepParams = [])
     {
         $sm = $this->schemaManager();

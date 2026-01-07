@@ -20,7 +20,7 @@ class Ip extends XFCP_Ip
         $db = $this->db();
 
         // Use a single query with subquery/join to avoid fetching IDs and handling large lists
-        $db->query("
+        $statement = $db->query("
             DELETE ip
             FROM xf_ip AS ip
             LEFT JOIN (
@@ -33,6 +33,6 @@ class Ip extends XFCP_Ip
             AND preserved.user_id IS NULL
         ", $cutOff);
 
-        return $db->affectedRows();
+        return $statement->rowsAffected();
     }
 }

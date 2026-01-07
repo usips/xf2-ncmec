@@ -72,12 +72,12 @@
     "admin/usips_ncmec_config.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "9f9469745b2deed4f3cf9c615ad772dd"
+        "hash": "66afb645b6358ab88496e0c8926c107a"
     },
     "admin/usips_ncmec_config_confirm.html": {
         "version_id": 0,
         "version_string": "1.0.0",
-        "hash": "315a3b44438d5d0f3a003163768754fb"
+        "hash": "9b7bea9fc6f590d9fc1c41dd44590d30"
     },
     "admin/usips_ncmec_content_preview.html": {
         "version_id": 0,
