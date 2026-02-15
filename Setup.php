@@ -92,6 +92,7 @@ class Setup extends AbstractSetup
             $table->addColumn('user_id', 'int');
             $table->addColumn('username', 'varchar', 50);
             $table->addPrimaryKey(['incident_id', 'content_type', 'content_id']);
+            $table->addKey('content_type_id', ['content_type', 'content_id']);
             $table->addKey('user_id');
         });
 
@@ -240,21 +241,48 @@ class Setup extends AbstractSetup
                 WHERE xf_usips_ncmec_incident_attachment_data.data_id = xf_attachment_data.data_id
             )
         ");
+
+        // Add emergency_report column + index to xf_report (needed for NCMEC emergency profiling)
+        if (!$this->schemaManager()->columnExists('xf_report', 'emergency_report'))
+        {
+            $this->schemaManager()->alterTable('xf_report', function(Alter $table)
+            {
+                $table->addColumn('emergency_report', 'tinyint')
+                    ->unsigned()
+                    ->setDefault(0)
+                    ->after('report_state');
+                $table->addKey('emergency_user_report', ['emergency_report', 'content_type', 'content_id', 'report_state']);
+            });
+        }
+    }
+
+    public function upgrade(array $stepParams = [])
+    {
+        // Versioned upgrades are handled by step methods (e.g., upgrade1010200Step1)
     }
 
     public function upgrade1010200Step1()
     {
         // Add emergency_report column to XenForo's xf_report table
         $sm = $this->schemaManager();
-        
+
         if (!$sm->columnExists('xf_report', 'emergency_report'))
         {
             $sm->alterTable('xf_report', function(Alter $table)
             {
                 $table->addColumn('emergency_report', 'tinyint')->unsigned()->setDefault(0)->after('report_state');
-                $table->addKey('emergency_report');
+                $table->addKey('emergency_user_report', ['emergency_report', 'content_type', 'content_id', 'report_state']);
             });
         }
+    }
+
+    public function upgrade1010201Step1()
+    {
+        // Add covering index for content visibility filtering queries
+        $this->schemaManager()->alterTable('xf_usips_ncmec_incident_content', function(Alter $table)
+        {
+            $table->addKey('content_type_id', ['content_type', 'content_id']);
+        });
     }
 
     public function uninstall(array $stepParams = [])

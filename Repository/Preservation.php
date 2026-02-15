@@ -6,16 +6,13 @@ use XF\Mvc\Entity\Repository;
 
 class Preservation extends Repository
 {
+    /**
+     * Check if a user is preserved. Delegates to Listener's per-request cache
+     * to avoid a DB query on every call.
+     */
     public function isUserPreserved($userId)
     {
-        return (bool)$this->db()->fetchOne("
-            SELECT 1
-            FROM xf_usips_ncmec_incident_user AS iu
-            INNER JOIN xf_usips_ncmec_incident AS i ON (iu.incident_id = i.incident_id)
-            WHERE iu.user_id = ?
-            AND i.submitted_on IS NOT NULL
-            LIMIT 1
-        ", [$userId]);
+        return \USIPS\NCMEC\Listener::isUserPreserved($userId);
     }
 
     public function getPreservedUserIds()
