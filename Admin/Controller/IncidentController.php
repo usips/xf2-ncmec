@@ -73,13 +73,16 @@ class IncidentController extends AbstractController
                 'incident_action' => 'str',
             ]);
 
-            $attachments = [];
             if ($input['attachment_ids'])
             {
                 $attachments = $this->finder('XF:Attachment')
                     ->where('attachment_id', $input['attachment_ids'])
                     ->with('Data.User')
                     ->fetch();
+            }
+            else
+            {
+                $attachments = $this->em()->getEmptyCollection();
             }
             $attachmentsChecked = $attachments->keys();
 
