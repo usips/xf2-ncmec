@@ -4,10 +4,9 @@ namespace USIPS\NCMEC\XF\Admin\Controller;
 
 use USIPS\NCMEC\Job\AssociateUser;
 use USIPS\NCMEC\Util\TimeLimit;
-use XF\Admin\Controller\UserController as BaseUserController;
 use XF\Searcher\User;
 
-class UserController extends BaseUserController
+class UserController extends XFCP_UserController
 {
     public function actionBatchUpdateConfirm()
     {
