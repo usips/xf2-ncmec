@@ -287,7 +287,172 @@ class Client extends AbstractService
         $response = $this->post(self::ENDPOINT_FILEINFO, $xmlDocument);
         return $this->parseXml($response);
     }
-    
+
+    /**
+     * Upload many files to a report concurrently, bounded to $lanes in-flight
+     * requests (curl_multi). Each /upload to a given reportId is independent —
+     * NCMEC assigns a distinct fileId per upload with no ordering dependency —
+     * so this is safe against a single open report.
+     *
+     * @param int   $reportId  NCMEC report id
+     * @param array $files     map of caller key => absolute file path
+     * @param int   $lanes     max concurrent uploads
+     * @return array           map of caller key => ['ok'=>bool,'fileId'=>?string,'code'=>int,'error'=>string,'description'=>?string]
+     */
+    public function uploadFilesParallel(int $reportId, array $files, int $lanes = 5): array
+    {
+        $tasks = [];
+        foreach ($files as $key => $path)
+        {
+            $tasks[$key] = [
+                'url' => $this->baseUrl . self::ENDPOINT_UPLOAD,
+                'fields' => ['id' => $reportId, 'file' => new \CURLFile($path)],
+            ];
+        }
+
+        $raw = $this->runParallel($tasks, $lanes, self::ENDPOINT_UPLOAD);
+
+        $out = [];
+        foreach ($raw as $key => $r)
+        {
+            $fileId = null; $rc = null; $desc = null;
+            if ($r['body'] !== null && $r['body'] !== '')
+            {
+                $x = @simplexml_load_string($r['body']);
+                if ($x !== false)
+                {
+                    $rc = (string) $x->responseCode;
+                    $fileId = (string) $x->fileId;
+                    $desc = (string) $x->responseDescription;
+                }
+            }
+            $out[$key] = [
+                'ok' => ($r['code'] === 200 && $r['error'] === '' && $rc === '0' && $fileId !== '' && $fileId !== null),
+                'fileId' => ($fileId !== '' ? $fileId : null),
+                'code' => $r['code'],
+                'error' => $r['error'],
+                'description' => $desc,
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Submit many /fileinfo documents concurrently, bounded to $lanes.
+     *
+     * @param array $xmlByKey  map of caller key => fileDetails XML string
+     * @param int   $lanes     max concurrent requests
+     * @return array           map of caller key => ['ok'=>bool,'code'=>int,'error'=>string,'description'=>?string]
+     */
+    public function submitFileDetailsParallel(array $xmlByKey, int $lanes = 5): array
+    {
+        $tasks = [];
+        foreach ($xmlByKey as $key => $xml)
+        {
+            $tasks[$key] = [
+                'url' => $this->baseUrl . self::ENDPOINT_FILEINFO,
+                'body' => $xml,
+                'headers' => ['Content-Type: text/xml; charset=UTF-8'],
+            ];
+        }
+
+        $raw = $this->runParallel($tasks, $lanes, self::ENDPOINT_FILEINFO);
+
+        $out = [];
+        foreach ($raw as $key => $r)
+        {
+            $rc = null; $desc = null;
+            if ($r['body'] !== null && $r['body'] !== '')
+            {
+                $x = @simplexml_load_string($r['body']);
+                if ($x !== false) { $rc = (string) $x->responseCode; $desc = (string) $x->responseDescription; }
+            }
+            $out[$key] = [
+                'ok' => ($r['code'] === 200 && $r['error'] === '' && $rc === '0'),
+                'code' => $r['code'],
+                'error' => $r['error'],
+                'description' => $desc,
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Bounded-concurrency curl_multi runner. Keeps at most $lanes handles
+     * in-flight, backfilling from the queue as each completes. Every task is a
+     * POST — multipart when 'fields' is set, raw body when 'body' is set.
+     * Returns map of key => ['body'=>?string,'code'=>int,'error'=>string].
+     * DB/entity work stays in the caller (single thread) — only network I/O
+     * is parallelized here.
+     *
+     * @param array  $tasks     map of key => ['url'=>..., 'fields'=>?array, 'body'=>?string, 'headers'=>?array]
+     * @param int    $lanes
+     * @param string $endpoint  for request logging context
+     */
+    protected function runParallel(array $tasks, int $lanes, string $endpoint): array
+    {
+        $lanes = max(1, (int) $lanes);
+        $results = [];
+        $keys = array_keys($tasks);
+        $mh = curl_multi_init();
+        $inflight = []; // (int)handle => key
+
+        $spawn = function ($key) use (&$inflight, $mh, $tasks) {
+            $t = $tasks[$key];
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $t['url']);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_USERPWD, $this->username . ':' . $this->password);
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+            curl_setopt($ch, CURLOPT_POST, true);
+            if (isset($t['fields']))
+            {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $t['fields']);
+            }
+            else
+            {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $t['body'] ?? '');
+                if (!empty($t['headers']))
+                {
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $t['headers']);
+                }
+            }
+            curl_multi_add_handle($mh, $ch);
+            $inflight[(int) $ch] = $key;
+        };
+
+        for ($i = 0; $i < $lanes && $keys; $i++) { $spawn(array_shift($keys)); }
+
+        do {
+            curl_multi_exec($mh, $running);
+            curl_multi_select($mh, 1.0);
+            while ($info = curl_multi_info_read($mh))
+            {
+                $ch = $info['handle'];
+                $key = $inflight[(int) $ch];
+                $body = curl_multi_getcontent($ch);
+                $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $error = (string) curl_error($ch);
+                $results[$key] = ['body' => ($body === false ? null : $body), 'code' => $code, 'error' => $error];
+
+                // Log each request the same way the serial paths do.
+                $this->resetLastRequestLogData();
+                $this->storeLastRequestLogData('POST', $endpoint, ['parallel' => true], $code, ($body !== false ? $body : $error), ($code === 200 && $error === ''));
+                $this->logFromLastRequest($code === 200 && $error === '');
+
+                curl_multi_remove_handle($mh, $ch);
+                curl_close($ch);
+                unset($inflight[(int) $ch]);
+                if ($keys) { $spawn(array_shift($keys)); }
+            }
+        } while ($inflight || $keys);
+
+        curl_multi_close($mh);
+        return $results;
+    }
+
     /**
      * Finish a report submission
      * 

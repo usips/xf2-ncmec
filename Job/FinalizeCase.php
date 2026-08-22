@@ -181,45 +181,58 @@ class FinalizeCase extends AbstractJob
                     break;
 
                 case 'files':
-                    // Process one file at a time to avoid timeouts
+                    // Process a bounded batch of files per iteration, uploading
+                    // them to NCMEC with the network I/O parallelized across
+                    // $lanes concurrent requests. DB/entity work stays serial.
                     $db = $this->app->db();
                     $lastDataId = $this->data['last_data_id'] ?? 0;
-                    
+                    $lanes = $this->getUploadLanes();
+
                     $fileQuery = "
                         SELECT iad.data_id, iad.incident_id
                         FROM xf_usips_ncmec_incident_attachment_data AS iad
                         INNER JOIN xf_usips_ncmec_incident AS i ON (iad.incident_id = i.incident_id)
-                        WHERE i.case_id = ? 
+                        WHERE i.case_id = ?
                         AND iad.data_id > ?
                     ";
                     $fileParams = [$case->case_id, $lastDataId];
-                    
+
                     if (!$isSingleReport)
                     {
                         $fileQuery .= " AND iad.user_id = ?";
                         $fileParams[] = $userId;
                     }
-                    
-                    $fileQuery .= " ORDER BY iad.data_id ASC LIMIT 1";
-                    
-                    $row = $db->fetchRow($fileQuery, $fileParams);
 
-                    if ($row)
+                    $fileQuery .= " ORDER BY iad.data_id ASC LIMIT " . $lanes;
+
+                    $rows = $db->fetchAll($fileQuery, $fileParams);
+
+                    if ($rows)
                     {
-                        $nextAttachmentId = $row['data_id'];
-                        $this->data['last_data_id'] = $nextAttachmentId;
+                        $dataIds = array_column($rows, 'data_id');
+                        // Advance the resume cursor past the whole batch up front,
+                        // so a mid-batch crash never reprocesses (each upload is
+                        // idempotent via the ReportFile ncmec_file_id check).
+                        $this->data['last_data_id'] = (int) end($dataIds);
 
-                        /** @var \XF\Entity\AttachmentData $attachmentData */
-                        $attachmentData = $this->app->em()->find('XF:AttachmentData', $nextAttachmentId);
-                        
-                        if ($attachmentData)
+                        $attachments = $this->app->em()->findByIds('XF:AttachmentData', $dataIds);
+                        $batch = [];
+                        foreach ($dataIds as $dataId)
                         {
-                            $submitter->processAttachment($attachmentData);
+                            if (isset($attachments[$dataId]))
+                            {
+                                $batch[] = $attachments[$dataId];
+                            }
                         }
-                        
-                        $this->data['processed_files']++;
-                        
-                        // Stay in 'files' state to process next file
+
+                        if ($batch)
+                        {
+                            $submitter->processAttachmentsBatch($batch, $lanes);
+                        }
+
+                        $this->data['processed_files'] += count($rows);
+
+                        // Stay in 'files' state to process the next batch
                     }
                     else
                     {
@@ -324,6 +337,19 @@ class FinalizeCase extends AbstractJob
      * 
      * @param \USIPS\NCMEC\Entity\CaseFile $case
      */
+    /**
+     * Concurrent upload lanes for the file phase. Reads the optional
+     * usipsNcmecUploadLanes option; defaults to 5 and is clamped to a sane
+     * range so a misconfiguration can't hammer NCMEC or drop to zero.
+     */
+    protected function getUploadLanes(): int
+    {
+        $lanes = (int) ($this->app->options()->usipsNcmecUploadLanes ?? 5);
+        if ($lanes < 1) { $lanes = 1; }
+        if ($lanes > 10) { $lanes = 10; }
+        return $lanes;
+    }
+
     protected function cleanupFailedReports(\USIPS\NCMEC\Entity\CaseFile $case)
     {
         $failedReports = $this->app->finder('USIPS\NCMEC:Report')

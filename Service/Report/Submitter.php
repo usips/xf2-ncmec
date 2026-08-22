@@ -108,6 +108,192 @@ class Submitter extends AbstractService
         return $this->report;
     }
 
+    /**
+     * Upload a batch of attachments to NCMEC with the network I/O parallelized
+     * across $lanes concurrent requests (uploads, then fileinfos). All DB /
+     * entity work — ReportFile creation, dedup, fileId persistence, and the
+     * post-upload attachment deletes — stays on this single process thread, so
+     * there are no cross-request races. Mirrors processAttachment()'s per-file
+     * semantics; only the transport is batched.
+     *
+     * @param \XF\Entity\AttachmentData[] $attachmentDataList
+     * @param int $lanes
+     */
+    public function processAttachmentsBatch(array $attachmentDataList, int $lanes = 5)
+    {
+        $this->report = $this->getOrCreateReport();
+        $this->apiClient->setReportId($this->report->report_id);
+
+        if (!$this->report->ncmec_report_id)
+        {
+            throw new \Exception("Report must be opened before processing attachments.");
+        }
+
+        // Phase A (serial DB): ensure a ReportFile row per attachment; stage the
+        // ones that still need uploading (no ncmec_file_id) to temp files.
+        $pending = []; // data_id => ['ad'=>AttachmentData,'rf'=>ReportFile,'temp'=>path]
+        foreach ($attachmentDataList as $attachmentData)
+        {
+            $reportFile = $this->prepareReportFileForAttachment($attachmentData);
+
+            if ($reportFile->ncmec_file_id)
+            {
+                // Already uploaded to this report — just remove our copy.
+                $attachmentData->delete();
+                continue;
+            }
+
+            $tempFile = $this->stageAttachmentToTemp($attachmentData);
+            if ($tempFile === null)
+            {
+                // File missing from storage — nothing to upload; drop the record.
+                $attachmentData->delete();
+                continue;
+            }
+
+            $pending[$attachmentData->data_id] = [
+                'ad' => $attachmentData,
+                'rf' => $reportFile,
+                'temp' => $tempFile,
+            ];
+        }
+
+        if (!$pending)
+        {
+            return;
+        }
+
+        try
+        {
+            // Phase B (parallel): upload the staged files.
+            $paths = [];
+            foreach ($pending as $dataId => $p) { $paths[$dataId] = $p['temp']; }
+            $uploads = $this->apiClient->uploadFilesParallel($this->report->ncmec_report_id, $paths, $lanes);
+
+            // Phase C (serial DB): persist fileIds; build fileinfo docs for the successes.
+            $fileInfoXml = [];
+            foreach ($pending as $dataId => $p)
+            {
+                $u = $uploads[$dataId] ?? null;
+                if ($u && $u['ok'])
+                {
+                    $p['rf']->ncmec_file_id = $u['fileId'];
+                    $p['rf']->save();
+                    $fileInfoXml[$dataId] = $this->buildFileDetailsXml($p['rf'], 'Reported');
+                }
+                else
+                {
+                    $err = $u ? ($u['description'] ?: ('HTTP ' . $u['code'] . ' ' . $u['error'])) : 'no response';
+                    \XF::logError("NCMEC parallel upload failed for data_id {$dataId}: {$err}");
+                }
+            }
+
+            // Phase D (parallel): submit fileinfo for the successfully uploaded files.
+            $fileInfoResults = $fileInfoXml ? $this->apiClient->submitFileDetailsParallel($fileInfoXml, $lanes) : [];
+
+            // Phase E (serial DB): delete our copy of every file that fully
+            // succeeded (upload + fileinfo). Leave failures in place to retry.
+            foreach ($pending as $dataId => $p)
+            {
+                $uploaded = isset($uploads[$dataId]) && $uploads[$dataId]['ok'];
+                $infoOk = !isset($fileInfoResults[$dataId]) || $fileInfoResults[$dataId]['ok'];
+                if ($uploaded && $infoOk)
+                {
+                    $p['ad']->delete();
+                }
+                elseif ($uploaded && !$infoOk)
+                {
+                    $d = $fileInfoResults[$dataId]['description'] ?? '';
+                    \XF::logError("NCMEC parallel fileinfo failed for data_id {$dataId}: {$d}");
+                }
+            }
+        }
+        finally
+        {
+            foreach ($pending as $p)
+            {
+                if (isset($p['temp']) && is_string($p['temp']) && file_exists($p['temp']))
+                {
+                    @unlink($p['temp']);
+                }
+            }
+        }
+    }
+
+    /**
+     * Ensure a ReportFile row exists for this attachment on the current report,
+     * populating IP + source URL the same way the serial path does. Returns the
+     * (possibly pre-existing) ReportFile.
+     */
+    protected function prepareReportFileForAttachment(\XF\Entity\AttachmentData $attachmentData): ReportFile
+    {
+        /** @var ReportFile|null $reportFile */
+        $reportFile = $this->finder('USIPS\NCMEC:ReportFile')
+            ->where('report_id', $this->report->report_id)
+            ->where('original_file_name', $attachmentData->filename)
+            ->fetchOne();
+
+        if ($reportFile)
+        {
+            return $reportFile;
+        }
+
+        $reportFile = $this->em()->create('USIPS\NCMEC:ReportFile');
+        $reportFile->report_id = $this->report->report_id;
+        $reportFile->case_id = $this->case->case_id;
+        $reportFile->ncmec_report_id = $this->report->ncmec_report_id;
+        $reportFile->original_file_name = $attachmentData->filename;
+
+        $attachment = $this->finder('XF:Attachment')
+            ->where('data_id', $attachmentData->data_id)
+            ->fetchOne();
+
+        if ($attachment)
+        {
+            $ip = $this->findIpForContent($attachment->content_type, $attachment->content_id);
+            if ($ip)
+            {
+                $reportFile->ip_capture_event = $ip;
+            }
+
+            if ($attachment->Container && method_exists($attachment->Container, 'getContentUrl'))
+            {
+                $reportFile->location_of_file = $attachment->Container->getContentUrl(true);
+            }
+        }
+
+        $reportFile->save();
+        return $reportFile;
+    }
+
+    /**
+     * Copy an attachment's stored bytes to a fresh temp file. Returns the temp
+     * path, or null if the source file is missing from storage.
+     */
+    protected function stageAttachmentToTemp(\XF\Entity\AttachmentData $attachmentData): ?string
+    {
+        $filePath = $attachmentData->getAbstractedDataPath();
+        $tempFile = \XF\Util\File::getTempFile();
+
+        $fs = \XF::app()->fs();
+        $stream = $fs->readStream($filePath);
+        if ($stream)
+        {
+            file_put_contents($tempFile, stream_get_contents($stream));
+            fclose($stream);
+            return $tempFile;
+        }
+
+        if (file_exists($filePath))
+        {
+            copy($filePath, $tempFile);
+            return $tempFile;
+        }
+
+        @unlink($tempFile);
+        return null;
+    }
+
     public function processAttachment(\XF\Entity\AttachmentData $attachmentData)
     {
         $this->report = $this->getOrCreateReport();
