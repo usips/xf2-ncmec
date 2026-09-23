@@ -15,10 +15,15 @@ class UserController extends XFCP_UserController
         if ($response instanceof \XF\Mvc\Reply\View)
         {
             $viewParams = $response->getParams();
-            $viewParams['nonFinalizedIncidents'] = $this->finder('USIPS\NCMEC:Incident')
-                ->where('finalized_on', null)
-                ->order('created_date', 'DESC')
-                ->fetch();
+            // Only list incidents to admins with NCMEC permission. Incidents in
+            // a finalized case are left out as well, since they can't be changed.
+            $viewParams['nonFinalizedIncidents'] = \XF::visitor()->hasAdminPermission('usips_ncmec')
+                ? $this->finder('USIPS\NCMEC:Incident')
+                    ->where('finalized_on', null)
+                    ->order('created_date', 'DESC')
+                    ->fetch()
+                    ->filter(function ($incident) { return !$incident->isFinalized(); })
+                : $this->em()->getEmptyCollection();
             $viewParams['timeLimitDefault'] = TimeLimit::getDefaultSeconds();
             $viewParams['timeLimitSelection'] = TimeLimit::normalizeSelection(null);
             $viewParams['timeLimitDefaultDescription'] = TimeLimit::describeDefault();
@@ -40,6 +45,7 @@ class UserController extends XFCP_UserController
         if (!empty($actions['ncmec_incident']))
         {
             $this->assertPostOnly();
+            $this->assertAdminPermission('usips_ncmec');
 
             if ($this->request->exists('user_ids'))
             {
@@ -65,6 +71,15 @@ class UserController extends XFCP_UserController
             if ($incidentId)
             {
                 $incident = $this->em()->find('USIPS\NCMEC:Incident', $incidentId);
+                if (!$incident)
+                {
+                    // Don't silently create a new incident for a bad ID.
+                    return $this->error(\XF::phrase('requested_page_not_found'), 404);
+                }
+                if ($incident->finalized_on || $incident->isFinalized())
+                {
+                    return $this->error(\XF::phrase('usips_ncmec_incident_finalized_cannot_delete'));
+                }
             }
 
             if (!$incident)
