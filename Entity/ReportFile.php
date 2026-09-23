@@ -16,6 +16,9 @@ use XF\Mvc\Entity\Structure;
  * @property string $location_of_file
  * @property bool $publicly_available
  * @property string $ip_capture_event
+ * @property int|null $data_id Source XF attachment data_id (attachment evidence files only)
+ * @property string|null $supplemental_key Export name (supplemental files only, e.g. users.json)
+ * @property bool $file_details_submitted Whether /fileinfo succeeded for this file
  *
  * RELATIONS
  * @property-read \USIPS\NCMEC\Entity\Report $Report
@@ -47,6 +50,9 @@ class ReportFile extends Entity
             'location_of_file' => ['type' => self::STR, 'maxLength' => 2048, 'default' => ''],
             'publicly_available' => ['type' => self::BOOL, 'default' => false],
             'ip_capture_event' => ['type' => self::BINARY, 'maxLength' => 16, 'default' => ''],
+            'data_id' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
+            'supplemental_key' => ['type' => self::STR, 'maxLength' => 100, 'nullable' => true, 'default' => null],
+            'file_details_submitted' => ['type' => self::BOOL, 'default' => false],
         ];
         $structure->relations = [
             'Report' => [

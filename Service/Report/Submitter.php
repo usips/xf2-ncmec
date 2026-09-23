@@ -113,13 +113,18 @@ class Submitter extends AbstractService
      * across $lanes concurrent requests (uploads, then fileinfos). All DB /
      * entity work — ReportFile creation, dedup, fileId persistence, and the
      * post-upload attachment deletes — stays on this single process thread, so
-     * there are no cross-request races. Mirrors processAttachment()'s per-file
-     * semantics; only the transport is batched.
+     * there are no cross-request races.
+     *
+     * Our copy of an attachment is deleted only once BOTH its /upload and its
+     * /fileinfo have succeeded. Anything else is returned as a failure and left
+     * in place so the caller can retry it. The caller must not finish the NCMEC
+     * report while failures remain.
      *
      * @param \XF\Entity\AttachmentData[] $attachmentDataList
      * @param int $lanes
+     * @return array map of data_id => ['ok' => bool, 'error' => string]
      */
-    public function processAttachmentsBatch(array $attachmentDataList, int $lanes = 5)
+    public function processAttachmentsBatch(array $attachmentDataList, int $lanes = 5): array
     {
         $this->report = $this->getOrCreateReport();
         $this->apiClient->setReportId($this->report->report_id);
@@ -129,88 +134,130 @@ class Submitter extends AbstractService
             throw new \Exception("Report must be opened before processing attachments.");
         }
 
-        // Phase A (serial DB): ensure a ReportFile row per attachment; stage the
-        // ones that still need uploading (no ncmec_file_id) to temp files.
-        $pending = []; // data_id => ['ad'=>AttachmentData,'rf'=>ReportFile,'temp'=>path]
+        $results = [];
+        $toUpload = []; // data_id => ['ad'=>AttachmentData,'rf'=>ReportFile,'temp'=>path]
+        $toDetail = []; // data_id => ['ad'=>AttachmentData,'rf'=>ReportFile] (uploaded, /fileinfo outstanding)
+
+        // Phase A (serial DB): ensure a ReportFile row per attachment and work
+        // out what each one still needs.
         foreach ($attachmentDataList as $attachmentData)
         {
+            $dataId = $attachmentData->data_id;
+            if (isset($results[$dataId]) || isset($toUpload[$dataId]) || isset($toDetail[$dataId]))
+            {
+                continue; // same attachment listed twice
+            }
+
             $reportFile = $this->prepareReportFileForAttachment($attachmentData);
 
             if ($reportFile->ncmec_file_id)
             {
-                // Already uploaded to this report — just remove our copy.
-                $attachmentData->delete();
+                if ($reportFile->file_details_submitted)
+                {
+                    // Fully sent on an earlier run; only our copy is left to remove.
+                    $attachmentData->delete();
+                    $results[$dataId] = ['ok' => true, 'error' => ''];
+                }
+                else
+                {
+                    // Uploaded earlier but /fileinfo never succeeded: resend it
+                    // and keep our copy until it does.
+                    $toDetail[$dataId] = ['ad' => $attachmentData, 'rf' => $reportFile];
+                }
                 continue;
             }
 
             $tempFile = $this->stageAttachmentToTemp($attachmentData);
             if ($tempFile === null)
             {
-                // File missing from storage — nothing to upload; drop the record.
-                $attachmentData->delete();
+                // Never delete evidence we could not read, because storage may
+                // only be unavailable for a while. Report a failure so the job
+                // retries and, if the problem persists, halts before finishing.
+                $error = 'file could not be read from storage (' . $attachmentData->getAbstractedDataPath() . ')';
+                \XF::logError("NCMEC: evidence data_id {$dataId} for report #{$this->report->report_id}: {$error}");
+                $results[$dataId] = ['ok' => false, 'error' => $error];
                 continue;
             }
 
-            $pending[$attachmentData->data_id] = [
+            $toUpload[$dataId] = [
                 'ad' => $attachmentData,
                 'rf' => $reportFile,
                 'temp' => $tempFile,
             ];
         }
 
-        if (!$pending)
-        {
-            return;
-        }
-
         try
         {
             // Phase B (parallel): upload the staged files.
-            $paths = [];
-            foreach ($pending as $dataId => $p) { $paths[$dataId] = $p['temp']; }
-            $uploads = $this->apiClient->uploadFilesParallel($this->report->ncmec_report_id, $paths, $lanes);
-
-            // Phase C (serial DB): persist fileIds; build fileinfo docs for the successes.
-            $fileInfoXml = [];
-            foreach ($pending as $dataId => $p)
+            if ($toUpload)
             {
-                $u = $uploads[$dataId] ?? null;
-                if ($u && $u['ok'])
+                $paths = [];
+                $logContext = [];
+                foreach ($toUpload as $dataId => $p)
                 {
-                    $p['rf']->ncmec_file_id = $u['fileId'];
-                    $p['rf']->save();
-                    $fileInfoXml[$dataId] = $this->buildFileDetailsXml($p['rf'], 'Reported');
+                    $paths[$dataId] = $p['temp'];
+                    $logContext[$dataId] = $this->getReportFileLogContext($p['rf']);
                 }
-                else
+                $uploads = $this->apiClient->uploadFilesParallel($this->report->ncmec_report_id, $paths, $lanes, $logContext);
+
+                // Phase C (serial DB): persist fileIds right away, so a crash
+                // before /fileinfo never causes a duplicate upload.
+                foreach ($toUpload as $dataId => $p)
                 {
-                    $err = $u ? ($u['description'] ?: ('HTTP ' . $u['code'] . ' ' . $u['error'])) : 'no response';
-                    \XF::logError("NCMEC parallel upload failed for data_id {$dataId}: {$err}");
+                    $u = $uploads[$dataId] ?? null;
+                    if ($u && $u['ok'])
+                    {
+                        $p['rf']->ncmec_file_id = $u['fileId'];
+                        $p['rf']->file_details_submitted = false;
+                        $p['rf']->save();
+                        $toDetail[$dataId] = ['ad' => $p['ad'], 'rf' => $p['rf']];
+                    }
+                    else
+                    {
+                        $err = $u ? ($u['description'] ?: ('HTTP ' . $u['code'] . ' ' . $u['error'])) : 'no response';
+                        \XF::logError("NCMEC parallel upload failed for data_id {$dataId} (report #{$this->report->report_id}): {$err}");
+                        $results[$dataId] = ['ok' => false, 'error' => 'upload: ' . $err];
+                    }
                 }
             }
 
-            // Phase D (parallel): submit fileinfo for the successfully uploaded files.
-            $fileInfoResults = $fileInfoXml ? $this->apiClient->submitFileDetailsParallel($fileInfoXml, $lanes) : [];
-
-            // Phase E (serial DB): delete our copy of every file that fully
-            // succeeded (upload + fileinfo). Leave failures in place to retry.
-            foreach ($pending as $dataId => $p)
+            // Phase D (parallel): submit /fileinfo for everything uploaded,
+            // whether in this batch or on an earlier run.
+            if ($toDetail)
             {
-                $uploaded = isset($uploads[$dataId]) && $uploads[$dataId]['ok'];
-                $infoOk = !isset($fileInfoResults[$dataId]) || $fileInfoResults[$dataId]['ok'];
-                if ($uploaded && $infoOk)
+                $fileInfoXml = [];
+                $logContext = [];
+                foreach ($toDetail as $dataId => $p)
                 {
-                    $p['ad']->delete();
+                    $fileInfoXml[$dataId] = $this->buildFileDetailsXml($p['rf'], 'Reported');
+                    $logContext[$dataId] = $this->getReportFileLogContext($p['rf']);
                 }
-                elseif ($uploaded && !$infoOk)
+                $fileInfoResults = $this->apiClient->submitFileDetailsParallel($fileInfoXml, $lanes, $logContext);
+
+                // Phase E (serial DB): record the result. Remove our copy only
+                // when the file is fully sent (upload + fileinfo).
+                foreach ($toDetail as $dataId => $p)
                 {
-                    $d = $fileInfoResults[$dataId]['description'] ?? '';
-                    \XF::logError("NCMEC parallel fileinfo failed for data_id {$dataId}: {$d}");
+                    $i = $fileInfoResults[$dataId] ?? null;
+                    if ($i && $i['ok'])
+                    {
+                        $p['rf']->file_details_submitted = true;
+                        $p['rf']->save();
+                        $p['ad']->delete();
+                        $results[$dataId] = ['ok' => true, 'error' => ''];
+                    }
+                    else
+                    {
+                        $err = $i ? ($i['description'] ?: ('HTTP ' . $i['code'] . ' ' . $i['error'])) : 'no response';
+                        \XF::logError("NCMEC parallel fileinfo failed for data_id {$dataId} (report #{$this->report->report_id}, fileId {$p['rf']->ncmec_file_id}): {$err}");
+                        $results[$dataId] = ['ok' => false, 'error' => 'fileinfo: ' . $err];
+                    }
                 }
             }
         }
         finally
         {
-            foreach ($pending as $p)
+            foreach ($toUpload as $p)
             {
                 if (isset($p['temp']) && is_string($p['temp']) && file_exists($p['temp']))
                 {
@@ -218,19 +265,97 @@ class Submitter extends AbstractService
                 }
             }
         }
+
+        return $results;
+    }
+
+    /**
+     * Report data_ids that are linked to this subject's evidence but no longer
+     * exist as attachment data. Returns them with whether they were confirmed
+     * sent (a ReportFile for that data_id with /fileinfo done).
+     *
+     * @param int[] $dataIds
+     * @return array data_id => bool (true = confirmed sent)
+     */
+    public function getMissingAttachmentSendState(array $dataIds): array
+    {
+        if (!$dataIds)
+        {
+            return [];
+        }
+
+        $report = $this->getExistingReport();
+        $sent = [];
+        if ($report)
+        {
+            $sent = $this->db()->fetchPairs("
+                SELECT data_id, file_details_submitted
+                FROM xf_usips_ncmec_report_file
+                WHERE report_id = ? AND data_id IN (" . $this->db()->quote($dataIds) . ")
+            ", $report->report_id);
+        }
+
+        $out = [];
+        foreach ($dataIds as $dataId)
+        {
+            $out[$dataId] = !empty($sent[$dataId]);
+        }
+        return $out;
+    }
+
+    /**
+     * Count evidence attachments for this report's subject(s) that are still
+     * held locally. Local copies are deleted only after upload + fileinfo
+     * succeed, so a non-zero count means evidence is still unsent and the
+     * NCMEC report must not be finished.
+     */
+    public function countOutstandingEvidence(): int
+    {
+        $db = $this->db();
+        $sql = "
+            SELECT COUNT(DISTINCT iad.data_id)
+            FROM xf_usips_ncmec_incident_attachment_data AS iad
+            INNER JOIN xf_usips_ncmec_incident AS i ON (iad.incident_id = i.incident_id)
+            INNER JOIN xf_attachment_data AS ad ON (ad.data_id = iad.data_id)
+            WHERE i.case_id = ?
+        ";
+        $params = [$this->case->case_id];
+
+        // Mirrors FinalizeCase's file query: in single-report mode every file in
+        // the case belongs to the one report; otherwise only this subject's files.
+        if (!$this->case->reported_person_id)
+        {
+            $sql .= " AND iad.user_id = ?";
+            $params[] = $this->subject->user_id;
+        }
+
+        return (int) $db->fetchOne($sql, $params);
+    }
+
+    protected function getReportFileLogContext(ReportFile $reportFile): array
+    {
+        return [
+            'file_id' => $reportFile->file_id,
+            'data_id' => $reportFile->data_id,
+            'original_file_name' => $reportFile->original_file_name,
+        ];
     }
 
     /**
      * Ensure a ReportFile row exists for this attachment on the current report,
-     * populating IP + source URL the same way the serial path does. Returns the
-     * (possibly pre-existing) ReportFile.
+     * populating IP + source URL. Returns the (possibly pre-existing)
+     * ReportFile.
+     *
+     * Rows are keyed by (report_id, data_id), never by filename: two evidence
+     * files can share a name (e.g. "image.png"). Rows from before 1.3.1 have a
+     * NULL data_id and never match here.
      */
     protected function prepareReportFileForAttachment(\XF\Entity\AttachmentData $attachmentData): ReportFile
     {
         /** @var ReportFile|null $reportFile */
         $reportFile = $this->finder('USIPS\NCMEC:ReportFile')
             ->where('report_id', $this->report->report_id)
-            ->where('original_file_name', $attachmentData->filename)
+            ->where('data_id', $attachmentData->data_id)
             ->fetchOne();
 
         if ($reportFile)
@@ -242,6 +367,7 @@ class Submitter extends AbstractService
         $reportFile->report_id = $this->report->report_id;
         $reportFile->case_id = $this->case->case_id;
         $reportFile->ncmec_report_id = $this->report->ncmec_report_id;
+        $reportFile->data_id = $attachmentData->data_id;
         $reportFile->original_file_name = $attachmentData->filename;
 
         $attachment = $this->finder('XF:Attachment')
@@ -268,25 +394,36 @@ class Submitter extends AbstractService
 
     /**
      * Copy an attachment's stored bytes to a fresh temp file. Returns the temp
-     * path, or null if the source file is missing from storage.
+     * path, or null if the source file could not be read.
      */
     protected function stageAttachmentToTemp(\XF\Entity\AttachmentData $attachmentData): ?string
     {
         $filePath = $attachmentData->getAbstractedDataPath();
         $tempFile = \XF\Util\File::getTempFile();
 
-        $fs = \XF::app()->fs();
-        $stream = $fs->readStream($filePath);
-        if ($stream)
+        try
         {
-            file_put_contents($tempFile, stream_get_contents($stream));
-            fclose($stream);
-            return $tempFile;
+            $fs = \XF::app()->fs();
+            $stream = $fs->readStream($filePath);
+            if ($stream)
+            {
+                $written = file_put_contents($tempFile, $stream);
+                fclose($stream);
+                if ($written !== false)
+                {
+                    return $tempFile;
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            // Covers missing files and storage errors (e.g. S3). Handled below.
         }
 
-        if (file_exists($filePath))
+        // Legacy fallback for a plain filesystem path. Abstracted paths
+        // (internal-data://...) are not PHP stream wrappers, so skip them here.
+        if (strpos($filePath, '://') === false && file_exists($filePath) && copy($filePath, $tempFile))
         {
-            copy($filePath, $tempFile);
             return $tempFile;
         }
 
@@ -294,117 +431,18 @@ class Submitter extends AbstractService
         return null;
     }
 
+    /**
+     * Single-attachment version of processAttachmentsBatch(). Throws if the file
+     * was not fully sent.
+     */
     public function processAttachment(\XF\Entity\AttachmentData $attachmentData)
     {
-        $this->report = $this->getOrCreateReport();
-        $this->apiClient->setReportId($this->report->report_id);
+        $results = $this->processAttachmentsBatch([$attachmentData], 1);
+        $result = $results[$attachmentData->data_id] ?? null;
 
-        if (!$this->report->ncmec_report_id)
+        if (!$result || !$result['ok'])
         {
-            throw new \Exception("Report must be opened before processing attachments.");
-        }
-
-        // Check if already processed for this report
-        $reportFile = $this->finder('USIPS\NCMEC:ReportFile')
-            ->where('report_id', $this->report->report_id)
-            ->where('original_file_name', $attachmentData->filename)
-            ->fetchOne();
-
-        if (!$reportFile)
-        {
-            $reportFile = $this->em()->create('USIPS\NCMEC:ReportFile');
-            $reportFile->report_id = $this->report->report_id;
-            $reportFile->case_id = $this->case->case_id;
-            $reportFile->ncmec_report_id = $this->report->ncmec_report_id;
-            $reportFile->original_file_name = $attachmentData->filename;
-            
-            // Try to find an IP for this attachment
-            $attachment = $this->finder('XF:Attachment')
-                ->where('data_id', $attachmentData->data_id)
-                ->fetchOne();
-            
-            if ($attachment)
-            {
-                $ip = $this->findIpForContent($attachment->content_type, $attachment->content_id);
-                if ($ip)
-                {
-                    $reportFile->ip_capture_event = $ip;
-                }
-                
-                if ($attachment->Container && method_exists($attachment->Container, 'getContentUrl'))
-                {
-                        $reportFile->location_of_file = $attachment->Container->getContentUrl(true);
-                }
-            }
-            
-            $reportFile->save();
-        }
-
-        if (!$reportFile->ncmec_file_id)
-        {
-            // Prepare file for upload
-            $filePath = $attachmentData->getAbstractedDataPath();
-            $tempFile = \XF\Util\File::getTempFile();
-            
-            try 
-            {
-                $fs = \XF::app()->fs();
-                $stream = $fs->readStream($filePath);
-                if ($stream)
-                {
-                    file_put_contents($tempFile, stream_get_contents($stream));
-                    fclose($stream);
-                }
-                else
-                {
-                    if (file_exists($filePath))
-                    {
-                        copy($filePath, $tempFile);
-                    }
-                    else
-                    {
-                        // If file is missing, we can't upload it. 
-                        // We should probably delete the data record and move on.
-                        $attachmentData->delete();
-                        return;
-                    }
-                }
-
-                $response = $this->apiClient->uploadFile($this->report->ncmec_report_id, $tempFile);
-                
-                if ($response && (string)$response->responseCode === '0')
-                {
-                    $reportFile->ncmec_file_id = (string)$response->fileId;
-                    $reportFile->save();
-
-                    // Submit File Details
-                    $detailsXml = $this->buildFileDetailsXml($reportFile, 'Reported');
-                    $this->apiClient->submitFileDetails($detailsXml);
-
-                    // Delete Data - This is the critical step requested
-                    // Deleting AttachmentData triggers XF's cleanup process which removes the file from storage
-                    $attachmentData->delete();
-                }
-                else
-                {
-                    $error = $response ? (string)$response->responseDescription : 'Unknown upload error';
-                    \XF::logError("NCMEC Upload Failed for data_id {$attachmentData->data_id}: $error");
-                    // Throwing exception to retry or handle in job
-                    throw new \Exception("Upload failed: $error");
-                }
-            }
-            finally
-            {
-                if (file_exists($tempFile))
-                {
-                    @unlink($tempFile);
-                }
-            }
-        }
-        else
-        {
-            // Already uploaded, ensure data is deleted
-            $attachmentData->delete();
+            throw new \Exception("NCMEC upload failed for data_id {$attachmentData->data_id}: " . ($result['error'] ?? 'no result'));
         }
     }
 
@@ -746,10 +784,11 @@ class Submitter extends AbstractService
 
     protected function uploadSupplementalFile(string $filePath, string $filename)
     {
-        // Check if already processed for this report
+        // Supplemental exports are keyed by name in their own column, so they
+        // can never collide with an attachment that has the same filename.
         $reportFile = $this->finder('USIPS\NCMEC:ReportFile')
             ->where('report_id', $this->report->report_id)
-            ->where('original_file_name', $filename)
+            ->where('supplemental_key', $filename)
             ->fetchOne();
 
         if (!$reportFile)
@@ -758,6 +797,7 @@ class Submitter extends AbstractService
             $reportFile->report_id = $this->report->report_id;
             $reportFile->case_id = $this->case->case_id;
             $reportFile->ncmec_report_id = $this->report->ncmec_report_id;
+            $reportFile->supplemental_key = $filename;
             $reportFile->original_file_name = $filename;
             $reportFile->save();
         }
@@ -769,17 +809,41 @@ class Submitter extends AbstractService
             if ($response && (string)$response->responseCode === '0')
             {
                 $reportFile->ncmec_file_id = (string)$response->fileId;
+                $reportFile->file_details_submitted = false;
                 $reportFile->save();
-
-                // Submit File Details
-                $detailsXml = $this->buildFileDetailsXml($reportFile, 'Supplemental Reported');
-                $this->apiClient->submitFileDetails($detailsXml);
             }
             else
             {
                 $error = $response ? (string)$response->responseDescription : 'Unknown upload error';
                 \XF::logError("NCMEC Supplemental Upload Failed for {$filename}: $error");
-                // We don't throw here to allow deletion to proceed, but we log it.
+                // Not thrown: supplemental exports are also kept in internal-data.
+                return;
+            }
+        }
+
+        if (!$reportFile->file_details_submitted)
+        {
+            $detailsXml = $this->buildFileDetailsXml($reportFile, 'Supplemental Reported');
+            try
+            {
+                $response = $this->apiClient->submitFileDetails($detailsXml);
+            }
+            catch (\Exception $e)
+            {
+                // Transport errors are already in the API log; treat them like
+                // an error response (logged, not fatal, retried on re-run).
+                $response = null;
+            }
+
+            if ($response && (string)$response->responseCode === '0')
+            {
+                $reportFile->file_details_submitted = true;
+                $reportFile->save();
+            }
+            else
+            {
+                $error = $response ? (string)$response->responseDescription : 'Unknown fileinfo error';
+                \XF::logError("NCMEC Supplemental fileinfo Failed for {$filename} (fileId {$reportFile->ncmec_file_id}): $error");
             }
         }
     }
@@ -846,7 +910,10 @@ class Submitter extends AbstractService
         }
     }
 
-    protected function getOrCreateReport(): Report
+    /**
+     * The Report row for this submitter's subject(s), without creating one.
+     */
+    public function getExistingReport(): ?Report
     {
         $finder = $this->finder('USIPS\NCMEC:Report')
             ->where('case_id', $this->case->case_id);
@@ -858,14 +925,20 @@ class Submitter extends AbstractService
             $finder->where('subject_user_id', $this->subject->user_id);
         }
 
-        $report = $finder->fetchOne();
+        return $finder->fetchOne();
+    }
+
+    protected function getOrCreateReport(): Report
+    {
+        $report = $this->getExistingReport();
 
         if (!$report)
         {
             $report = $this->em()->create('USIPS\NCMEC:Report');
             $report->case_id = $this->case->case_id;
             $report->user_id = \XF::visitor()->user_id;
-            $report->username = \XF::visitor()->username;
+            // Guest visitor when run from the CLI (resume-case): username is required.
+            $report->username = \XF::visitor()->username ?: 'System';
             $report->subject_user_id = $this->subject->user_id;
             $report->subject_username = $this->subject->username;
             $report->save();
