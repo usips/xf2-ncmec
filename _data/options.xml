@@ -25,4 +25,10 @@ units={{ phrase('units_hours') }}</edit_format_params>
     <edit_format_params>USIPS\NCMEC\Option\ReporterContactPerson::renderSelect</edit_format_params>
     <relation group_id="usips_ncmec" display_order="300"/>
   </option>
+  <option option_id="usipsNcmecUploadLanes" edit_format="spinbox" data_type="positive_integer" advanced="0">
+    <default_value>5</default_value>
+    <edit_format_params>min=1
+max=10</edit_format_params>
+    <relation group_id="usips_ncmec" display_order="400"/>
+  </option>
 </options>

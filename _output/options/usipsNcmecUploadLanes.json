@@ -1,0 +1,13 @@
+{
+    "edit_format": "spinbox",
+    "edit_format_params": "min=1\nmax=10",
+    "data_type": "positive_integer",
+    "sub_options": [],
+    "validation_class": "",
+    "validation_method": "",
+    "advanced": false,
+    "default_value": "5",
+    "relations": {
+        "usips_ncmec": 400
+    }
+}

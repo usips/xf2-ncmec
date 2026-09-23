@@ -1,0 +1,1 @@
+How many evidence files are uploaded to NCMEC at the same time while a case is being submitted. Allowed range is 1 to 10; the default is 5.

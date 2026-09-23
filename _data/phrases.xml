@@ -19,12 +19,14 @@
   <phrase title="option.usipsNcmecDefaultTimespan" version_id="0" version_string="1.0.0"><![CDATA[Default timespan]]></phrase>
   <phrase title="option.usipsNcmecReporterCompanyTemplate" version_id="0" version_string="1.0.0"><![CDATA[Company template]]></phrase>
   <phrase title="option.usipsNcmecReporterContactPerson" version_id="0" version_string="1.0.0"><![CDATA[Contact person]]></phrase>
+  <phrase title="option.usipsNcmecUploadLanes" version_id="1030100" version_string="1.3.1"><![CDATA[Parallel upload lanes]]></phrase>
   <phrase title="option_explain.usipsNcmecApi" version_id="0" version_string="1.0.0"><![CDATA[]]></phrase>
   <phrase title="option_explain.usipsNcmecDefaultTimespan" version_id="0" version_string="1.0.0"><![CDATA[Certain moderation actions automatically grab recently created content by the user. This is to help reduce false positives when dealing with an older compromised account. You may change the search range for these actions.
 
 0 is <strong>all</strong> content.]]></phrase>
   <phrase title="option_explain.usipsNcmecReporterCompanyTemplate" version_id="0" version_string="1.0.0"><![CDATA[Supplied on all reports as <a href="https://exttest.cybertip.org/ispws/documentation/index.html#reporter">/report/reporter/companyTemplate</a>]]></phrase>
   <phrase title="option_explain.usipsNcmecReporterContactPerson" version_id="0" version_string="1.0.0"><![CDATA[Supplied on all reports as <a href="https://exttest.cybertip.org/ispws/documentation/index.html#reporter">/report/reporter/contactPerson</a>]]></phrase>
+  <phrase title="option_explain.usipsNcmecUploadLanes" version_id="1030100" version_string="1.3.1"><![CDATA[How many evidence files are uploaded to NCMEC at the same time while a case is being submitted. Allowed range is 1 to 10; the default is 5.]]></phrase>
   <phrase title="option_group.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC Reporting]]></phrase>
   <phrase title="option_group_description.usips_ncmec" version_id="0" version_string="1.0.0"><![CDATA[NCMEC reporting credentials and environment settings.]]></phrase>
   <phrase title="permission.general_usipsNcmecReportEmergency" version_id="0" version_string="1.0.0"><![CDATA[[NCMEC] Report content as emergency]]></phrase>
