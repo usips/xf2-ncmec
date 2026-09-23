@@ -55,31 +55,7 @@ class CaseController extends AbstractController
      */
     protected function validateCaseForFinalization(\USIPS\NCMEC\Entity\CaseFile $case)
     {
-        $errors = [];
-
-        // Check incident_type (required by NCMEC API)
-        if (empty($case->incident_type))
-        {
-            $errors[] = \XF::phrase('usips_ncmec_error_incident_type_required')->render();
-        }
-
-        // Check reporter_person_id (required for reportingPerson)
-        if (empty($case->reporter_person_id))
-        {
-            $errors[] = \XF::phrase('usips_ncmec_error_reporter_person_required')->render();
-        }
-
-        // Check that case has at least one incident
-        $incidentCount = $this->finder('USIPS\NCMEC:Incident')
-            ->where('case_id', $case->case_id)
-            ->total();
-
-        if ($incidentCount === 0)
-        {
-            $errors[] = \XF::phrase('usips_ncmec_error_no_incidents')->render();
-        }
-
-        return $errors;
+        return $case->getFinalizationErrors();
     }
 
     public function actionEdit(ParameterBag $params)

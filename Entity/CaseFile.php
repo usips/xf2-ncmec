@@ -97,6 +97,40 @@ class CaseFile extends Entity
         return false;
     }
 
+    /**
+     * Checks that the case has everything NCMEC submission needs. Shared by the
+     * admin finalize flow and the usips-ncmec:resume-case CLI.
+     *
+     * @return string[] rendered error messages (empty if valid)
+     */
+    public function getFinalizationErrors(): array
+    {
+        $errors = [];
+
+        // incident_type is required by the NCMEC API
+        if (empty($this->incident_type))
+        {
+            $errors[] = \XF::phrase('usips_ncmec_error_incident_type_required')->render();
+        }
+
+        // reporter_person_id is required for reportingPerson
+        if (empty($this->reporter_person_id))
+        {
+            $errors[] = \XF::phrase('usips_ncmec_error_reporter_person_required')->render();
+        }
+
+        $incidentCount = $this->finder('USIPS\NCMEC:Incident')
+            ->where('case_id', $this->case_id)
+            ->total();
+
+        if ($incidentCount === 0)
+        {
+            $errors[] = \XF::phrase('usips_ncmec_error_no_incidents')->render();
+        }
+
+        return $errors;
+    }
+
     public static function getStructure(Structure $structure)
     {
         $structure->table = 'xf_usips_ncmec_case';
